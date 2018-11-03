@@ -16,15 +16,15 @@ RUN apk update && apk add bash && \
 RUN apk add --no-cache git curl tzdata && \
 	curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64 -o $GOPATH/bin/dep && \
 	chmod +x $GOPATH/bin/dep && \
-    mkdir -p $GOPATH/src/github.com/HarbinZhang/goRainbow
+    mkdir -p $GOPATH/src/github.com/HarbinZhang/Rainbow
 
 ENV TZ America/Los_Angeles	
 
-COPY . $GOPATH/src/github.com/HarbinZhang/goRainbow
-RUN cd $GOPATH/src/github.com/HarbinZhang/goRainbow/
-RUN dep init
+ADD . $GOPATH/src/github.com/HarbinZhang/Rainbow && \
+    cd $GOPATH/src/github.com/HarbinZhang/Rainbow/ && \
+    dep init
 RUN	dep ensure
-RUN	go build -o /app/gorainbow ./gorainbow
+RUN	go build -o /app/gorainbow .
 
 WORKDIR /app
 

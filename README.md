@@ -23,7 +23,7 @@ go-rainbow includes 3 parts:
 2. Light:
     a. Using queue-like channel, rather than cache. We don't need LRU, LFU algorithms here, because each message would be used and only used once. 
 # Usage
-The main program is gorainbow.go under gorainbow.
+The main program is gorainbow.go
 ```
 go run gorainbow.go
 ```

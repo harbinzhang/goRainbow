@@ -3,27 +3,12 @@ package producer
 import (
 	"fmt"
 
+	"github.com/HarbinZhang/goRainbow/config"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
-// Field represents a Field
-type Field struct {
-	Title string `json:"title"`
-	Value string `json:"value"`
-	Short bool   `json:"short,omitempty"`
-}
-
-// LagMessage is a simulator for Burrow lag message
-type LagMessage struct {
-	Attachments []struct {
-		Color  string  `json:"color"`
-		Title  string  `json:"title"`
-		Fields []Field `json:"fields"`
-	} `json:"attachments"`
-}
-
 // Produce message to kafka
-func Produce(lagQueue chan LagMessage) {
+func Produce(lagQueue chan config.LagMessage) {
 	kafkaConfig := kafka.ConfigMap{
 		"batch.num.messages": 2000,
 		"linger.ms":          1,

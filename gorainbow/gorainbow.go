@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/HarbinZhang/goRainbow/config"
@@ -10,9 +9,11 @@ import (
 )
 
 func main() {
-	lagQueue := make(chan config.LagMessage, 1000)
+	lagQueue := make(chan config.LagMessage, 3000)
+	produceQueue := make(chan string, 3000)
 	// go producer.Produce(lagQueue)
-	go core.Translator(lagQueue)
+	go core.Translator(lagQueue, produceQueue)
+	go core.Produce(produceQueue)
 	lagHandler := consumeLag(lagQueue)
 	http.HandleFunc("/rainbow/lag", lagHandler)
 	http.ListenAndServe(":7099", nil)
@@ -26,7 +27,7 @@ func consumeLag(lagQueue chan config.LagMessage) func(http.ResponseWriter, *http
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println(msg)
+		// fmt.Println(msg)
 		lagQueue <- msg
 	}
 }

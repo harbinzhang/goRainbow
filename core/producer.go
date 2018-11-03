@@ -3,12 +3,11 @@ package core
 import (
 	"fmt"
 
-	"github.com/HarbinZhang/goRainbow/config"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
 // Produce message to kafka
-func Produce(lagQueue chan config.LagMessage) {
+func Produce(produceQueue chan string) {
 	kafkaConfig := kafka.ConfigMap{
 		"batch.num.messages": 2000,
 		"linger.ms":          1,
@@ -43,17 +42,19 @@ func Produce(lagQueue chan config.LagMessage) {
 		}
 	}()
 
-	message := "fjord.burrow.test3.python-consumer-1.BusinessEvent.0.maxLag 0.00 1541214139 source=192.168.3.169 data_center=slv dca_zone=local department=fjord planet=sbx888 service_name=porter_rainbow porter_tools=porter-rainbow"
+	// message := "fjord.burrow.test3.python-consumer-1.BusinessEvent.0.maxLag 0.00 1541214139 source=192.168.3.169 data_center=slv dca_zone=local department=fjord planet=sbx888 service_name=porter_rainbow porter_tools=porter-rainbow"
 
 	// Produce messages to topic (asynchronously)
 	topic := "micrometer-wavefront"
-	for _, word := range []string{message} {
+
+	// Wait for message deliveries before shutting down
+	go p.Flush(15 * 1000)
+
+	for message := range produceQueue {
 		p.Produce(&kafka.Message{
 			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-			Value:          []byte(word),
+			Value:          []byte(message),
 		}, nil)
 	}
 
-	// Wait for message deliveries before shutting down
-	p.Flush(15 * 1000)
 }

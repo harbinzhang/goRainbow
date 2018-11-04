@@ -102,8 +102,9 @@ func parseMessage(lag config.LagMessage, produceQueue chan string) {
 }
 
 func getEpochTime(str string) string {
-	layout := "2006-01-02T15:04:05Z"
-	if str == "0001-01-01T00:00:00Z" {
+	layout := "2006-01-02 15:04:05"
+	// layout := "2006-01-02T15:04:05Z07:00"
+	if str == "0001-01-01 00:00:00" {
 		return strconv.FormatInt(time.Now().Unix(), 10)
 	}
 	t, err := time.Parse(layout, str)

@@ -2,11 +2,16 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/HarbinZhang/goRainbow/config"
 	"github.com/HarbinZhang/goRainbow/core"
 )
+
+// TODO: open config
+// TODO: exception handle
+// TODO: logging
 
 func main() {
 	lagQueue := make(chan config.LagMessage, 3000)
@@ -17,6 +22,7 @@ func main() {
 	lagHandler := consumeLag(lagQueue)
 	http.HandleFunc("/rainbow/lag", lagHandler)
 	http.ListenAndServe(":7099", nil)
+	fmt.Println("server started")
 }
 
 func consumeLag(lagQueue chan config.LagMessage) func(http.ResponseWriter, *http.Request) {

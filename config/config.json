@@ -1,0 +1,17 @@
+{
+  "reportIntervalSeconds": 30,
+  "kafka": {
+    "brokerServers": "speed-racer-kafka.zeta.tools:9092",
+    "topic": "micrometer-wavefront"
+  },
+  "translator": {
+    "fullClassName": "io.porter.rainbow.translate.translators.MicroMeterRainbowTranslator"
+  },
+  "service": {
+    "customTags": "",
+    "name": "porter_rainbow",
+    "planet": "sbx888",
+    "department": "fjord",
+    "dataCenter": "slv"
+  }
+}

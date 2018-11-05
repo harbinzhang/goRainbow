@@ -1,5 +1,24 @@
 package config
 
+// Config struct is for config file load
+type Config struct {
+	ReportIntervalSeconds int `json:"reportIntervalSeconds"`
+	Kafka                 struct {
+		BrokerServers string `json:"brokerServers"`
+		Topic         string `json:"topic"`
+	} `json:"kafka"`
+	Translator struct {
+		FullClassName string `json:"fullClassName"`
+	} `json:"translator"`
+	Service struct {
+		CustomTags string `json:"customTags"`
+		Name       string `json:"name"`
+		Planet     string `json:"planet"`
+		Department string `json:"department"`
+		DataCenter string `json:"dataCenter"`
+	} `json:"service"`
+}
+
 // Field represents a Field
 type Field struct {
 	Title string `json:"title"`

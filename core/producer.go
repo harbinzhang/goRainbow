@@ -1,17 +1,29 @@
 package core
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 
+	"github.com/HarbinZhang/goRainbow/config"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
 // Produce message to kafka
 func Produce(produceQueue chan string) {
+
+	var conf config.Config
+	configFile, _ := os.Open("config/config.json")
+	defer configFile.Close()
+	decoder := json.NewDecoder(configFile)
+	if err := decoder.Decode(&conf); err != nil {
+		fmt.Println("Err: ", err)
+	}
+
 	kafkaConfig := kafka.ConfigMap{
 		"batch.num.messages": 2000,
 		"linger.ms":          1,
-		"bootstrap.servers":  "speed-racer-kafka.zeta.tools",
+		"bootstrap.servers":  conf.Kafka.BrokerServers,
 		// "buffer.memory=33554432"
 		"socket.send.buffer.bytes": 1024000,
 		// "reconnect.backoff.ms":     100,
@@ -48,10 +60,10 @@ func Produce(produceQueue chan string) {
 	go p.Flush(15 * 1000)
 
 	// Produce messages to topic (asynchronously)
-	topic := "micrometer-wavefront"
+	topic := conf.Kafka.Topic
 
 	for message := range produceQueue {
-		fmt.Println(message)
+		// fmt.Println(message)
 		p.Produce(&kafka.Message{
 			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
 			Value:          []byte(message),

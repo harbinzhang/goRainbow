@@ -9,9 +9,9 @@ import (
 	"github.com/HarbinZhang/goRainbow/core"
 )
 
-// TODO: open config
 // TODO: exception handle
 // TODO: logging
+// TODO:
 
 func main() {
 	lagQueue := make(chan config.LagInfo, 3000)
@@ -22,7 +22,7 @@ func main() {
 	lagHandler := consumeLag(lagQueue)
 	http.HandleFunc("/rainbow/lag", lagHandler)
 	http.ListenAndServe(":7099", nil)
-	fmt.Println("server started")
+	fmt.Println("server exited")
 }
 
 func consumeLag(lagQueue chan config.LagInfo) func(http.ResponseWriter, *http.Request) {

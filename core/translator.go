@@ -1,7 +1,9 @@
 package core
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -12,9 +14,30 @@ import (
 // Translator for message translate from struct to string
 func Translator(lagQueue chan config.LagInfo, produceQueue chan string) {
 
+	var conf config.Config
+	configFile, _ := os.Open("config/config.json")
+	defer configFile.Close()
+	decoder := json.NewDecoder(configFile)
+	if err := decoder.Decode(&conf); err != nil {
+		fmt.Println("Err: ", err)
+	}
+
+	dataCenter := "data_center=" + conf.Service.DataCenter
+	department := "department=" + conf.Service.Department
+	planet := "planet=" + conf.Service.Planet
+	serviceName := "service_name=" + conf.Service.Name
+	porterTools := "porter_tools=goRainbow"
+
+	// Need to do what
+	source := "source=192.168.3.169"
+	dcaZone := "dca_zone=local"
+
+	// postfix := "source=192.168.3.169 data_center=slv dca_zone=local department=fjord planet=sbx888 service_name=porter_rainbow porter_tools=porter-rainbow"
+	postfix := strings.Join([]string{source, dataCenter, dcaZone, department, planet, serviceName, porterTools}, " ")
+
 	for lag := range lagQueue {
 		// fmt.Println("trans", lag)
-		parseInfo(lag, produceQueue)
+		parseInfo(lag, produceQueue, postfix)
 	}
 }
 
@@ -22,11 +45,11 @@ func combineInfo(prefix []string, postfix []string) string {
 	return strings.Join(prefix, ".") + " " + strings.Join(postfix, " ")
 }
 
-func parseInfo(lag config.LagInfo, produceQueue chan string) {
+func parseInfo(lag config.LagInfo, produceQueue chan string, postfix string) {
 	// fmt.Println(lag)
+
 	for _, eventItem := range lag.Events {
 		event := eventItem.Event
-		fmt.Println(event)
 		cluster := event.Cluster
 		group := event.Group
 		totalLag := event.TotalLag
@@ -37,8 +60,8 @@ func parseInfo(lag config.LagInfo, produceQueue chan string) {
 		sb.WriteString(cluster + ".")
 		sb.WriteString(group)
 		prefix := sb.String()
-		postfix := "source=192.168.3.169 data_center=slv dca_zone=local department=fjord planet=sbx888 service_name=porter_rainbow porter_tools=porter-rainbow"
 
+		fmt.Printf("Handled: %s at %s \n", group, timestamp)
 		// combined info is like: "fjord.burrow.cluster.group.totalLag $totalLag timestamp postfix"
 		produceQueue <- combineInfo([]string{prefix, "totalLag"}, []string{totalLag, timestamp, postfix})
 
@@ -49,9 +72,9 @@ func parseInfo(lag config.LagInfo, produceQueue chan string) {
 			endOffset := strconv.Itoa(partition.End.Offset)
 			currentLag := strconv.Itoa(partition.CurrentLag)
 
-			produceQueue <- combineInfo([]string{prefix, partitionID, topic, "Lag"}, []string{currentLag, timestamp, postfix})
-			produceQueue <- combineInfo([]string{prefix, partitionID, topic, "startOffset"}, []string{startOffset, timestamp, postfix})
-			produceQueue <- combineInfo([]string{prefix, partitionID, topic, "endOffset"}, []string{endOffset, timestamp, postfix})
+			produceQueue <- combineInfo([]string{prefix, topic, partitionID, "Lag"}, []string{currentLag, timestamp, postfix})
+			produceQueue <- combineInfo([]string{prefix, topic, partitionID, "startOffset"}, []string{startOffset, timestamp, postfix})
+			produceQueue <- combineInfo([]string{prefix, topic, partitionID, "endOffset"}, []string{endOffset, timestamp, postfix})
 		}
 	}
 }
@@ -91,9 +114,9 @@ func parseMessage(lag config.LagMessage, produceQueue chan string) {
 		}
 	}
 
-	if totalLag != "0" {
-		fmt.Println(lag)
-	}
+	// if totalLag != "0" {
+	// 	fmt.Println(lag)
+	// }
 
 	var sb strings.Builder
 	sb.WriteString("fjord.burrow.")
@@ -144,6 +167,7 @@ func parseMessage(lag config.LagMessage, produceQueue chan string) {
 }
 
 func getEpochTime(str string) string {
+	// Skipping Burrow's timestamp because it's not precise.
 	return strconv.FormatInt(time.Now().Unix(), 10)
 
 	// layout := "2006-01-02 15:04:05"

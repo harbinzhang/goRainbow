@@ -42,12 +42,12 @@ type LagInfo struct {
 	Block  bool   `json:"block"`
 	Events []struct {
 		Event struct {
-			Severity   string `json:"severity"`
-			Cluster    string `json:"cluster"`
-			Group      string `json:"group"`
-			TotalLag   string `json:"totalLag"`
-			Start      string `json:"start"`
-			Complete   int    `json:"complete"`
+			Severity   string  `json:"severity"`
+			Cluster    string  `json:"cluster"`
+			Group      string  `json:"group"`
+			TotalLag   string  `json:"totalLag"`
+			Start      string  `json:"start"`
+			Complete   float64 `json:"complete"`
 			Partitions []struct {
 				Topic     string `json:"topic"`
 				Partition int    `json:"partition"`

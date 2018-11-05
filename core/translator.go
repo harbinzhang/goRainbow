@@ -19,7 +19,7 @@ func Translator(lagQueue chan config.LagInfo, produceQueue chan string) {
 	defer configFile.Close()
 	decoder := json.NewDecoder(configFile)
 	if err := decoder.Decode(&conf); err != nil {
-		fmt.Println("Err: ", err)
+		fmt.Println("Err conf: ", err)
 	}
 
 	dataCenter := "data_center=" + conf.Service.DataCenter
@@ -34,6 +34,8 @@ func Translator(lagQueue chan config.LagInfo, produceQueue chan string) {
 
 	// postfix := "source=192.168.3.169 data_center=slv dca_zone=local department=fjord planet=sbx888 service_name=porter_rainbow porter_tools=porter-rainbow"
 	postfix := strings.Join([]string{source, dataCenter, dcaZone, department, planet, serviceName, porterTools}, " ")
+
+	fmt.Println(postfix)
 
 	for lag := range lagQueue {
 		// fmt.Println("trans", lag)

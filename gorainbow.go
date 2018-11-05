@@ -27,6 +27,7 @@ func main() {
 
 func consumeLag(lagQueue chan config.LagInfo) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println(r.Body)
 		decoder := json.NewDecoder(r.Body)
 		var msg config.LagInfo
 		err := decoder.Decode(&msg)

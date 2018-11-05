@@ -10,11 +10,49 @@ import (
 )
 
 // Translator for message translate from struct to string
-func Translator(lagQueue chan config.LagMessage, produceQueue chan string) {
+func Translator(lagQueue chan config.LagInfo, produceQueue chan string) {
 
 	for lag := range lagQueue {
 		// fmt.Println("trans", lag)
-		parseMessage(lag, produceQueue)
+		parseInfo(lag, produceQueue)
+	}
+}
+
+func combineInfo(prefix []string, postfix []string) string {
+	return strings.Join(prefix, ".") + " " + strings.Join(postfix, " ")
+}
+
+func parseInfo(lag config.LagInfo, produceQueue chan string) {
+	// fmt.Println(lag)
+	for _, eventItem := range lag.Events {
+		event := eventItem.Event
+		fmt.Println(event)
+		cluster := event.Cluster
+		group := event.Group
+		totalLag := event.TotalLag
+		timestamp := getEpochTime(event.Start)
+
+		var sb strings.Builder
+		sb.WriteString("fjord.burrow.")
+		sb.WriteString(cluster + ".")
+		sb.WriteString(group)
+		prefix := sb.String()
+		postfix := "source=192.168.3.169 data_center=slv dca_zone=local department=fjord planet=sbx888 service_name=porter_rainbow porter_tools=porter-rainbow"
+
+		// combined info is like: "fjord.burrow.cluster.group.totalLag $totalLag timestamp postfix"
+		produceQueue <- combineInfo([]string{prefix, "totalLag"}, []string{totalLag, timestamp, postfix})
+
+		for _, partition := range event.Partitions {
+			topic := partition.Topic
+			partitionID := strconv.Itoa(partition.Partition)
+			startOffset := strconv.Itoa(partition.Start.Offset)
+			endOffset := strconv.Itoa(partition.End.Offset)
+			currentLag := strconv.Itoa(partition.CurrentLag)
+
+			produceQueue <- combineInfo([]string{prefix, partitionID, topic, "Lag"}, []string{currentLag, timestamp, postfix})
+			produceQueue <- combineInfo([]string{prefix, partitionID, topic, "startOffset"}, []string{startOffset, timestamp, postfix})
+			produceQueue <- combineInfo([]string{prefix, partitionID, topic, "endOffset"}, []string{endOffset, timestamp, postfix})
+		}
 	}
 }
 
@@ -26,7 +64,7 @@ func parseMessage(lag config.LagMessage, produceQueue chan string) {
 	var maxLagTopic string
 	var startOffset string
 	var endOffset string
-	var maxLagPartitionID string
+	var maxLagpartitionID string
 	var maxLagPartitionLag string
 	for _, field := range lag.Attachments[0].Fields {
 		switch field.Title {
@@ -38,8 +76,8 @@ func parseMessage(lag config.LagMessage, produceQueue chan string) {
 			totalLag = field.Value
 		case "Cluster":
 			env = field.Value
-		case "MaxLagPartitionID":
-			maxLagPartitionID = field.Value
+		case "MaxLagpartitionID":
+			maxLagpartitionID = field.Value
 		case "MaxLagPartitionTopic":
 			maxLagTopic = field.Value
 		case "MaxLagPartitionStartOffset":
@@ -51,6 +89,10 @@ func parseMessage(lag config.LagMessage, produceQueue chan string) {
 		default:
 			fmt.Println("Something wrong", field.Title)
 		}
+	}
+
+	if totalLag != "0" {
+		fmt.Println(lag)
 	}
 
 	var sb strings.Builder
@@ -71,7 +113,7 @@ func parseMessage(lag config.LagMessage, produceQueue chan string) {
 
 	var maxLagBuilder strings.Builder
 	maxLagBuilder.WriteString(prefix + maxLagTopic + ".")
-	maxLagBuilder.WriteString(maxLagPartitionID + ".")
+	maxLagBuilder.WriteString(maxLagpartitionID + ".")
 	maxLagBuilder.WriteString("maxLag" + " ")
 	maxLagBuilder.WriteString(maxLagPartitionLag + " ")
 	maxLagBuilder.WriteString(timestamp + " ")
@@ -81,7 +123,7 @@ func parseMessage(lag config.LagMessage, produceQueue chan string) {
 
 	var startOffsetBuilder strings.Builder
 	startOffsetBuilder.WriteString(prefix + maxLagTopic + ".")
-	startOffsetBuilder.WriteString(maxLagPartitionID + ".")
+	startOffsetBuilder.WriteString(maxLagpartitionID + ".")
 	startOffsetBuilder.WriteString("startOffset" + " ")
 	startOffsetBuilder.WriteString(startOffset + " ")
 	startOffsetBuilder.WriteString(timestamp + " ")
@@ -91,7 +133,7 @@ func parseMessage(lag config.LagMessage, produceQueue chan string) {
 
 	var endOffsetBuilder strings.Builder
 	endOffsetBuilder.WriteString(prefix + maxLagTopic + ".")
-	endOffsetBuilder.WriteString(maxLagPartitionID + ".")
+	endOffsetBuilder.WriteString(maxLagpartitionID + ".")
 	endOffsetBuilder.WriteString("endOffset" + " ")
 	endOffsetBuilder.WriteString(endOffset + " ")
 	endOffsetBuilder.WriteString(timestamp + " ")
@@ -102,15 +144,17 @@ func parseMessage(lag config.LagMessage, produceQueue chan string) {
 }
 
 func getEpochTime(str string) string {
-	layout := "2006-01-02 15:04:05"
-	// layout := "2006-01-02T15:04:05Z07:00"
-	if str == "0001-01-01 00:00:00" {
-		return strconv.FormatInt(time.Now().Unix(), 10)
-	}
-	t, err := time.Parse(layout, str)
-	if err != nil {
-		fmt.Println("err: ", err)
-	}
+	return strconv.FormatInt(time.Now().Unix(), 10)
 
-	return strconv.FormatInt(t.Unix(), 10)
+	// layout := "2006-01-02 15:04:05"
+	// // layout := "2006-01-02T15:04:05Z07:00"
+	// if str == "0001-01-01 00:00:00" {
+	// 	return strconv.FormatInt(time.Now().Unix(), 10)
+	// }
+	// t, err := time.Parse(layout, str)
+	// if err != nil {
+	// 	fmt.Println("err: ", err)
+	// }
+
+	// return strconv.FormatInt(t.Unix(), 10)
 }

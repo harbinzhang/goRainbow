@@ -36,7 +36,7 @@ func Produce(produceQueue chan string) {
 				if ev.TopicPartition.Error != nil {
 					fmt.Printf("Delivery failed: %v\n", ev.TopicPartition)
 				} else {
-					fmt.Printf("Delivered message to %v\n", ev.TopicPartition)
+					// fmt.Printf("Delivered message to %v\n", ev.TopicPartition)
 				}
 			}
 		}
@@ -44,13 +44,14 @@ func Produce(produceQueue chan string) {
 
 	// message := "fjord.burrow.test3.python-consumer-1.BusinessEvent.0.maxLag 0.00 1541214139 source=192.168.3.169 data_center=slv dca_zone=local department=fjord planet=sbx888 service_name=porter_rainbow porter_tools=porter-rainbow"
 
-	// Produce messages to topic (asynchronously)
-	topic := "micrometer-wavefront"
-
 	// Wait for message deliveries before shutting down
 	go p.Flush(15 * 1000)
 
+	// Produce messages to topic (asynchronously)
+	topic := "micrometer-wavefront"
+
 	for message := range produceQueue {
+		fmt.Println(message)
 		p.Produce(&kafka.Message{
 			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
 			Value:          []byte(message),

@@ -14,7 +14,7 @@ import (
 // TODO: logging
 
 func main() {
-	lagQueue := make(chan config.LagMessage, 3000)
+	lagQueue := make(chan config.LagInfo, 3000)
 	produceQueue := make(chan string, 3000)
 	// go producer.Produce(lagQueue)
 	go core.Translator(lagQueue, produceQueue)
@@ -25,10 +25,10 @@ func main() {
 	fmt.Println("server started")
 }
 
-func consumeLag(lagQueue chan config.LagMessage) func(http.ResponseWriter, *http.Request) {
+func consumeLag(lagQueue chan config.LagInfo) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
-		var msg config.LagMessage
+		var msg config.LagInfo
 		err := decoder.Decode(&msg)
 		if err != nil {
 			panic(err)

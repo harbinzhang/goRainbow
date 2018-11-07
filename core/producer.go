@@ -63,7 +63,7 @@ func Produce(produceQueue chan string) {
 	topic := conf.Kafka.Topic
 
 	for message := range produceQueue {
-		fmt.Println(message)
+		// fmt.Println(message)
 		p.Produce(&kafka.Message{
 			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
 			Value:          []byte(message),

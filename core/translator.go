@@ -14,6 +14,7 @@ import (
 // Translator for message translate from struct to string
 func Translator(lagQueue chan config.LagInfo, produceQueue chan string) {
 
+	// Prepare config file
 	var conf config.Config
 	configFile, _ := os.Open("config/config.json")
 	defer configFile.Close()
@@ -22,6 +23,7 @@ func Translator(lagQueue chan config.LagInfo, produceQueue chan string) {
 		fmt.Println("Err conf: ", err)
 	}
 
+	// Prepare tags
 	dataCenter := "data_center=" + conf.Service.DataCenter
 	department := "department=" + conf.Service.Department
 	planet := "planet=" + conf.Service.Planet
@@ -47,6 +49,8 @@ func combineInfo(prefix []string, postfix []string) string {
 	return strings.Join(prefix, ".") + " " + strings.Join(postfix, " ")
 }
 
+// parseInfo is for LagInfo struct (in config/struct.go),
+// which has all partitions info.
 func parseInfo(lag config.LagInfo, produceQueue chan string, postfix string) {
 	// fmt.Println(lag)
 
@@ -57,6 +61,7 @@ func parseInfo(lag config.LagInfo, produceQueue chan string, postfix string) {
 		totalLag := event.TotalLag
 		timestamp := getEpochTime(event.Start)
 
+		// Prepare prefix
 		var sb strings.Builder
 		sb.WriteString("fjord.burrow.")
 		sb.WriteString(cluster + ".")
@@ -81,6 +86,8 @@ func parseInfo(lag config.LagInfo, produceQueue chan string, postfix string) {
 	}
 }
 
+// parseMessage is for LagMessage struct(in config/struct.go),
+// which has MaxLagPartiion Info.
 func parseMessage(lag config.LagMessage, produceQueue chan string) {
 	var timestamp string
 	var env string
@@ -115,10 +122,6 @@ func parseMessage(lag config.LagMessage, produceQueue chan string) {
 			fmt.Println("Something wrong", field.Title)
 		}
 	}
-
-	// if totalLag != "0" {
-	// 	fmt.Println(lag)
-	// }
 
 	var sb strings.Builder
 	sb.WriteString("fjord.burrow.")
@@ -169,12 +172,14 @@ func parseMessage(lag config.LagMessage, produceQueue chan string) {
 }
 
 func getEpochTime(str string) string {
-	// Skipping Burrow's timestamp because it's not precise.
+	// Skipping Burrow's timestamp because it's not precise now.
+	// I think it's because cluster not stable
 	return strconv.FormatInt(time.Now().Unix(), 10)
 
 	// layout := "2006-01-02 15:04:05"
 	// // layout := "2006-01-02T15:04:05Z07:00"
 	// if str == "0001-01-01 00:00:00" {
+	//	// Burrow info level would provide this date, need to verify.
 	// 	return strconv.FormatInt(time.Now().Unix(), 10)
 	// }
 	// t, err := time.Parse(layout, str)

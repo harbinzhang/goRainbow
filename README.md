@@ -6,17 +6,17 @@ It's very light and fast.
 ### Thanks
 A very big thanks to porter-rainbow, which gave us a basic idea about how to design the go-rainbow.
 
-port-rainbow is mainly based on socket connection. go-rainbow provides HTTP connection for you to use.
+port-rainbow is mainly based on socket connection. go-rainbow provides HTTP endpoint for you to use.
 
 # Who might consider go-rainbow
 1. If you prefer sending message using HTTP POST. 
-2. If you have a performance bottle neck in translator.
+2. If you have a performance bottle neck in rainbow.
 
 # High-level
 go-rainbow includes 3 parts:
 1. http server.
 2. translator: translates data into required form, prepared for producer.
-3. kafka producer: sends data to kafka(speed-racer).
+3. kafka producer: sends data to kafka(speed-racer), which will send metrics to the Wavefront.
 
 # Great Features
 1. Fast  

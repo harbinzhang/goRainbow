@@ -37,11 +37,25 @@ func Translator(lagQueue chan config.LagInfo, produceQueue chan string) {
 	// postfix := "source=192.168.3.169 data_center=slv dca_zone=local department=fjord planet=sbx888 service_name=porter_rainbow porter_tools=porter-rainbow"
 	postfix := strings.Join([]string{source, dataCenter, dcaZone, department, planet, serviceName, porterTools}, " ")
 
-	fmt.Println(postfix)
+	// fmt.Println(postfix)
+
+	// Init RequestCountService for data traffic statistic
+	// rcsTotal for total data traffic
+	rcsTotal := &RequestCountService{
+		name:         "totalMessage",
+		interval:     60 * time.Second,
+		producerChan: produceQueue,
+	}
+	// rcsValid for valid data traffic(i.e. message with totalLag > 0)
+	rcsValid := &RequestCountService{
+		name:         "validMessage",
+		interval:     60 * time.Second,
+		producerChan: produceQueue,
+	}
 
 	for lag := range lagQueue {
 		// fmt.Println("trans", lag)
-		parseInfo(lag, produceQueue, postfix)
+		parseInfo(lag, produceQueue, postfix, rcsTotal, rcsValid)
 	}
 }
 
@@ -51,7 +65,7 @@ func combineInfo(prefix []string, postfix []string) string {
 
 // parseInfo is for LagInfo struct (in config/struct.go),
 // which has all partitions info.
-func parseInfo(lag config.LagInfo, produceQueue chan string, postfix string) {
+func parseInfo(lag config.LagInfo, produceQueue chan string, postfix string, rcsTotal *RequestCountService, rcsValid *RequestCountService) {
 	// fmt.Println(lag)
 
 	for _, eventItem := range lag.Events {
@@ -69,9 +83,20 @@ func parseInfo(lag config.LagInfo, produceQueue chan string, postfix string) {
 		prefix := sb.String()
 
 		fmt.Printf("Handled: %s at %s \n", group, timestamp)
-		// combined info is like: "fjord.burrow.cluster.group.totalLag $totalLag timestamp postfix"
+		// combined info is like: "fjord.burrow.[cluster].[group].totalLag $[totalLag] [timestamp] [postfix]"
 		produceQueue <- combineInfo([]string{prefix, "totalLag"}, []string{totalLag, timestamp, postfix})
 
+		rcsTotal.Increase(cluster)
+
+		// skip partitions info if totalLag == 0
+		if totalLag == "0" {
+			break
+		}
+
+		// The current message is valid, with totalLag > 0
+		rcsValid.Increase(cluster)
+
+		// Handle all partitions level lag.
 		for _, partition := range event.Partitions {
 			topic := partition.Topic
 			partitionID := strconv.Itoa(partition.Partition)

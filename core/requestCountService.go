@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -14,6 +15,7 @@ type RequestCountService struct {
 	interval     time.Duration
 	producerChan chan string
 	name         string
+	postfix      string
 }
 
 // Init is to initial a RequestCountService
@@ -42,13 +44,18 @@ func (rc *RequestCountService) Increase(env string) {
 // translate all count to metrics and push it to chan
 func (rc *RequestCountService) generateMetric() {
 	rc.Lock()
+	timestamp := getCurrentEpochTime()
 	for env, count := range rc.envCount {
 		prefix := "fjord.burrow." + env + "." + rc.name
-		message := prefix + " " + strconv.Itoa(count)
+		message := strings.Join([]string{prefix, strconv.Itoa(count), timestamp, rc.postfix}, " ")
 		fmt.Println("Data traffic produced: " + message)
 		rc.producerChan <- message
 	}
 
 	rc.envCount = make(map[string]int)
 	rc.Unlock()
+}
+
+func getCurrentEpochTime() string {
+	return strconv.FormatInt(time.Now().Unix(), 10)
 }

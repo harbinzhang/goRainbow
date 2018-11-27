@@ -46,12 +46,14 @@ func Translator(lagQueue chan config.LagInfo, produceQueue chan string) {
 		name:         "totalMessage",
 		interval:     60 * time.Second,
 		producerChan: produceQueue,
+		postfix:      postfix,
 	}
 	// rcsValid for valid data traffic(i.e. message with totalLag > 0)
 	rcsValid := &RequestCountService{
 		name:         "validMessage",
 		interval:     60 * time.Second,
 		producerChan: produceQueue,
+		postfix:      postfix,
 	}
 
 	rcsTotal.Init()

@@ -26,7 +26,7 @@ func TestRequestCountServiceSingle(t *testing.T) {
 	// t.Log(rc.envCount["test"])
 	time.Sleep(1 * time.Second)
 	res = <-producerChan
-	assert.Equal(t, "fjord.burrow.test.totalMessage 3", res, "message not correct")
+	assert.Equal(t, "fjord.burrow.test.totalMessage 2", res, "message not correct")
 
 }
 

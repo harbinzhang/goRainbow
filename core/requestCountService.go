@@ -47,6 +47,6 @@ func (rc *RequestCountService) generateMetric() {
 		rc.producerChan <- message
 	}
 
-	// rc.envCount = make(map[string]int)
+	rc.envCount = make(map[string]int)
 	rc.Unlock()
 }

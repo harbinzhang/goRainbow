@@ -3,6 +3,7 @@ package core
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/HarbinZhang/goRainbow/config"
@@ -64,6 +65,7 @@ func Produce(produceQueue chan string) {
 
 	for message := range produceQueue {
 		// fmt.Println(message)
+		log.Println("Produced to speed-racer: " + message)
 		p.Produce(&kafka.Message{
 			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
 			Value:          []byte(message),

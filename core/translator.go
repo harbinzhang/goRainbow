@@ -3,6 +3,7 @@ package core
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -53,6 +54,9 @@ func Translator(lagQueue chan config.LagInfo, produceQueue chan string) {
 		producerChan: produceQueue,
 	}
 
+	rcsTotal.Init()
+	rcsValid.Init()
+
 	for lag := range lagQueue {
 		// fmt.Println("trans", lag)
 		parseInfo(lag, produceQueue, postfix, rcsTotal, rcsValid)
@@ -82,7 +86,8 @@ func parseInfo(lag config.LagInfo, produceQueue chan string, postfix string, rcs
 		sb.WriteString(group)
 		prefix := sb.String()
 
-		fmt.Printf("Handled: %s at %s \n", group, timestamp)
+		// fmt.Printf("Handled: %s at %s \n", group, timestamp)
+		log.Printf("Handled: %s at %s \n", group, timestamp)
 		// combined info is like: "fjord.burrow.[cluster].[group].totalLag $[totalLag] [timestamp] [postfix]"
 		produceQueue <- combineInfo([]string{prefix, "totalLag"}, []string{totalLag, timestamp, postfix})
 

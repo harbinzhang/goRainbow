@@ -3,7 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 
 	"github.com/HarbinZhang/goRainbow/config"
 	"github.com/HarbinZhang/goRainbow/core"
@@ -26,6 +28,16 @@ func main() {
 
 	go core.Translator(lagQueue, produceQueue)
 	go core.Produce(produceQueue)
+
+	// log
+	f, err := os.OpenFile("rainbow_log", os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer f.Close()
+	log.SetOutput(f)
+	log.Println("Log setup finished.")
 
 	lagHandler := consumeLag(lagQueue)
 	http.HandleFunc("/rainbow/lag", lagHandler)

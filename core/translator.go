@@ -81,6 +81,10 @@ func parseInfo(lag config.LagInfo, produceQueue chan string, postfix string, rcs
 		totalLag := event.TotalLag
 		timestamp := getEpochTime(event.Start)
 
+		envTag := "env=" + cluster
+		consumerTag := "consumer=" + group
+		newPostfix := strings.Join([]string{postfix, envTag, consumerTag}, " ")
+
 		// Prepare prefix
 		var sb strings.Builder
 		sb.WriteString("fjord.burrow.")
@@ -91,7 +95,7 @@ func parseInfo(lag config.LagInfo, produceQueue chan string, postfix string, rcs
 		fmt.Printf("Handled: %s at %s \n", group, timestamp)
 		log.Printf("Handled: %s at %s \n", group, timestamp)
 		// combined info is like: "fjord.burrow.[cluster].[group].totalLag $[totalLag] [timestamp] [postfix]"
-		produceQueue <- combineInfo([]string{prefix, "totalLag"}, []string{totalLag, timestamp, postfix})
+		produceQueue <- combineInfo([]string{prefix, "totalLag"}, []string{totalLag, timestamp, newPostfix})
 
 		rcsTotal.Increase(cluster)
 
@@ -111,9 +115,9 @@ func parseInfo(lag config.LagInfo, produceQueue chan string, postfix string, rcs
 			endOffset := strconv.Itoa(partition.End.Offset)
 			currentLag := strconv.Itoa(partition.CurrentLag)
 
-			produceQueue <- combineInfo([]string{prefix, topic, partitionID, "Lag"}, []string{currentLag, timestamp, postfix})
-			produceQueue <- combineInfo([]string{prefix, topic, partitionID, "startOffset"}, []string{startOffset, timestamp, postfix})
-			produceQueue <- combineInfo([]string{prefix, topic, partitionID, "endOffset"}, []string{endOffset, timestamp, postfix})
+			produceQueue <- combineInfo([]string{prefix, topic, partitionID, "Lag"}, []string{currentLag, timestamp, newPostfix})
+			produceQueue <- combineInfo([]string{prefix, topic, partitionID, "startOffset"}, []string{startOffset, timestamp, newPostfix})
+			produceQueue <- combineInfo([]string{prefix, topic, partitionID, "endOffset"}, []string{endOffset, timestamp, newPostfix})
 		}
 	}
 }

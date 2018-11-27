@@ -47,7 +47,8 @@ func (rc *RequestCountService) generateMetric() {
 	timestamp := getCurrentEpochTime()
 	for env, count := range rc.envCount {
 		prefix := "fjord.burrow." + env + "." + rc.name
-		message := strings.Join([]string{prefix, strconv.Itoa(count), timestamp, rc.postfix}, " ")
+		envTag := "env=" + env
+		message := strings.Join([]string{prefix, strconv.Itoa(count), timestamp, rc.postfix, envTag}, " ")
 		fmt.Println("Data traffic produced: " + message)
 		rc.producerChan <- message
 	}

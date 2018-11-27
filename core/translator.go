@@ -86,7 +86,7 @@ func parseInfo(lag config.LagInfo, produceQueue chan string, postfix string, rcs
 		sb.WriteString(group)
 		prefix := sb.String()
 
-		// fmt.Printf("Handled: %s at %s \n", group, timestamp)
+		fmt.Printf("Handled: %s at %s \n", group, timestamp)
 		log.Printf("Handled: %s at %s \n", group, timestamp)
 		// combined info is like: "fjord.burrow.[cluster].[group].totalLag $[totalLag] [timestamp] [postfix]"
 		produceQueue <- combineInfo([]string{prefix, "totalLag"}, []string{totalLag, timestamp, postfix})

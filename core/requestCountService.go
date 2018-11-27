@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"strconv"
 	"sync"
 	"time"
@@ -44,6 +45,7 @@ func (rc *RequestCountService) generateMetric() {
 	for env, count := range rc.envCount {
 		prefix := "fjord.burrow." + env + "." + rc.name
 		message := prefix + " " + strconv.Itoa(count)
+		fmt.Println("Data traffic produced: " + message)
 		rc.producerChan <- message
 	}
 

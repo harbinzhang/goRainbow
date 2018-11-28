@@ -107,6 +107,18 @@ func parseInfo(lag config.LagInfo, produceQueue chan string, postfix string, rcs
 		// The current message is valid, with totalLag > 0
 		rcsValid.Increase(cluster)
 
+		// MaxLagPartition Level handle
+		maxLag := make(map[string]string)
+		maxLag["maxLagmaxLagPartitionID"] = strconv.Itoa(event.MaxLagPartition.Partition)
+		maxLag["maxLagCurrentLag"] = strconv.Itoa(event.MaxLagPartition.CurrentLag)
+		maxLag["maxLagStartOffset"] = strconv.Itoa(event.MaxLagPartition.Start.Offset)
+		maxLag["maxLagEndOffset"] = strconv.Itoa(event.MaxLagPartition.End.Offset)
+		maxLag["maxLagTopic"] = event.MaxLagPartition.Topic
+
+		for key, value := range maxLag {
+			produceQueue <- combineInfo([]string{prefix, key}, []string{value, timestamp, newPostfix})
+		}
+
 		// Handle all partitions level lag.
 		for _, partition := range event.Partitions {
 			topic := partition.Topic
@@ -115,9 +127,11 @@ func parseInfo(lag config.LagInfo, produceQueue chan string, postfix string, rcs
 			endOffset := strconv.Itoa(partition.End.Offset)
 			currentLag := strconv.Itoa(partition.CurrentLag)
 
-			produceQueue <- combineInfo([]string{prefix, topic, partitionID, "Lag"}, []string{currentLag, timestamp, newPostfix})
-			produceQueue <- combineInfo([]string{prefix, topic, partitionID, "startOffset"}, []string{startOffset, timestamp, newPostfix})
-			produceQueue <- combineInfo([]string{prefix, topic, partitionID, "endOffset"}, []string{endOffset, timestamp, newPostfix})
+			topicPostfix := "topic=" + topic
+
+			produceQueue <- combineInfo([]string{prefix, topic, partitionID, "Lag"}, []string{currentLag, timestamp, newPostfix, topicPostfix})
+			produceQueue <- combineInfo([]string{prefix, topic, partitionID, "startOffset"}, []string{startOffset, timestamp, newPostfix, topicPostfix})
+			produceQueue <- combineInfo([]string{prefix, topic, partitionID, "endOffset"}, []string{endOffset, timestamp, newPostfix, topicPostfix})
 		}
 	}
 }

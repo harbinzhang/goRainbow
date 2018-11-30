@@ -25,15 +25,16 @@ func Translator(lagQueue chan config.LagInfo, produceQueue chan string) {
 	}
 
 	// Prepare tags
-	dataCenter := "data_center=" + conf.Service.DataCenter
 	department := "department=" + conf.Service.Department
-	planet := "planet=" + conf.Service.Planet
 	serviceName := "service_name=" + conf.Service.Name
 	porterTools := "porter_tools=goRainbow"
 
-	// Need to do what
-	source := "source=192.168.3.169"
+	// Prepare tags from env variables
+	dataCenter := "data_center=" + os.Getenv("DATACENTER")
+	planet := "planet=" + os.Getenv("ENV")
+
 	dcaZone := "dca_zone=local"
+	source := "source=fjord-burrow"
 
 	// postfix := "source=192.168.3.169 data_center=slv dca_zone=local department=fjord planet=sbx888 service_name=porter_rainbow porter_tools=porter-rainbow"
 	postfix := strings.Join([]string{source, dataCenter, dcaZone, department, planet, serviceName, porterTools}, " ")

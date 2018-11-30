@@ -10,8 +10,6 @@
   "service": {
     "customTags": "",
     "name": "go_rainbow",
-    "planet": "sbx888",
-    "department": "fjord",
-    "dataCenter": "slv"
+    "department": "fjord"
   }
 }

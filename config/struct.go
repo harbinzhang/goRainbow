@@ -9,13 +9,12 @@ type Config struct {
 	} `json:"kafka"`
 	Translator struct {
 		FullClassName string `json:"fullClassName"`
+		MetricFormat  string `json:"metricFormat"`
 	} `json:"translator"`
 	Service struct {
 		CustomTags string `json:"customTags"`
 		Name       string `json:"name"`
-		Planet     string `json:"planet"`
 		Department string `json:"department"`
-		DataCenter string `json:"dataCenter"`
 	} `json:"service"`
 }
 

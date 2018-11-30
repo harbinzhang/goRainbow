@@ -27,7 +27,7 @@ func Translator(lagQueue chan config.LagInfo, produceQueue chan string) {
 	// Prepare tags
 	department := "department=" + conf.Service.Department
 	serviceName := "service_name=" + conf.Service.Name
-	porterTools := "porter_tools=goRainbow"
+	metricFormat := "metric_format=" + conf.Translator.MetricFormat
 
 	// Prepare tags from env variables
 	dataCenter := "data_center=" + os.Getenv("DATACENTER")
@@ -37,7 +37,7 @@ func Translator(lagQueue chan config.LagInfo, produceQueue chan string) {
 	source := "source=fjord-burrow"
 
 	// postfix := "source=192.168.3.169 data_center=slv dca_zone=local department=fjord planet=sbx888 service_name=porter_rainbow porter_tools=porter-rainbow"
-	postfix := strings.Join([]string{source, dataCenter, dcaZone, department, planet, serviceName, porterTools}, " ")
+	postfix := strings.Join([]string{source, dataCenter, dcaZone, department, planet, serviceName, metricFormat}, " ")
 
 	// fmt.Println(postfix)
 
@@ -45,14 +45,14 @@ func Translator(lagQueue chan config.LagInfo, produceQueue chan string) {
 	// rcsTotal for total data traffic
 	rcsTotal := &RequestCountService{
 		name:         "totalMessage",
-		interval:     60 * time.Second,
+		interval:     30 * time.Second,
 		producerChan: produceQueue,
 		postfix:      postfix,
 	}
 	// rcsValid for valid data traffic(i.e. message with totalLag > 0)
 	rcsValid := &RequestCountService{
 		name:         "validMessage",
-		interval:     60 * time.Second,
+		interval:     30 * time.Second,
 		producerChan: produceQueue,
 		postfix:      postfix,
 	}

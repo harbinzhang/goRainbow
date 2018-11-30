@@ -5,7 +5,8 @@
     "topic": "micrometer-wavefront"
   },
   "translator": {
-    "fullClassName": "io.porter.rainbow.translate.translators.MicroMeterRainbowTranslator"
+    "fullClassName": "io.porter.rainbow.translate.translators.MicroMeterRainbowTranslator",
+    "metricFormat": "micrometer"
   },
   "service": {
     "customTags": "",

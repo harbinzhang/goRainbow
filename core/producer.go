@@ -26,7 +26,7 @@ func Produce(produceQueue chan string) {
 	// Prepare tags
 	department := "department=" + conf.Service.Department
 	serviceName := "service_name=" + conf.Service.Name
-	porterTools := "porter_tools=goRainbow"
+	metricFormat := "metric_format=" + conf.Translator.MetricFormat
 
 	// Prepare tags from env variables
 	dataCenter := "data_center=" + os.Getenv("DATACENTER")
@@ -36,7 +36,7 @@ func Produce(produceQueue chan string) {
 	source := "source=fjord-burrow"
 
 	// postfix := "source=192.168.3.169 data_center=slv dca_zone=local department=fjord planet=sbx888 service_name=porter_rainbow porter_tools=porter-rainbow"
-	postfix := strings.Join([]string{source, dataCenter, dcaZone, department, planet, serviceName, porterTools}, " ")
+	postfix := strings.Join([]string{source, dataCenter, dcaZone, department, planet, serviceName, metricFormat}, " ")
 
 	kafkaConfig := kafka.ConfigMap{
 		"batch.num.messages": 2000,
@@ -75,7 +75,7 @@ func Produce(produceQueue chan string) {
 	// rcsMetricsSent is for metrics level traffic, how many metrics sent to wavefront
 	rcsMetricsSent := &RequestCountService{
 		name:         "metricsSent",
-		interval:     60 * time.Second,
+		interval:     30 * time.Second,
 		producerChan: produceQueue,
 		postfix:      postfix,
 	}

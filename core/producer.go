@@ -75,7 +75,7 @@ func Produce(produceQueue chan string) {
 	// rcsMetricsSent is for metrics level traffic, how many metrics sent to wavefront
 	rcsMetricsSent := &RequestCountService{
 		name:         "metricsSent",
-		interval:     30 * time.Second,
+		interval:     60 * time.Second,
 		producerChan: produceQueue,
 		postfix:      postfix,
 	}

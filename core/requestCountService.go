@@ -11,18 +11,21 @@ import (
 // RequestCountService is for count data traffic in go-rainbow
 type RequestCountService struct {
 	sync.Mutex
-	envCount     map[string]int
-	interval     time.Duration
-	producerChan chan string
-	name         string
-	postfix      string
+	envCount         map[string]int
+	unavailableCount int
+
+	Interval     time.Duration
+	ProducerChan chan string
+	Name         string
+	Postfix      string
 }
 
 // Init is to initial a RequestCountService
 func (rc *RequestCountService) Init() {
 	rc.envCount = make(map[string]int)
+	rc.unavailableCount = 0
 	go func() {
-		ticker := time.NewTicker(rc.interval)
+		ticker := time.NewTicker(rc.Interval)
 		for {
 			<-ticker.C
 			rc.generateMetric()
@@ -45,18 +48,34 @@ func (rc *RequestCountService) Increase(env string) {
 func (rc *RequestCountService) generateMetric() {
 	rc.Lock()
 	timestamp := getCurrentEpochTime()
+	isAllUnavailable := true
 	for env, count := range rc.envCount {
-		prefix := "fjord.burrow." + env + "." + rc.name
+		if count != 0 {
+			isAllUnavailable = false
+		}
+		prefix := "fjord.burrow." + env + "." + rc.Name
 		envTag := "env=" + env
-		message := strings.Join([]string{prefix, strconv.Itoa(count), timestamp, rc.postfix, envTag}, " ")
+		message := strings.Join([]string{prefix, strconv.Itoa(count), timestamp, rc.Postfix, envTag}, " ")
 		fmt.Println("Data traffic produced: " + message)
-		rc.producerChan <- message
+		rc.ProducerChan <- message
 	}
-
+	if isAllUnavailable {
+		rc.unavailableCount++
+	} else {
+		rc.unavailableCount = 0
+	}
 	rc.envCount = make(map[string]int)
 	rc.Unlock()
 }
 
 func getCurrentEpochTime() string {
 	return strconv.FormatInt(time.Now().Unix(), 10)
+}
+
+// MetricsIsAvailable is for test if Burrow is sending Lag information to Rainbow
+func (rc *RequestCountService) MetricsIsAvailable() bool {
+	rc.Lock()
+	defer rc.Unlock()
+	// We set healthy threshold is 8 here, i.e. 8 min
+	return rc.unavailableCount < 8
 }

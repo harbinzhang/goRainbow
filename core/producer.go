@@ -74,10 +74,10 @@ func Produce(produceQueue chan string) {
 
 	// rcsMetricsSent is for metrics level traffic, how many metrics sent to wavefront
 	rcsMetricsSent := &RequestCountService{
-		name:         "metricsSent",
-		interval:     60 * time.Second,
-		producerChan: produceQueue,
-		postfix:      postfix,
+		Name:         "metricsSent",
+		Interval:     60 * time.Second,
+		ProducerChan: produceQueue,
+		Postfix:      postfix,
 	}
 	rcsMetricsSent.Init()
 
@@ -92,7 +92,7 @@ func Produce(produceQueue chan string) {
 	env := os.Getenv("ENV")
 
 	for message := range produceQueue {
-		rcsMetricsSent.Increase(env)
+		go rcsMetricsSent.Increase(env)
 		// fmt.Println(message)
 		log.Println("Produced to speed-racer: " + message)
 		p.Produce(&kafka.Message{

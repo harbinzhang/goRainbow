@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/HarbinZhang/goRainbow/config"
 	"github.com/HarbinZhang/goRainbow/core"
@@ -26,7 +27,15 @@ func main() {
 	lagQueue := make(chan config.LagInfo, LagQueueSize)
 	produceQueue := make(chan string, ProduceQueueSize)
 
-	go core.Translator(lagQueue, produceQueue)
+	// Preapre rcs for total metrics traffic.
+	rcsTotal := &core.RequestCountService{
+		Name:         "totalMessage",
+		Interval:     60 * time.Second,
+		ProducerChan: produceQueue,
+	}
+	rcsTotal.Init()
+
+	go core.Translator(lagQueue, produceQueue, rcsTotal)
 	go core.Produce(produceQueue)
 
 	// log
@@ -40,7 +49,10 @@ func main() {
 	log.Println("Log setup finished.")
 
 	lagHandler := consumeLag(lagQueue)
+	healthCheckHandler := healthChecker(rcsTotal)
+
 	http.HandleFunc("/rainbow/lag", lagHandler)
+	http.HandleFunc("/health_check", healthCheckHandler)
 	http.ListenAndServe(":7099", nil)
 	fmt.Println("server exited")
 }
@@ -56,5 +68,18 @@ func consumeLag(lagQueue chan config.LagInfo) func(http.ResponseWriter, *http.Re
 		}
 		// fmt.Println(msg)
 		lagQueue <- msg
+	}
+}
+
+func healthChecker(rcsTotal *core.RequestCountService) func(http.ResponseWriter, *http.Request) {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		if rcsTotal.MetricsIsAvailable() {
+			w.WriteHeader(http.StatusOK)
+		} else {
+			// w.WriteHeader(http.StatusServiceUnavailable)
+			// w.Write([]byte("503 - Burrow stop sending metrics!"))
+			http.Error(w, http.StatusText(http.StatusServiceUnavailable), http.StatusServiceUnavailable)
+		}
 	}
 }

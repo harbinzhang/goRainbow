@@ -13,7 +13,7 @@ import (
 )
 
 // Translator for message translate from struct to string
-func Translator(lagQueue chan config.LagInfo, produceQueue chan string) {
+func Translator(lagQueue chan config.LagInfo, produceQueue chan string, rcsTotal *RequestCountService) {
 
 	// Prepare config file
 	var conf config.Config
@@ -43,22 +43,17 @@ func Translator(lagQueue chan config.LagInfo, produceQueue chan string) {
 
 	// Init RequestCountService for data traffic statistic
 	// rcsTotal for total data traffic
-	rcsTotal := &RequestCountService{
-		name:         "totalMessage",
-		interval:     60 * time.Second,
-		producerChan: produceQueue,
-		postfix:      postfix,
-	}
+
 	// rcsValid for valid data traffic(i.e. message with totalLag > 0)
 	rcsValid := &RequestCountService{
-		name:         "validMessage",
-		interval:     60 * time.Second,
-		producerChan: produceQueue,
-		postfix:      postfix,
+		Name:         "validMessage",
+		Interval:     60 * time.Second,
+		ProducerChan: produceQueue,
+		Postfix:      postfix,
 	}
 
-	rcsTotal.Init()
 	rcsValid.Init()
+	rcsTotal.Postfix = postfix
 
 	for lag := range lagQueue {
 		// fmt.Println("trans", lag)
@@ -98,7 +93,7 @@ func parseInfo(lag config.LagInfo, produceQueue chan string, postfix string, rcs
 		// combined info is like: "fjord.burrow.[cluster].[group].totalLag $[totalLag] [timestamp] [postfix]"
 		produceQueue <- combineInfo([]string{prefix, "totalLag"}, []string{totalLag, timestamp, newPostfix})
 
-		rcsTotal.Increase(cluster)
+		go rcsTotal.Increase(cluster)
 
 		// skip partitions info if totalLag == 0
 		if totalLag == "0" {
@@ -106,7 +101,7 @@ func parseInfo(lag config.LagInfo, produceQueue chan string, postfix string, rcs
 		}
 
 		// The current message is valid, with totalLag > 0
-		rcsValid.Increase(cluster)
+		go rcsValid.Increase(cluster)
 
 		// MaxLagPartition Level handle
 		maxLag := make(map[string]string)

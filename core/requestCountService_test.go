@@ -47,3 +47,23 @@ func TestRequestCountServiceMulti(t *testing.T) {
 	res = <-producerChan
 	assert.Equal(t, "fjord.burrow.staging2.totalMessage 2", res, "message not correct")
 }
+
+func TestMetricsIsAvailable(t *testing.T) {
+	producerChan := make(chan string, 10)
+	rc := &RequestCountService{
+		name:         "totalMessage",
+		interval:     10 * time.Millisecond,
+		producerChan: producerChan,
+	}
+	rc.Init()
+	// t.Log(rc.envCount["test"])
+	assert.Equal(t, true, rc.MetricsIsAvailable(), "MetricsIsAvailable should return true")
+	time.Sleep(50 * time.Millisecond)
+	assert.Equal(t, true, rc.MetricsIsAvailable(), "MetricsIsAvailable should return true")
+	time.Sleep(50 * time.Millisecond)
+	assert.Equal(t, false, rc.MetricsIsAvailable(), "MetricsIsAvailable should return true")
+	rc.Increase("test")
+	assert.Equal(t, false, rc.MetricsIsAvailable(), "MetricsIsAvailable should return true")
+	time.Sleep(10 * time.Millisecond)
+	assert.Equal(t, true, rc.MetricsIsAvailable(), "MetricsIsAvailable should return true")
+}

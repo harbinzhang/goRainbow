@@ -62,7 +62,7 @@ func Translator(lagQueue chan config.LagInfo, produceQueue chan string) {
 
 	for lag := range lagQueue {
 		// fmt.Println("trans", lag)
-		parseInfo(lag, produceQueue, postfix, rcsTotal, rcsValid)
+		go parseInfo(lag, produceQueue, postfix, rcsTotal, rcsValid)
 	}
 }
 

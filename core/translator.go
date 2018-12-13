@@ -122,13 +122,15 @@ func parseInfo(lag config.LagInfo, produceQueue chan string, postfix string, rcs
 			startOffset := strconv.Itoa(partition.Start.Offset)
 			endOffset := strconv.Itoa(partition.End.Offset)
 			currentLag := strconv.Itoa(partition.CurrentLag)
+			owner := partition.Owner
 
 			topicTag := "topic=" + topic
 			partitionTag := "partition=" + partitionID
+			ownerTag := "owner=" + owner
 
-			produceQueue <- combineInfo([]string{prefix, topic, partitionID, "Lag"}, []string{currentLag, timestamp, newPostfix, topicTag, partitionTag})
-			produceQueue <- combineInfo([]string{prefix, topic, partitionID, "startOffset"}, []string{startOffset, timestamp, newPostfix, topicTag, partitionTag})
-			produceQueue <- combineInfo([]string{prefix, topic, partitionID, "endOffset"}, []string{endOffset, timestamp, newPostfix, topicTag, partitionTag})
+			produceQueue <- combineInfo([]string{prefix, topic, partitionID, "Lag"}, []string{currentLag, timestamp, newPostfix, topicTag, partitionTag, ownerTag})
+			produceQueue <- combineInfo([]string{prefix, topic, partitionID, "startOffset"}, []string{startOffset, timestamp, newPostfix, topicTag, partitionTag, ownerTag})
+			produceQueue <- combineInfo([]string{prefix, topic, partitionID, "endOffset"}, []string{endOffset, timestamp, newPostfix, topicTag, partitionTag, ownerTag})
 		}
 	}
 }

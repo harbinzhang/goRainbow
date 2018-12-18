@@ -13,10 +13,14 @@ import (
 // AliveConsumersMaintainer is a maintainer for alive consumers
 // It checks Burrow periodically to see if there is a new consumer, then creates a new thread for this consumer.
 func AliveConsumersMaintainer(link string, lagStatusQueue chan config.LagStatus) {
-	clusters, clusterLink := GetClusters(link)
 	clusterConsumerMap := &SyncNestedMap{}
 	clusterConsumerMap.Init()
 	for {
+		clusters, clusterLink := GetClusters(link)
+		if clusters == nil {
+			time.Sleep(1 * time.Minute)
+			continue
+		}
 		for _, cluster := range clusters.([]interface{}) {
 			clusterString := cluster.(string)
 			consumersSet := clusterConsumerMap.GetConsumers(clusterString)
@@ -94,6 +98,7 @@ func HTTPGetSubSlice(link string, key string) interface{} {
 	resp, err := http.Get(link)
 	if err != nil {
 		log.Println(err)
+		return nil
 	}
 
 	decode := json.NewDecoder(resp.Body)
@@ -102,6 +107,7 @@ func HTTPGetSubSlice(link string, key string) interface{} {
 	err = decode.Decode(&s)
 	if err != nil {
 		log.Println(err)
+		return nil
 	}
 
 	// copy needed string slice to res

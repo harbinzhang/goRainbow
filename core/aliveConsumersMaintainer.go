@@ -53,6 +53,7 @@ func NewConsumerForLag(consumersLink string, consumer string, cluster string, la
 
 	ticker := time.NewTicker(60 * time.Second)
 	for {
+		// check its consumer lag from Burrow periodically
 		<-ticker.C
 		HTTPGetStruct(consumersLink+consumer+"/lag", &lagStatus)
 		if lagStatus.Error {

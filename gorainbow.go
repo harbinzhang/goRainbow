@@ -43,6 +43,7 @@ func main() {
 	go core.Translator(lagStatusQueue, produceQueue, rcsTotal)
 	go core.Produce(produceQueue)
 
+	// health_check server
 	healthCheckHandler := core.HealthChecker(rcsTotal)
 	http.HandleFunc("/health_check", healthCheckHandler)
 	http.ListenAndServe(":7099", nil)

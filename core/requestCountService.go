@@ -36,17 +36,18 @@ func (rc *RequestCountService) Init() {
 // Increase is for increase message count increase per env
 func (rc *RequestCountService) Increase(env string) {
 	rc.Lock()
+	defer rc.Unlock()
 	if value, ok := rc.envCount[env]; ok {
 		rc.envCount[env] = value + 1
 	} else {
 		rc.envCount[env] = 1
 	}
-	rc.Unlock()
 }
 
 // translate all count to metrics and push it to chan
 func (rc *RequestCountService) generateMetric() {
 	rc.Lock()
+	defer rc.Unlock()
 	timestamp := getCurrentEpochTime()
 	isAllUnavailable := true
 	for env, count := range rc.envCount {
@@ -65,7 +66,6 @@ func (rc *RequestCountService) generateMetric() {
 		rc.unavailableCount = 0
 	}
 	rc.envCount = make(map[string]int)
-	rc.Unlock()
 }
 
 func getCurrentEpochTime() string {

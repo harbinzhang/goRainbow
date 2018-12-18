@@ -37,7 +37,7 @@ func AliveConsumersMaintainer(clusters interface{}, clusterLink string, lagStatu
 
 			clusterConsumerMap.ReleaseLock(clusterString)
 		}
-		time.Sleep(10 * time.Second)
+		time.Sleep(5 * time.Minute)
 	}
 }
 

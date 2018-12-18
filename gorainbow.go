@@ -32,7 +32,7 @@ func main() {
 	// Preapre rcs for total metrics traffic.
 	rcsTotal := &core.RequestCountService{
 		Name:         "totalMessage",
-		Interval:     10 * time.Second,
+		Interval:     60 * time.Second,
 		ProducerChan: produceQueue,
 	}
 	rcsTotal.Init()

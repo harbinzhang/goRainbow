@@ -34,6 +34,64 @@ type LagMessage struct {
 	} `json:"attachments"`
 }
 
+type Partition struct {
+	Topic     string `json:"topic"`
+	Partition int    `json:"partition"`
+	Owner     string `json:"owner"`
+	Status    string `json:"status"`
+	Start     struct {
+		Offset    int   `json:"offset"`
+		Timestamp int64 `json:"timestamp"`
+		Lag       int   `json:"lag"`
+	} `json:"start"`
+	End struct {
+		Offset    int   `json:"offset"`
+		Timestamp int64 `json:"timestamp"`
+		Lag       int   `json:"lag"`
+	} `json:"end"`
+	CurrentLag int     `json:"current_lag"`
+	Complete   float64 `json:"complete"`
+}
+
+type MaxLag struct {
+	Topic     string `json:"topic"`
+	Partition int    `json:"partition"`
+	Owner     string `json:"owner"`
+	Status    string `json:"status"`
+	Start     struct {
+		Offset    int   `json:"offset"`
+		Timestamp int64 `json:"timestamp"`
+		Lag       int   `json:"lag"`
+	} `json:"start"`
+	End struct {
+		Offset    int   `json:"offset"`
+		Timestamp int64 `json:"timestamp"`
+		Lag       int   `json:"lag"`
+	} `json:"end"`
+	CurrentLag int     `json:"current_lag"`
+	Complete   float64 `json:"complete"`
+}
+
+// LagStatus is "status" from v3/kafka/{cluster}/consumer/{consumer}/lag
+type LagStatus struct {
+	Error   bool   `json:"error"`
+	Message string `json:"message"`
+	Status  struct {
+		Cluster        string      `json:"cluster"`
+		Group          string      `json:"group"`
+		Status         string      `json:"status"`
+		Complete       float64     `json:"complete"`
+		Partitions     []Partition `json:"partitions"`
+		PartitionCount int         `json:"partition_count"`
+		Maxlag         MaxLag      `json:"maxlag"`
+		Totallag       int         `json:"totallag"`
+	} `json:"status"`
+	Request struct {
+		URL  string `json:"url"`
+		Host string `json:"host"`
+	} `json:"request"`
+}
+
 // LagInfo contains all lag info in all partitions
 type LagInfo struct {
 	APIKey string `json:"api_key"`

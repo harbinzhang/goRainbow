@@ -56,8 +56,9 @@ func (snm *SyncNestedMap) GetConsumers(cluster string) map[string]bool {
 }
 
 func (snm *SyncNestedMap) DeregisterConsumer(cluster string, consumer string) {
-	snm.Lock()
-	defer snm.Unlock()
+	// Refined cluster-level lock.
+	snm.SetLock(cluster)
+	defer snm.ReleaseLock(cluster)
 
 	// May need to add a judge
 	delete(snm.infoMap[cluster], consumer)

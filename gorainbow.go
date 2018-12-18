@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"time"
 
@@ -37,12 +38,11 @@ func main() {
 	}
 	rcsTotal.Init()
 
-	healthCheckHandler := core.HealthChecker(rcsTotal)
-
 	go core.AliveConsumersMaintainer(link, lagStatusQueue)
 	go core.Translator(lagStatusQueue, produceQueue, rcsTotal)
 	go core.Produce(produceQueue)
 
+	healthCheckHandler := core.HealthChecker(rcsTotal)
 	http.HandleFunc("/health_check", healthCheckHandler)
 	http.ListenAndServe(":7099", nil)
 	fmt.Println("server exited")

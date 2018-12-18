@@ -13,7 +13,7 @@ import (
 )
 
 // Translator for message translate from struct to string
-func Translator(lagQueue chan config.LagInfo, produceQueue chan string, rcsTotal *RequestCountService) {
+func Translator(lagQueue chan config.LagStatus, produceQueue chan string, rcsTotal *RequestCountService) {
 
 	// Prepare config file
 	var conf config.Config
@@ -58,6 +58,7 @@ func Translator(lagQueue chan config.LagInfo, produceQueue chan string, rcsTotal
 	for lag := range lagQueue {
 		// fmt.Println("trans", lag)
 		go parseInfo(lag, produceQueue, postfix, rcsTotal, rcsValid)
+
 	}
 }
 
@@ -65,9 +66,87 @@ func combineInfo(prefix []string, postfix []string) string {
 	return strings.Join(prefix, ".") + " " + strings.Join(postfix, " ")
 }
 
+func parseInfo(lag config.LagStatus, produceQueue chan string, postfix string, rcsTotal *RequestCountService, rcsValid *RequestCountService) {
+	// lag is 0 or non-zero.
+	// parse it into lower level(partitions, maxlag).
+	cluster := lag.Status.Cluster
+	group := lag.Status.Group
+	totalLag := strconv.Itoa(lag.Status.Totallag)
+	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
+
+	envTag := "env=" + cluster
+	consumerTag := "consumer=" + group
+	newPostfix := strings.Join([]string{timestamp, postfix, envTag, consumerTag}, " ")
+
+	go rcsTotal.Increase(cluster)
+
+	// prepare prefix = "fjord.burrow.{cluster}.{group}"
+	var sb strings.Builder
+	sb.WriteString("fjord.burrow.")
+	sb.WriteString(cluster + ".")
+	sb.WriteString(group)
+	prefix := sb.String()
+
+	fmt.Printf("Handled: %s at %s \n", group, timestamp)
+	log.Printf("Handled: %s at %s \n", group, timestamp)
+
+	produceQueue <- combineInfo([]string{prefix, "totalLag"}, []string{totalLag, newPostfix})
+
+	if totalLag == "0" {
+		return
+	}
+
+	go rcsValid.Increase(cluster)
+
+	go parsePartitionInfo(lag.Status.Partitions, produceQueue, prefix, newPostfix)
+	go parseMaxLagInfo(lag.Status.Maxlag, produceQueue, prefix, newPostfix)
+
+}
+
+func parsePartitionInfo(partitions []config.Partition, produceQueue chan string, prefix string, postfix string) {
+	for _, partition := range partitions {
+		topic := partition.Topic
+		partitionID := strconv.Itoa(partition.Partition)
+		startOffset := strconv.Itoa(partition.Start.Offset)
+		endOffset := strconv.Itoa(partition.End.Offset)
+		currentLag := strconv.Itoa(partition.CurrentLag)
+		owner := partition.Owner
+
+		topicTag := "topic=" + topic
+		partitionTag := "partition=" + partitionID
+		ownerTag := "owner=" + owner
+
+		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "Lag"}, []string{currentLag, postfix, topicTag, partitionTag, ownerTag})
+		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "startOffset"}, []string{startOffset, postfix, topicTag, partitionTag, ownerTag})
+		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "endOffset"}, []string{endOffset, postfix, topicTag, partitionTag, ownerTag})
+
+	}
+}
+
+func parseMaxLagInfo(maxLag config.MaxLag, produceQueue chan string, prefix string, postfix string) {
+	// tags: owner
+	// metrics: partitionID, currentLag, startOffset, endOffset, topic
+
+	owner := maxLag.Owner
+	ownerTag := "owner=" + owner
+
+	// MaxLagPartition Level handle
+	maxLagMap := make(map[string]string)
+	maxLagMap["maxLagmaxLagPartitionID"] = strconv.Itoa(maxLag.Partition)
+	maxLagMap["maxLagCurrentLag"] = strconv.Itoa(maxLag.CurrentLag)
+	maxLagMap["maxLagStartOffset"] = strconv.Itoa(maxLag.Start.Offset)
+	maxLagMap["maxLagEndOffset"] = strconv.Itoa(maxLag.End.Offset)
+	maxLagMap["maxLagTopic"] = maxLag.Topic
+
+	for key, value := range maxLagMap {
+		produceQueue <- combineInfo([]string{prefix, key}, []string{value, postfix, ownerTag})
+	}
+
+}
+
 // parseInfo is for LagInfo struct (in config/struct.go),
 // which has all partitions info.
-func parseInfo(lag config.LagInfo, produceQueue chan string, postfix string, rcsTotal *RequestCountService, rcsValid *RequestCountService) {
+func parseInfod(lag config.LagInfo, produceQueue chan string, postfix string, rcsTotal *RequestCountService, rcsValid *RequestCountService) {
 	// fmt.Println(lag)
 
 	for _, eventItem := range lag.Events {

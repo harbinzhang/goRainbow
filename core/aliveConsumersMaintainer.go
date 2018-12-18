@@ -51,7 +51,7 @@ func NewConsumerForLag(consumersLink string, consumer string, cluster string, la
 	fmt.Println("New consumer found: ", consumersLink, consumer)
 	var lagStatus config.LagStatus
 
-	ticker := time.NewTicker(6 * time.Second)
+	ticker := time.NewTicker(60 * time.Second)
 	for {
 		<-ticker.C
 		HTTPGetStruct(consumersLink+consumer+"/lag", &lagStatus)

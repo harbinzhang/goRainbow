@@ -12,7 +12,8 @@ import (
 
 // AliveConsumersMaintainer is a maintainer for alive consumers
 // It checks Burrow periodically to see if there is a new consumer, then creates a new thread for this consumer.
-func AliveConsumersMaintainer(clusters interface{}, clusterLink string, lagStatusQueue chan config.LagStatus) {
+func AliveConsumersMaintainer(link string, lagStatusQueue chan config.LagStatus) {
+	clusters, clusterLink := GetClusters(link)
 	clusterConsumerMap := &SyncNestedMap{}
 	clusterConsumerMap.Init()
 	for {

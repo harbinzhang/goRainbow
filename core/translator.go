@@ -87,8 +87,8 @@ func parseInfo(lag config.LagStatus, produceQueue chan string, postfix string, r
 	sb.WriteString(group)
 	prefix := sb.String()
 
-	fmt.Printf("Handled: %s at %s \n", group, timestamp)
-	log.Printf("Handled: %s at %s \n", group, timestamp)
+	fmt.Printf("Handled: %s at %s with totalLag %s\n", group, timestamp, totalLag)
+	log.Printf("Handled: %s at %s with totalLag %s\n", group, timestamp, totalLag)
 
 	produceQueue <- combineInfo([]string{prefix, "totalLag"}, []string{totalLag, newPostfix})
 
@@ -105,11 +105,14 @@ func parseInfo(lag config.LagStatus, produceQueue chan string, postfix string, r
 
 func parsePartitionInfo(partitions []config.Partition, produceQueue chan string, prefix string, postfix string) {
 	for _, partition := range partitions {
+		currentLag := strconv.Itoa(partition.CurrentLag)
+		if currentLag == "0" {
+			continue
+		}
 		topic := partition.Topic
 		partitionID := strconv.Itoa(partition.Partition)
 		startOffset := strconv.Itoa(partition.Start.Offset)
 		endOffset := strconv.Itoa(partition.End.Offset)
-		currentLag := strconv.Itoa(partition.CurrentLag)
 		owner := partition.Owner
 
 		topicTag := "topic=" + topic

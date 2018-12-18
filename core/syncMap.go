@@ -19,6 +19,8 @@ func (snm *SyncNestedMap) Init() {
 	snm.clusterLock = make(map[string]*sync.Mutex)
 }
 
+// SetLock to set a refined lock, on cluster-level,
+// to improve performance
 func (snm *SyncNestedMap) SetLock(cluster string) bool {
 	snm.Lock()
 	defer snm.Unlock()
@@ -57,5 +59,6 @@ func (snm *SyncNestedMap) DeregisterConsumer(cluster string, consumer string) {
 	snm.Lock()
 	defer snm.Unlock()
 
+	// May need to add a judge
 	delete(snm.infoMap[cluster], consumer)
 }

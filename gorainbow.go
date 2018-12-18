@@ -31,6 +31,7 @@ func main() {
 	produceQueue := make(chan string, ProduceQueueSize)
 
 	// Preapre rcs for total metrics traffic.
+	// Using it for health_check
 	rcsTotal := &core.RequestCountService{
 		Name:         "totalMessage",
 		Interval:     60 * time.Second,

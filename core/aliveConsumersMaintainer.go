@@ -72,7 +72,7 @@ func GetConsumers(link string, cluster string) (interface{}, string) {
 func GetClusters(link string) (interface{}, string) {
 	// defer Info.Println("Exit getClusters")
 	// Info.Println("Into getClusters")
-	return HTTPGetSubSlice(link, "clusters"), link
+	return HTTPGetSubSlice(link, "clusters"), link + "/"
 }
 
 // HTTPGetStruct put HTTP GET body into target
@@ -81,7 +81,7 @@ func HTTPGetStruct(link string, target interface{}) {
 
 	resp, err := client.Get(link)
 	if err != nil {
-		log.Panicln(err)
+		log.Println(err)
 	}
 
 	defer resp.Body.Close()
@@ -93,7 +93,7 @@ func HTTPGetStruct(link string, target interface{}) {
 func HTTPGetSubSlice(link string, key string) interface{} {
 	resp, err := http.Get(link)
 	if err != nil {
-		log.Panic(err)
+		log.Println(err)
 	}
 
 	decode := json.NewDecoder(resp.Body)
@@ -101,7 +101,7 @@ func HTTPGetSubSlice(link string, key string) interface{} {
 	var s interface{}
 	err = decode.Decode(&s)
 	if err != nil {
-		log.Panic(err)
+		log.Println(err)
 	}
 
 	// copy needed string slice to res

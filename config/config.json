@@ -1,0 +1,16 @@
+{
+  "reportIntervalSeconds": 30,
+  "kafka": {
+    "brokerServers": "speed-racer-kafka.zeta.tools:9092",
+    "topic": "micrometer-wavefront"
+  },
+  "translator": {
+    "fullClassName": "io.porter.rainbow.translate.translators.MicroMeterRainbowTranslator",
+    "metricFormat": "micrometer"
+  },
+  "service": {
+    "customTags": "",
+    "name": "go_rainbow",
+    "department": "fjord"
+  }
+}

@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	const link string = "localhost:8000/v3/kafka/"
+	const link string = "http://127.0.0.1:8000/v3/kafka/"
 	const LagQueueSize int = 1000
 	const ProduceQueueSize int = 9000
 

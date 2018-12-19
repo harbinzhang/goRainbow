@@ -96,9 +96,9 @@ func parseInfo(lag config.LagStatus, produceQueue chan string, postfix string,
 
 	produceQueue <- combineInfo([]string{prefix, "totalLag"}, []string{totalLag, newPostfix})
 
-	if totalLag == "0" {
-		return
-	}
+	// if totalLag == "0" {
+	// 	return
+	// }
 
 	go rcsValid.Increase(cluster)
 
@@ -111,7 +111,7 @@ func parsePartitionInfo(partitions []config.Partition, produceQueue chan string,
 	for _, partition := range partitions {
 		partitionID := strconv.Itoa(partition.Partition)
 		currentLag := partition.CurrentLag
-		shouldSendIt := tsm.Put(prefix+partitionID, currentLag)
+		shouldSendIt := tsm.PartitionPut(prefix+partitionID, currentLag)
 		if !shouldSendIt {
 			continue
 		}

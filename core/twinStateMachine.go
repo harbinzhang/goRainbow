@@ -7,15 +7,15 @@ import "sync"
 // When lag doesn't change, or is 0, will send metrics per 60s
 //
 // So we have logic:
-// currentLag	PreviousLag 	send?  		save
-//		0			0			 No			-1
-//		0			not 0		 Yes		0
-//		X(not 0)	0			 Yes		X
-//		X(not 0) 	X(not 0)	 No			-1
-//		X(not 0)	Y(not 0)	 Yes		X
+// currentLag    PreviousLag     send?      save
+//      0           0            No          -1
+//      0           not 0        Yes         0
+//      X(not 0)    0            Yes         X
+//      X(not 0)    X(not 0)     No          -1
+//      X(not 0)    Y(not 0)     Yes         X
 // After simplify:
 //	CurrentLag == PreviousLag	Not send, save -1
-//  CurrentLag != PreviousLag	send, save CurrentLag
+//  CurrentLag != PreviousLag	Send, save CurrentLag
 type TwinStateMachine struct {
 	sync.Mutex
 	mmap map[string]int

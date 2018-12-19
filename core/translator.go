@@ -99,8 +99,9 @@ func parseInfo(lag config.LagStatus, produceQueue chan string, postfix string,
 	// if totalLag == "0" {
 	// 	return
 	// }
-
-	go rcsValid.Increase(cluster)
+	if totalLag != "0" {
+		go rcsValid.Increase(cluster)
+	}
 
 	go parsePartitionInfo(lag.Status.Partitions, produceQueue, prefix, newPostfix, tsm)
 	go parseMaxLagInfo(lag.Status.Maxlag, produceQueue, prefix, newPostfix)

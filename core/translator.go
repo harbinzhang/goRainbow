@@ -51,14 +51,20 @@ func Translator(lagQueue chan config.LagStatus, produceQueue chan string, rcsTot
 		ProducerChan: produceQueue,
 		Postfix:      postfix,
 	}
-
 	rcsValid.Init()
-	rcsTotal.Postfix = postfix
+
+	// Prepare metrics traffic control
+	tsm := &TwinStateMachine{}
+	tsm.Init()
 
 	for lag := range lagQueue {
-		// fmt.Println("trans", lag)
-		go parseInfo(lag, produceQueue, postfix, rcsTotal, rcsValid)
+		// if lag doesn't change, sends it per 60s.
+		shouldSendIt := tsm.Put(lag.Status.Cluster+lag.Status.Group, lag.Status.Totallag)
+		if !shouldSendIt {
+			continue
+		}
 
+		go parseInfo(lag, produceQueue, postfix, rcsTotal, rcsValid, tsm)
 	}
 }
 
@@ -66,7 +72,8 @@ func combineInfo(prefix []string, postfix []string) string {
 	return strings.Join(prefix, ".") + " " + strings.Join(postfix, " ")
 }
 
-func parseInfo(lag config.LagStatus, produceQueue chan string, postfix string, rcsTotal *RequestCountService, rcsValid *RequestCountService) {
+func parseInfo(lag config.LagStatus, produceQueue chan string, postfix string,
+	rcsTotal *RequestCountService, rcsValid *RequestCountService, tsm *TwinStateMachine) {
 	// lag is 0 or non-zero.
 	// parse it into lower level(partitions, maxlag).
 	cluster := lag.Status.Cluster
@@ -98,19 +105,22 @@ func parseInfo(lag config.LagStatus, produceQueue chan string, postfix string, r
 
 	go rcsValid.Increase(cluster)
 
-	go parsePartitionInfo(lag.Status.Partitions, produceQueue, prefix, newPostfix)
+	go parsePartitionInfo(lag.Status.Partitions, produceQueue, prefix, newPostfix, tsm)
 	go parseMaxLagInfo(lag.Status.Maxlag, produceQueue, prefix, newPostfix)
 
 }
 
-func parsePartitionInfo(partitions []config.Partition, produceQueue chan string, prefix string, postfix string) {
+func parsePartitionInfo(partitions []config.Partition, produceQueue chan string, prefix string, postfix string, tsm *TwinStateMachine) {
 	for _, partition := range partitions {
-		currentLag := strconv.Itoa(partition.CurrentLag)
-		if currentLag == "0" {
+		partitionID := strconv.Itoa(partition.Partition)
+		currentLag := partition.CurrentLag
+		shouldSendIt := tsm.PartitionPut(prefix+partitionID, currentLag)
+		if !shouldSendIt {
 			continue
 		}
+
 		topic := partition.Topic
-		partitionID := strconv.Itoa(partition.Partition)
+
 		startOffset := strconv.Itoa(partition.Start.Offset)
 		endOffset := strconv.Itoa(partition.End.Offset)
 		owner := partition.Owner
@@ -119,10 +129,9 @@ func parsePartitionInfo(partitions []config.Partition, produceQueue chan string,
 		partitionTag := "partition=" + partitionID
 		ownerTag := "owner=" + owner
 
-		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "Lag"}, []string{currentLag, postfix, topicTag, partitionTag, ownerTag})
+		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "Lag"}, []string{strconv.Itoa(currentLag), postfix, topicTag, partitionTag, ownerTag})
 		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "startOffset"}, []string{startOffset, postfix, topicTag, partitionTag, ownerTag})
 		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "endOffset"}, []string{endOffset, postfix, topicTag, partitionTag, ownerTag})
-
 	}
 }
 

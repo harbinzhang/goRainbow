@@ -18,6 +18,7 @@ func AliveConsumersMaintainer(link string, lagStatusQueue chan config.LagStatus)
 	for {
 		clusters, clusterLink := GetClusters(link)
 		if clusters == nil {
+			// Burrow server is not ready
 			time.Sleep(1 * time.Minute)
 			continue
 		}

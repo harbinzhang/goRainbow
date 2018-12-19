@@ -39,6 +39,7 @@ func main() {
 	}
 	rcsTotal.Init()
 
+	// Prepare pipeline routines
 	go core.AliveConsumersMaintainer(link, lagStatusQueue)
 	go core.Translator(lagStatusQueue, produceQueue, rcsTotal)
 	go core.Produce(produceQueue)

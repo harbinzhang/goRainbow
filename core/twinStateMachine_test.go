@@ -54,3 +54,17 @@ func TestPartitionPut(t *testing.T) {
 	assert.Equal(t, false, tsm.PartitionPut("test", 0), "Not passed")
 
 }
+
+func TestPartitionPutFor0(t *testing.T) {
+	tsm := &TwinStateMachine{}
+
+	tsm.Init()
+
+	assert.Equal(t, true, tsm.PartitionPut("test", 1), "Not passed")
+	assert.Equal(t, false, tsm.PartitionPut("test", 1), "Not passed")
+	assert.Equal(t, true, tsm.PartitionPut("test", 1), "Not passed")
+	assert.Equal(t, false, tsm.PartitionPut("test", 1), "Not passed")
+	assert.Equal(t, true, tsm.PartitionPut("test", 1), "Not passed")
+	assert.Equal(t, true, tsm.PartitionPut("test", 0), "Not passed")
+
+}

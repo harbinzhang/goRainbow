@@ -39,11 +39,8 @@ func Translator(lagQueue chan config.LagStatus, produceQueue chan string, rcsTot
 	// postfix := "source=192.168.3.169 data_center=slv dca_zone=local department=fjord planet=sbx888 service_name=porter_rainbow porter_tools=porter-rainbow"
 	postfix := strings.Join([]string{source, dataCenter, dcaZone, department, planet, serviceName, metricFormat}, " ")
 
-	// fmt.Println(postfix)
-
 	// Init RequestCountService for data traffic statistic
-	// rcsTotal for total data traffic
-
+	rcsTotal.Postfix = postfix
 	// rcsValid for valid data traffic(i.e. message with totalLag > 0)
 	rcsValid := &RequestCountService{
 		Name:         "validMessage",
@@ -58,7 +55,7 @@ func Translator(lagQueue chan config.LagStatus, produceQueue chan string, rcsTot
 	tsm.Init()
 
 	for lag := range lagQueue {
-		// if lag doesn't change, sends it per 60s.
+		// if lag doesn't change, sends it per 60s. Otherwise 30s.
 		shouldSendIt := tsm.Put(lag.Status.Cluster+lag.Status.Group, lag.Status.Totallag)
 		if !shouldSendIt {
 			continue
@@ -114,7 +111,7 @@ func parsePartitionInfo(partitions []config.Partition, produceQueue chan string,
 	for _, partition := range partitions {
 		partitionID := strconv.Itoa(partition.Partition)
 		currentLag := partition.CurrentLag
-		shouldSendIt := tsm.PartitionPut(prefix+partitionID, currentLag)
+		shouldSendIt := tsm.Put(prefix+partitionID, currentLag)
 		if !shouldSendIt {
 			continue
 		}

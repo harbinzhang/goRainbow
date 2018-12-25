@@ -92,6 +92,17 @@ type LagStatus struct {
 	} `json:"request"`
 }
 
+// TopicOffset is for topic/offset
+type TopicOffset struct {
+	Error   bool   `json:"error"`
+	Message string `json:"message"`
+	Offsets []int  `json:"offsets"`
+	Request struct {
+		URL  string `json:"url"`
+		Host string `json:"host"`
+	} `json:"request"`
+}
+
 // LagInfo contains all lag info in all partitions
 type LagInfo struct {
 	APIKey string `json:"api_key"`

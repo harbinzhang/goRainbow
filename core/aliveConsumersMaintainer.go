@@ -24,7 +24,7 @@ func AliveConsumersMaintainer(link string, lagStatusQueue chan config.LagStatus)
 		}
 		for _, cluster := range clusters.([]interface{}) {
 			clusterString := cluster.(string)
-			consumersSet := clusterConsumerMap.GetConsumers(clusterString)
+			consumersSet := clusterConsumerMap.GetChild(clusterString)
 
 			clusterConsumerMap.SetLock(clusterString)
 
@@ -64,7 +64,7 @@ func NewConsumerForLag(consumersLink string, consumer string, cluster string, la
 		lagStatusQueue <- lagStatus
 	}
 
-	snm.DeregisterConsumer(cluster, consumer)
+	snm.DeregisterChild(cluster, consumer)
 	log.Fatalf("Consumer is invalid: %s\tcluster:%s\n", consumer, cluster)
 }
 
@@ -91,7 +91,6 @@ func HTTPGetStruct(link string, target interface{}) {
 	}
 
 	defer resp.Body.Close()
-
 	json.NewDecoder(resp.Body).Decode(target)
 }
 

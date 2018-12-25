@@ -57,7 +57,7 @@ func newTopic(topicLink string, topic string, cluster string, produceQueue chan 
 
 	prefix := "fjord.burrow." + cluster + ".topic." + topic
 
-	ticker := time.NewTicker(6 * time.Second)
+	ticker := time.NewTicker(60 * time.Second)
 	for {
 		// check its topic offset from Burrow periodically
 		<-ticker.C

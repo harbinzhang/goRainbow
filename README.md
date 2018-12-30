@@ -35,13 +35,6 @@ goRainbow includes 3 main parts:
 1. URL maintainer: maintain available URLs, create new handler thread for new URL.
 2. URL handler: translates data into required form, prepared for producer.
 3. kafka producer: sends data to kafka(speed-racer), which will send metrics to the Wavefront.
-
-# Great Features
-1. Fast  
-    a. Http server handles as less as possible to have a better respond. Leaving heavy work to following modules via channel.  
-    b. batch? for producer message?  
-2. Light  
-    a. Using queue-like channel, rather than cache. We don't need LRU, LFU algorithms here, because each message would be used and only used once.  
 # Usage
 ### For Burrow
 You may check burrow/Dockerfile for how to use goRainbow.

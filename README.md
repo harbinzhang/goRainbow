@@ -57,7 +57,7 @@ It will open ports at localhost:7099
 # TODO
 (From High priority to low)  
 1. Exception Handle to be robust.
-~~2. Logging.~~
+2. ~~ Logging.~~
 3. Performance and memory usage check.
 4. Send in seconds, deduplicate feature.
 5. Producer is blocking?

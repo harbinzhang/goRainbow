@@ -50,6 +50,11 @@ It will open ports at localhost:7099
 ### Burrow push-model
 Also goRainbow provides a Burrow-push-model, in which goRainbow accepts Burrow's Lag message via Burrow notifier. It's working fine, but goRainbow pull-model can provide a better precision.   
 You may check rainbow-push-model branch for details. [push-model](https://github.com/HarbinZhang/goRainbow/tree/rainbow-push-model)
+### Some implements
+1. Avoid blocking operation in main pipeline.
+   1. Refined nested sync map to avoid blocking in URL maintainer.
+   2. leave heavy workload to goroutine.
+2. Twin-state-machine to guarantee metrics start and end with 0.
 # TODO
 (From High priority to low)  
 1. Exception Handle to be robust.

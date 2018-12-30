@@ -10,7 +10,7 @@ goRainbow is a plug-in for Burrow. It pulls lag information from Burrow, transla
    1. It sends metrics when lag exists. Also it guarantees every metric starts from 0 and ends with 0, which shows better in wavefront.
    2. It sends metrics per 30s when metrics change and per 60s for unchanged metrics.
 ## Thanks
-Thanks to porter-rainbow, which gave a basic idea about how to design the goRainbow.
+A big thanks to porter-rainbow, which gave a basic idea about how to design the goRainbow.
 
 port-rainbow is mainly based on socket connection. goRainbow is like a RESTful service.
 # Metrics format

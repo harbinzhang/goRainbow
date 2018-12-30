@@ -24,7 +24,7 @@ goRainbow is a plug-in for Burrow. It pulls lag information from Burrow, transla
    - "fjord.burrow.${env}.${consumer}.${partitionId}.startOffset ${value} ${timestamp} ${tags}"
    - "fjord.burrow.${env}.${consumer}.${partitionId}.endOffset ${value} ${timestamp} ${tags}"
 ### Topic level
-Topic level offset shows the kafka-producer offset in each partition.
+- Topic level offset shows the kafka-producer offset in each partition.
    - "fjord.burrow.${env}.topic.${partitionId}.offset ${value} ${timestamp} ${tags}"
 
 ### Thanks

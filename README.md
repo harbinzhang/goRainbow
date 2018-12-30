@@ -12,9 +12,13 @@ goRainbow is a plug-in for Burrow. It pulls lag information from Burrow, transla
 # Metrics format
 ### Consumer level
 1. consumer totalLag:
-- "fjord.burrow.${env}.${consumer}.totalLag ${totalLag} ${timestamp} ${tags}"
-2. consumer maxLag partition:
    - "fjord.burrow.${env}.${consumer}.totalLag ${totalLag} ${timestamp} ${tags}"
+2. consumer maxLag partition:
+   - "fjord.burrow.${env}.${consumer}.maxLagmaxLagPartitionID ${value} ${timestamp} ${tags}"
+   - "fjord.burrow.${env}.${consumer}.maxLagCurrentLag ${value} ${timestamp} ${tags}"
+   - "fjord.burrow.${env}.${consumer}.maxLagStartOffset ${value} ${timestamp} ${tags}"
+   - "fjord.burrow.${env}.${consumer}.maxLagEndOffset ${value} ${timestamp} ${tags}"
+   - "fjord.burrow.${env}.${consumer}.maxLagTopic ${value} ${timestamp} ${tags}"
 3. consumer all paritions(when totalLag is above 0):
 - "fjord.burrow.${env}.${consumer}.totalLag ${totalLag} ${timestamp} ${tags}"
 ### Topic level

@@ -1,19 +1,12 @@
 # goRainbow
 ### What it is
-go-rainbow is a transformer which accepts your HTTP POST, translates it to metrics and sends it to the wavefront.
-It's very light and fast.
-
+goRainbow is a plug-in for Burrow. It pulls lag information from Burrow, translates it to metrics and sends it to the wavefront.
 ### Thanks
-A very big thanks to porter-rainbow, which gave us a basic idea about how to design the go-rainbow.
+Thanks to porter-rainbow, which gave a basic idea about how to design the goRainbow.
 
-port-rainbow is mainly based on socket connection. go-rainbow provides HTTP endpoint for you to use.
-
-# Who might consider go-rainbow
-1. If you prefer sending message using HTTP POST. 
-2. If you have a performance bottle neck in rainbow.
-
+port-rainbow is mainly based on socket connection. goRainbow is like a RESTful service.
 # High-level
-go-rainbow includes 3 parts:
+goRainbow includes 3 parts:
 1. http server.
 2. translator: translates data into required form, prepared for producer.
 3. kafka producer: sends data to kafka(speed-racer), which will send metrics to the Wavefront.

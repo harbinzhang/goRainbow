@@ -9,6 +9,10 @@ goRainbow is a plug-in for Burrow. It pulls lag information from Burrow, transla
 2. Dynamic metric sending:
    1. It sends metrics when lag exists. Also it guarantees every metric starts from 0 and ends with 0, which shows better in wavefront.
    2. It sends metrics per 30s when metrics change and per 60s for unchanged metrics.
+# Thanks
+Thanks to porter-rainbow, which gave a basic idea about how to design the goRainbow.
+
+port-rainbow is mainly based on socket connection. goRainbow is like a RESTful service.
 # Metrics format
 ### Consumer level
 1. consumer totalLag:
@@ -26,12 +30,6 @@ goRainbow is a plug-in for Burrow. It pulls lag information from Burrow, transla
 ### Topic level
 - Topic level offset shows the kafka-producer offset in each partition.
    - "fjord.burrow.${env}.topic.${partitionId}.offset ${value} ${timestamp} ${tags}"
-
-### Thanks
-Thanks to porter-rainbow, which gave a basic idea about how to design the goRainbow.
-
-port-rainbow is mainly based on socket connection. goRainbow is like a RESTful service.
-
 # High-level
 goRainbow includes 3 main parts:
 1. URL maintainer: maintain available URLs, create new handler thread for new URL.

@@ -11,12 +11,12 @@ goRainbow is a plug-in for Burrow. It pulls lag information from Burrow, transla
    2. It sends metrics per 30s when metrics change and per 60s for unchanged metrics.
 # Metrics format
 ### Consumer level
-- consumer totalLag:
-"fjord.burrow.${env}.${consumer}.totalLag ${totalLag} ${timestamp} ${tags}"
-- consumer maxLag partition:
-"fjord.burrow.${env}.${consumer}.totalLag ${totalLag} ${timestamp} ${tags}"
-- consumer all paritions(when totalLag is above 0):
-"fjord.burrow.${env}.${consumer}.totalLag ${totalLag} ${timestamp} ${tags}"
+1. consumer totalLag:
+- "fjord.burrow.${env}.${consumer}.totalLag ${totalLag} ${timestamp} ${tags}"
+2. consumer maxLag partition:
+   - "fjord.burrow.${env}.${consumer}.totalLag ${totalLag} ${timestamp} ${tags}"
+3. consumer all paritions(when totalLag is above 0):
+- "fjord.burrow.${env}.${consumer}.totalLag ${totalLag} ${timestamp} ${tags}"
 ### Topic level
 
 ### Thanks

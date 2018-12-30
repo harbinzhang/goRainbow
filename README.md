@@ -4,11 +4,19 @@ goRainbow is a plug-in for Burrow. It pulls lag information from Burrow, transla
 1. It pulls lag of consumers.
 2. It pulls offset of topics.
 3. It provides data traffic statistic.(totalMessage, validMessage, metricsSent)
+### Features
+1. Heath-check: It provides health-check HTTP service so that AWS can auto restart Burrow-goRainbow when the service is unavailable.
+2. Dynamic metric sending:
+   1. It sends metrics when lag exists. Also it guarantees every metric starts from 0 and ends with 0, which shows better in wavefront.
+   2. It sends metrics per 30s when metrics change and per 60s for unchanged metrics.
 # Metrics format
 ### Consumer level
 - consumer totalLag:
+"fjord.burrow.${env}.${consumer}.totalLag ${totalLag} ${timestamp} ${tags}"
 - consumer maxLag partition:
+"fjord.burrow.${env}.${consumer}.totalLag ${totalLag} ${timestamp} ${tags}"
 - consumer all paritions(when totalLag is above 0):
+"fjord.burrow.${env}.${consumer}.totalLag ${totalLag} ${timestamp} ${tags}"
 ### Topic level
 
 ### Thanks

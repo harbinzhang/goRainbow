@@ -37,7 +37,7 @@ goRainbow includes 3 main parts:
 3. kafka producer: sends data to kafka(speed-racer), which will send metrics to the Wavefront.
 # Usage
 ### For Burrow
-You may check burrow/Dockerfile for how to use goRainbow.
+You may check [Burrow Dockerfile](burrow/Dockerfile) for how to use goRainbow.
 ### Program
 The main program is gorainbow.go
 ```

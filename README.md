@@ -1,6 +1,16 @@
 # goRainbow
-### What it is
-goRainbow is a plug-in for Burrow. It pulls lag information from Burrow, translates it to metrics and sends it to the wavefront.
+# What it is
+goRainbow is a plug-in for Burrow. It pulls lag information from Burrow, translates it into metrics and sends it to the wavefront.
+1. It pulls lag of consumers.
+2. It pulls offset of topics.
+3. It provides data traffic statistic.(totalMessage, validMessage, metricsSent)
+# Metrics format
+### Consumer level
+- consumer totalLag:
+- consumer maxLag partition:
+- consumer all paritions(when totalLag is above 0):
+### Topic level
+
 ### Thanks
 Thanks to porter-rainbow, which gave a basic idea about how to design the goRainbow.
 

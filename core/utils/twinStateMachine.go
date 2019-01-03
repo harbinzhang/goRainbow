@@ -50,31 +50,58 @@ func (tsm *TwinStateMachine) Put(key string, lag int) bool {
 // Also it should send the previous lag=0 if current lag != 0 to make sure
 // all partition metrics start from 0.
 //
-// Using >0, -1 to store 3 states in twoStateMachine.
+// Using >0, -1, -2 to store 3 states in twoStateMachine.
 // @params
 // return (shouldSendCurrentLag, shouldSendPreviousLag)
 func (tsm *TwinStateMachine) PartitionPut(key string, lag int) (bool, bool) {
 	tsm.Lock()
 	defer tsm.Unlock()
 
+	shouldSendCurrentLag := false
+	shouldSendPreviousLag := false
 	if val, ok := tsm.mmap[key]; ok {
 		if lag == 0 && val == 0 {
-			return false, false
+			// skip this lag
 		} else if lag == val {
 			tsm.mmap[key] = -1
-			return false, false
 		} else if lag == 0 && val > 0 {
-			tsm.mmap[key] = -1
-			return false, false
-		} else if lag == 0 && val == -1 {
-			tsm.mmap[key] = 0
-			return true, false
+			tsm.mmap[key] = -2
 		} else {
 			tsm.mmap[key] = lag
-			return false, true
+			shouldSendCurrentLag = true
+		}
+		if lag > 0 && val == 0 {
+			shouldSendPreviousLag = true
 		}
 	} else {
 		tsm.mmap[key] = lag
-		return false, false
+		shouldSendCurrentLag = true
 	}
+
+	// It's the origin logic before simplification
+	// if val, ok := tsm.mmap[key]; ok {
+	// 	if lag == 0 && val == 0 {
+	// 		return false, false
+	// 	} else if lag == val {
+	// 		tsm.mmap[key] = -1
+	// 		return false, false
+	// 	} else if lag == 0 && val > 0 {
+	// 		tsm.mmap[key] = -2
+	// 		return false, false
+	// 	} else if lag == 0 && val == -2 {
+	// 		tsm.mmap[key] = lag
+	// 		return true, false
+	// 	} else if lag > 0 && val == 0 {
+	// 		tsm.mmap[key] = lag
+	// 		return true, true
+	// 	} else {
+	// 		tsm.mmap[key] = lag
+	// 		return true, false
+	// 	}
+	// } else {
+	// 	tsm.mmap[key] = lag
+	// 	return true, false
+	// }
+
+	return shouldSendCurrentLag, shouldSendPreviousLag
 }

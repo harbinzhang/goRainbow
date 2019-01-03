@@ -69,8 +69,9 @@ func parseInfo(lag protocol.LagStatus, produceQueue chan string, postfix string,
 	sb.WriteString(group)
 	prefix := sb.String()
 
-	fmt.Printf("Handled: %s at %s with totalLag %s\n", group, totalLag)
-	log.Printf("Handled: %s at %s with totalLag %s\n", group, totalLag)
+	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
+	fmt.Printf("Handled: %s at %s with totalLag %s\n", group, timestamp, totalLag)
+	log.Printf("Handled: %s at %s with totalLag %s\n", group, timestamp, totalLag)
 
 	produceQueue <- combineInfo([]string{prefix, "totalLag"}, []string{totalLag, newPostfix})
 
@@ -80,7 +81,6 @@ func parseInfo(lag protocol.LagStatus, produceQueue chan string, postfix string,
 
 	go parsePartitionInfo(lag.Status.Partitions, produceQueue, prefix, newPostfix, tsm)
 	go parseMaxLagInfo(lag.Status.Maxlag, produceQueue, prefix, newPostfix)
-
 }
 
 func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan string, prefix string, postfix string, tsm *utils.TwinStateMachine) {

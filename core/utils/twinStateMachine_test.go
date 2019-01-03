@@ -37,6 +37,15 @@ func TestPartitionPut(t *testing.T) {
 
 	tsm.Init()
 
+	res, _ := tsm.PartitionPut("test", 1)
+	assert.Equal(t, true, res, "Not passed")
+	res, _ = tsm.PartitionPut("test", 1)
+	assert.Equal(t, false, res, "Not passed")
+	res, _ = tsm.PartitionPut("test", 1)
+	assert.Equal(t, true, res, "Not passed")
+	// res, _ = tsm.PartitionPut("test", 1)
+	// assert.Equal(t, false, res, "Not passed")
+
 	// assert.Equal(t, true, tsm.PartitionPut("test", 1), "Not passed")
 	// assert.Equal(t, false, tsm.PartitionPut("test", 1), "Not passed")
 	// assert.Equal(t, true, tsm.PartitionPut("test", 1), "Not passed")
@@ -60,7 +69,8 @@ func TestPartitionPutFor0(t *testing.T) {
 
 	tsm.Init()
 
-	// assert.Equal(t, true, tsm.PartitionPut("test", 1), "Not passed")
+	res, _ := tsm.PartitionPut("test", 1)
+	assert.Equal(t, true, res, "Not passed")
 	// assert.Equal(t, false, tsm.PartitionPut("test", 1), "Not passed")
 	// assert.Equal(t, true, tsm.PartitionPut("test", 1), "Not passed")
 	// assert.Equal(t, false, tsm.PartitionPut("test", 1), "Not passed")

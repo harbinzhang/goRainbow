@@ -46,35 +46,38 @@ func TestPartitionPut(t *testing.T) {
 	res, _ = tsm.PartitionPut("test", 1)
 	assert.Equal(t, false, res, "Not passed")
 
-	// assert.Equal(t, true, tsm.PartitionPut("test", 1), "Not passed")
-	// assert.Equal(t, false, tsm.PartitionPut("test", 1), "Not passed")
-	// assert.Equal(t, true, tsm.PartitionPut("test", 1), "Not passed")
-	// assert.Equal(t, false, tsm.PartitionPut("test", 1), "Not passed")
-	// assert.Equal(t, true, tsm.PartitionPut("test", 1), "Not passed")
-	// assert.Equal(t, false, tsm.PartitionPut("test", 1), "Not passed")
-	// assert.Equal(t, true, tsm.PartitionPut("test", 1), "Not passed")
+	res, _ = tsm.PartitionPut("test", 1)
+	assert.Equal(t, true, res, "Not passed")
 
-	// assert.Equal(t, true, tsm.PartitionPut("test", 0), "Not passed")
-	// assert.Equal(t, false, tsm.PartitionPut("test", 0), "Not passed")
-	// assert.Equal(t, false, tsm.PartitionPut("test", 0), "Not passed")
-	// assert.Equal(t, false, tsm.PartitionPut("test", 0), "Not passed")
-	// assert.Equal(t, false, tsm.PartitionPut("test", 0), "Not passed")
-	// assert.Equal(t, false, tsm.PartitionPut("test", 0), "Not passed")
-	// assert.Equal(t, false, tsm.PartitionPut("test", 0), "Not passed")
-
+	res, _ = tsm.PartitionPut("test", 0)
+	assert.Equal(t, false, res, "Not passed")
+	res, _ = tsm.PartitionPut("test", 0)
+	assert.Equal(t, true, res, "Not passed")
 }
 
-func TestPartitionPutFor0(t *testing.T) {
+func TestPartitionPutShouldSendPreviousLag(t *testing.T) {
 	tsm := &TwinStateMachine{}
 
 	tsm.Init()
 
-	res, _ := tsm.PartitionPut("test", 1)
+	_, res := tsm.PartitionPut("test", 1)
+	assert.Equal(t, false, res, "Not passed")
+	_, res = tsm.PartitionPut("test", 0)
+	assert.Equal(t, false, res, "Not passed")
+	_, res = tsm.PartitionPut("test", 0)
+	assert.Equal(t, false, res, "Not passed")
+	_, res = tsm.PartitionPut("test", 1)
 	assert.Equal(t, true, res, "Not passed")
-	// assert.Equal(t, false, tsm.PartitionPut("test", 1), "Not passed")
-	// assert.Equal(t, true, tsm.PartitionPut("test", 1), "Not passed")
-	// assert.Equal(t, false, tsm.PartitionPut("test", 1), "Not passed")
-	// assert.Equal(t, true, tsm.PartitionPut("test", 1), "Not passed")
-	// assert.Equal(t, true, tsm.PartitionPut("test", 0), "Not passed")
 
+	_, res = tsm.PartitionPut("test", 0)
+	assert.Equal(t, false, res, "Not passed")
+	_, res = tsm.PartitionPut("test", 1)
+	assert.Equal(t, false, res, "Not passed")
+
+	_, res = tsm.PartitionPut("test", 0)
+	assert.Equal(t, false, res, "Not passed")
+	_, res = tsm.PartitionPut("test", 0)
+	assert.Equal(t, false, res, "Not passed")
+	_, res = tsm.PartitionPut("test", 1)
+	assert.Equal(t, true, res, "Not passed")
 }

@@ -1,4 +1,4 @@
-package core
+package pipeline
 
 import (
 	"encoding/json"
@@ -7,13 +7,14 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/HarbinZhang/goRainbow/config"
+	"github.com/HarbinZhang/goRainbow/core/protocol"
+	"github.com/HarbinZhang/goRainbow/core/utils"
 )
 
 // AliveConsumersMaintainer is a maintainer for alive consumers
 // It checks Burrow periodically to see if there is a new consumer, then creates a new thread for this consumer.
-func AliveConsumersMaintainer(link string, lagStatusQueue chan config.LagStatus) {
-	clusterConsumerMap := &SyncNestedMap{}
+func AliveConsumersMaintainer(link string, lagStatusQueue chan protocol.LagStatus) {
+	clusterConsumerMap := &utils.SyncNestedMap{}
 	clusterConsumerMap.Init()
 	for {
 		clusters, clusterLink := GetClusters(link)
@@ -48,9 +49,9 @@ func AliveConsumersMaintainer(link string, lagStatusQueue chan config.LagStatus)
 }
 
 // NewConsumerForLag is a thread to handle new found consumer
-func NewConsumerForLag(consumersLink string, consumer string, cluster string, lagStatusQueue chan config.LagStatus, snm *SyncNestedMap) {
+func NewConsumerForLag(consumersLink string, consumer string, cluster string, lagStatusQueue chan protocol.LagStatus, snm *utils.SyncNestedMap) {
 	fmt.Println("New consumer found: ", consumersLink, consumer)
-	var lagStatus config.LagStatus
+	var lagStatus protocol.LagStatus
 
 	ticker := time.NewTicker(30 * time.Second)
 	for {

@@ -1,4 +1,4 @@
-package core
+package pipeline
 
 import (
 	"fmt"
@@ -6,13 +6,14 @@ import (
 	"os"
 	"time"
 
+	"github.com/HarbinZhang/goRainbow/core/utils"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
 // Produce message to kafka
 func Produce(produceQueue chan string) {
 
-	contextProvider := ContextProvider{}
+	contextProvider := utils.ContextProvider{}
 	contextProvider.Init("config/config.json")
 	postfix := contextProvider.GetPostfix()
 	conf := contextProvider.GetConf()
@@ -52,7 +53,7 @@ func Produce(produceQueue chan string) {
 	}()
 
 	// rcsMetricsSent is for metrics level traffic, how many metrics sent to wavefront
-	rcsMetricsSent := &RequestCountService{
+	rcsMetricsSent := &utils.RequestCountService{
 		Name:         "metricsSent",
 		Interval:     60 * time.Second,
 		ProducerChan: produceQueue,

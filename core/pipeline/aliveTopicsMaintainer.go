@@ -1,4 +1,4 @@
-package core
+package pipeline
 
 import (
 	"fmt"
@@ -6,18 +6,19 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/HarbinZhang/goRainbow/config"
+	"github.com/HarbinZhang/goRainbow/core/protocol"
+	"github.com/HarbinZhang/goRainbow/core/utils"
 )
 
 // AliveTopicsMaintainer is a maintainer for alive topics
 // It checks Burrow periodically to see if there is a new topic, then creates a new thread for this topic.
 func AliveTopicsMaintainer(link string, produceQueue chan string) {
 
-	contextProvider := ContextProvider{}
+	contextProvider := utils.ContextProvider{}
 	contextProvider.Init("config/config.json")
 	postfix := contextProvider.GetPostfix()
 
-	clusterTopicMap := &SyncNestedMap{}
+	clusterTopicMap := &utils.SyncNestedMap{}
 	clusterTopicMap.Init()
 	for {
 		clusters, clusterLink := GetClusters(link)
@@ -51,9 +52,9 @@ func AliveTopicsMaintainer(link string, produceQueue chan string) {
 }
 
 // NewConsumerForLag is a thread to handle new found consumer
-func newTopic(topicLink string, topic string, cluster string, produceQueue chan string, snm *SyncNestedMap, postfix string) {
+func newTopic(topicLink string, topic string, cluster string, produceQueue chan string, snm *utils.SyncNestedMap, postfix string) {
 	fmt.Println("New topic found: ", topicLink, topic)
-	var topicOffset config.TopicOffset
+	var topicOffset protocol.TopicOffset
 
 	prefix := "fjord.burrow." + cluster + ".topic." + topic
 
@@ -78,7 +79,7 @@ func getTopics(link string, cluster string) (interface{}, string) {
 	return HTTPGetSubSlice(topicsLink, "topics"), topicsLink + "/"
 }
 
-func topicOffsetHandler(topicOffset config.TopicOffset, prefix string, postfix string, produceQueue chan string) {
+func topicOffsetHandler(topicOffset protocol.TopicOffset, prefix string, postfix string, produceQueue chan string) {
 	for id, offset := range topicOffset.Offsets {
 		time := strconv.FormatInt(time.Now().Unix(), 10)
 		partitionIDTag := "partitionId=" + strconv.Itoa(id)

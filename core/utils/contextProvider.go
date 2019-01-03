@@ -1,4 +1,4 @@
-package core
+package utils
 
 import (
 	"encoding/json"
@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/HarbinZhang/goRainbow/config"
+	"github.com/HarbinZhang/goRainbow/core/protocol"
 )
 
 type ContextProvider struct {
@@ -17,9 +17,9 @@ func (cp *ContextProvider) Init(name string) {
 	cp.filename = name
 }
 
-func (cp *ContextProvider) GetConf() config.Config {
+func (cp *ContextProvider) GetConf() protocol.Config {
 	// Prepare config file
-	var conf config.Config
+	var conf protocol.Config
 	configFile, _ := os.Open(cp.filename)
 	defer configFile.Close()
 	decoder := json.NewDecoder(configFile)

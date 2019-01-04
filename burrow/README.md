@@ -32,6 +32,8 @@ For burrow, it supports Kafka 1.0 from its latest release. https://github.com/li
 
 If we will upgrade Kafka to a newer version, I can do a local test quickly to find out whether burrow supports the newer version or not.
 
+In our test, Burrow supports Kafka 1.1.1 even if there is no option for 1.1.1 in Burrow-sarama. (we are setting 1.1.0 in Burrow configuration file: burrow.toml)
+
 # Coordinator level
 ## Consumer Coordinator
 1. What it is

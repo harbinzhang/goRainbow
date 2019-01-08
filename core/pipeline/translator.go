@@ -34,7 +34,7 @@ func Translator(lagQueue chan protocol.LagStatus, produceQueue chan string, rcsT
 	tsm.Init()
 
 	for lag := range lagQueue {
-		// if lag doesn't change, sends it per 120s. Otherwise 60s.
+		// if lag doesn't change, sends it per 60s. Otherwise 30s.
 		shouldSendIt := tsm.Put(lag.Status.Cluster+lag.Status.Group, lag.Status.Totallag)
 		if !shouldSendIt {
 			continue
@@ -104,18 +104,19 @@ func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan strin
 		partitionTag := "partition=" + partitionID
 		ownerTag := "owner=" + owner
 
-		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "Lag"}, []string{strconv.Itoa(currentLag), endOffsetTimestamp, postfix, topicTag, partitionTag, ownerTag})
-		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "startOffset"}, []string{startOffset, startOffsetTimestamp, postfix, topicTag, partitionTag, ownerTag})
-		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "endOffset"}, []string{endOffset, endOffsetTimestamp, postfix, topicTag, partitionTag, ownerTag})
-
 		if shouldSendPreviousLag {
 			previousTimestamp, err := strconv.ParseInt(strings.Split(postfix, " ")[0], 10, 64)
+			previousTimestamp -= 60
 			if err != nil {
 				log.Println("ERROR: Cannot parse previousTimestamp in shouldSendPreviousLag.")
 				return
 			}
-			fmt.Println(previousTimestamp)
+			produceQueue <- combineInfo([]string{prefix, topic, partitionID, "Lag"}, []string{"0", strconv.FormatInt(previousTimestamp, 10), postfix, topicTag, partitionTag, ownerTag})
 		}
+
+		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "Lag"}, []string{strconv.Itoa(currentLag), endOffsetTimestamp, postfix, topicTag, partitionTag, ownerTag})
+		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "startOffset"}, []string{startOffset, startOffsetTimestamp, postfix, topicTag, partitionTag, ownerTag})
+		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "endOffset"}, []string{endOffset, endOffsetTimestamp, postfix, topicTag, partitionTag, ownerTag})
 	}
 }
 

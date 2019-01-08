@@ -8,7 +8,7 @@ goRainbow is a plug-in for Burrow. It pulls lag information from Burrow, transla
 1. Heath-check: It provides health-check HTTP service so that AWS can auto restart Burrow-goRainbow when the service is unavailable.
 2. Dynamic metric sending:
    1. It sends partition metrics when lag exists. Also it guarantees every metric starts from 0 and ends with 0, which shows better in wavefront.
-   2. It sends metrics per 30s when metrics change and per 60s for unchanged metrics.
+   2. It sends metrics per 60s when metrics change and per 120s for unchanged metrics.
 ## Thanks
 A big thanks to porter-rainbow, which gave a basic idea about how to design the goRainbow.
 

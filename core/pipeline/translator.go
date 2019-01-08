@@ -34,7 +34,7 @@ func Translator(lagQueue chan protocol.LagStatus, produceQueue chan string, rcsT
 	tsm.Init()
 
 	for lag := range lagQueue {
-		// if lag doesn't change, sends it per 60s. Otherwise 30s.
+		// if lag doesn't change, sends it per 120s. Otherwise 60s.
 		shouldSendIt := tsm.Put(lag.Status.Cluster+lag.Status.Group, lag.Status.Totallag)
 		if !shouldSendIt {
 			continue

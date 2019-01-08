@@ -1,5 +1,5 @@
 {
-  "reportIntervalSeconds": 30,
+  "reportIntervalSeconds": 60,
   "kafka": {
     "brokerServers": "speed-racer-kafka.zeta.tools:9092",
     "topic": "micrometer-wavefront"

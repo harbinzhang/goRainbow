@@ -53,7 +53,7 @@ func NewConsumerForLag(consumersLink string, consumer string, cluster string, la
 	fmt.Println("New consumer found: ", consumersLink, consumer)
 	var lagStatus protocol.LagStatus
 
-	ticker := time.NewTicker(60 * time.Second)
+	ticker := time.NewTicker(30 * time.Second)
 	for {
 		// check its consumer lag from Burrow periodically
 		<-ticker.C

@@ -3,8 +3,8 @@ package utils
 import "sync"
 
 // TwinStateMachine is for cleverly sending metrics to wavefront
-// When lag changes observingly, will send metrics per 60s
-// When lag doesn't change, or is 0, will send metrics per 120s
+// When lag changes observingly, will send metrics per 30s
+// When lag doesn't change, or is 0, will send metrics per 60s
 //
 // So we have logic:
 // currentLag    PreviousLag     send?      save
@@ -26,7 +26,7 @@ func (tsm *TwinStateMachine) Init() {
 	tsm.mmap = make(map[string]int)
 }
 
-// Put if lag changes, send it to wavefront in 60s(true), otherwise 120s(false)
+// Put if lag changes, send it to wavefront in 30s(true), otherwise 60s(false)
 func (tsm *TwinStateMachine) Put(key string, lag int) bool {
 	tsm.Lock()
 	defer tsm.Unlock()

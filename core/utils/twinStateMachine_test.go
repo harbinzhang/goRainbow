@@ -81,3 +81,26 @@ func TestPartitionPutShouldSendPreviousLag(t *testing.T) {
 	_, res = tsm.PartitionPut("test", 1)
 	assert.Equal(t, true, res, "Not passed")
 }
+
+func TestPartitionPutShouldSendAllTheTime(t *testing.T) {
+	tsm := &TwinStateMachine{}
+
+	tsm.Init()
+
+	res, _ := tsm.PartitionPut("test", 1)
+	assert.Equal(t, true, res, "Not passed")
+	res, _ = tsm.PartitionPut("test", 2)
+	assert.Equal(t, true, res, "Not passed")
+	res, _ = tsm.PartitionPut("test", 1)
+	assert.Equal(t, true, res, "Not passed")
+	res, _ = tsm.PartitionPut("test", 2)
+	assert.Equal(t, true, res, "Not passed")
+
+	res, _ = tsm.PartitionPut("test", 3)
+	assert.Equal(t, true, res, "Not passed")
+
+	res, _ = tsm.PartitionPut("test", 4)
+	assert.Equal(t, true, res, "Not passed")
+	res, _ = tsm.PartitionPut("test", 5)
+	assert.Equal(t, true, res, "Not passed")
+}

@@ -28,8 +28,8 @@ func (tsm *TwinStateMachine) Init() {
 
 // Put if lag changes, send it to wavefront in 30s(true), otherwise 60s(false)
 func (tsm *TwinStateMachine) Put(key string, lag int) bool {
-	// tsm.Lock()
-	// defer tsm.Unlock()
+	tsm.Lock()
+	defer tsm.Unlock()
 
 	if val, ok := tsm.mmap[key]; ok {
 		if val == lag {
@@ -54,8 +54,8 @@ func (tsm *TwinStateMachine) Put(key string, lag int) bool {
 // @params
 // return (shouldSendCurrentLag, shouldSendPreviousLag)
 func (tsm *TwinStateMachine) PartitionPut(key string, lag int) (bool, bool) {
-	// tsm.Lock()
-	// defer tsm.Unlock()
+	tsm.Lock()
+	defer tsm.Unlock()
 
 	shouldSendCurrentLag := false
 	shouldSendPreviousLag := false

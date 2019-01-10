@@ -1,0 +1,180 @@
+{
+    "error": false,
+    "message": "consumer status returned",
+    "status": {
+        "cluster": "test",
+        "group": "console-consumer-3939",
+        "status": "OK",
+        "complete": 0,
+        "partitions": [
+            {
+                "topic": "fourth_topic",
+                "partition": 0,
+                "owner": "",
+                "status": "OK",
+                "start": {
+                    "offset": 44975,
+                    "timestamp": 1547157588147,
+                    "lag": 0
+                },
+                "end": {
+                    "offset": 45001,
+                    "timestamp": 1547157609358,
+                    "lag": 0
+                },
+                "current_lag": 32,
+                "complete": 0.6
+            },
+            {
+                "topic": "fourth_topic",
+                "partition": 1,
+                "owner": "",
+                "status": "OK",
+                "start": {
+                    "offset": 44985,
+                    "timestamp": 1547157588147,
+                    "lag": 0
+                },
+                "end": {
+                    "offset": 45012,
+                    "timestamp": 1547157609358,
+                    "lag": 0
+                },
+                "current_lag": 31,
+                "complete": 0.6
+            },
+            {
+                "topic": "fourth_topic",
+                "partition": 2,
+                "owner": "",
+                "status": "OK",
+                "start": {
+                    "offset": 44998,
+                    "timestamp": 1547157588147,
+                    "lag": 0
+                },
+                "end": {
+                    "offset": 45024,
+                    "timestamp": 1547157609358,
+                    "lag": 0
+                },
+                "current_lag": 32,
+                "complete": 0.6
+            },
+            {
+                "topic": "fourth_topic",
+                "partition": 3,
+                "owner": "",
+                "status": "OK",
+                "start": {
+                    "offset": 44833,
+                    "timestamp": 1547157588147,
+                    "lag": 0
+                },
+                "end": {
+                    "offset": 44860,
+                    "timestamp": 1547157609358,
+                    "lag": 0
+                },
+                "current_lag": 31,
+                "complete": 0.6
+            },
+            {
+                "topic": "fourth_topic",
+                "partition": 4,
+                "owner": "",
+                "status": "OK",
+                "start": {
+                    "offset": 44837,
+                    "timestamp": 1547157588147,
+                    "lag": 0
+                },
+                "end": {
+                    "offset": 44863,
+                    "timestamp": 1547157609358,
+                    "lag": 0
+                },
+                "current_lag": 32,
+                "complete": 0.6
+            },
+            {
+                "topic": "fourth_topic",
+                "partition": 5,
+                "owner": "",
+                "status": "OK",
+                "start": {
+                    "offset": 44994,
+                    "timestamp": 1547157588147,
+                    "lag": 0
+                },
+                "end": {
+                    "offset": 45020,
+                    "timestamp": 1547157609358,
+                    "lag": 0
+                },
+                "current_lag": 32,
+                "complete": 0.6
+            },
+            {
+                "topic": "fourth_topic",
+                "partition": 6,
+                "owner": "",
+                "status": "OK",
+                "start": {
+                    "offset": 44843,
+                    "timestamp": 1547157588147,
+                    "lag": 0
+                },
+                "end": {
+                    "offset": 44870,
+                    "timestamp": 1547157609358,
+                    "lag": 0
+                },
+                "current_lag": 31,
+                "complete": 0.6
+            },
+            {
+                "topic": "fourth_topic",
+                "partition": 7,
+                "owner": "",
+                "status": "OK",
+                "start": {
+                    "offset": 44994,
+                    "timestamp": 1547157588147,
+                    "lag": 0
+                },
+                "end": {
+                    "offset": 45021,
+                    "timestamp": 1547157609358,
+                    "lag": 0
+                },
+                "current_lag": 32,
+                "complete": 0.6
+            }
+        ],
+        "partition_count": 8,
+        "maxlag": {
+            "topic": "fourth_topic",
+            "partition": 0,
+            "owner": "",
+            "status": "OK",
+            "start": {
+                "offset": 44975,
+                "timestamp": 1547157588147,
+                "lag": 0
+            },
+            "end": {
+                "offset": 45001,
+                "timestamp": 1547157609358,
+                "lag": 0
+            },
+            "current_lag": 32,
+            "complete": 0.6
+        },
+        "totallag": 253
+    },
+    "request": {
+        "url": "/v3/kafka/test/consumer/console-consumer-3939/lag",
+        "host": "ip-172-31-38-26"
+    }
+}

@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/HarbinZhang/goRainbow/core/pipeline"
-	"github.com/HarbinZhang/goRainbow/core/protocol"
 	"github.com/HarbinZhang/goRainbow/core/utils"
 )
 
@@ -30,7 +29,7 @@ func main() {
 	log.Println("Log setup finished.")
 
 	// Queue init
-	lagStatusQueue := make(chan protocol.LagStatus, LagQueueSize)
+	// lagStatusQueue := make(chan protocol.LagStatus, LagQueueSize)
 	produceQueue := make(chan string, ProduceQueueSize)
 
 	// Preapre rcs for total metrics traffic.
@@ -43,9 +42,9 @@ func main() {
 	rcsTotal.Init()
 
 	// Prepare pipeline routines
-	go pipeline.AliveConsumersMaintainer(link, lagStatusQueue)
+	go pipeline.AliveConsumersMaintainer(link, produceQueue, rcsTotal)
 	go pipeline.AliveTopicsMaintainer(link, produceQueue)
-	go pipeline.Translator(lagStatusQueue, produceQueue, rcsTotal)
+	// go pipeline.Translator(lagStatusQueue, produceQueue, rcsTotal)
 	go pipeline.Produce(produceQueue)
 
 	// health_check server
@@ -53,4 +52,5 @@ func main() {
 	http.HandleFunc("/health_check", healthCheckHandler)
 	http.ListenAndServe(":7099", nil)
 	fmt.Println("server exited")
+	close(produceQueue)
 }

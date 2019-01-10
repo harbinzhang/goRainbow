@@ -72,6 +72,8 @@ func NewConsumerForLag(consumersLink string, consumer string, cluster string, sn
 	}
 
 	snm.DeregisterChild(cluster, consumer)
+
+	close(lagStatusQueue)
 	log.Fatalf("Consumer is invalid: %s\tcluster:%s\n", consumer, cluster)
 }
 

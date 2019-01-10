@@ -71,6 +71,7 @@ func TestBasic(t *testing.T) {
 }
 
 func BenchmarkBasic(b *testing.B) {
+	b.ReportAllocs()
 
 	lagStatusQueue, produceQueue := preparePipeline()
 	pull := prepareLag()

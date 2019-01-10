@@ -56,7 +56,7 @@ func NewConsumerForLag(consumersLink string, consumer string, cluster string, sn
 
 	lagStatusQueue := make(chan protocol.LagStatus)
 
-	ticker := time.NewTicker(30 * time.Second)
+	ticker := time.NewTicker(60 * time.Second)
 
 	go Translator(lagStatusQueue, produceQueue, rcsTotal)
 

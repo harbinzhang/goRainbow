@@ -1,8 +1,6 @@
 package pipeline
 
 import (
-	"fmt"
-	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -12,7 +10,7 @@ import (
 )
 
 // Translator for message translate from struct to string
-func Translator(lagQueue chan protocol.LagStatus, produceQueue chan string, rcsTotal *utils.RequestCountService) {
+func Translator(lagQueue <-chan protocol.LagStatus, produceQueue chan<- string, rcsTotal *utils.RequestCountService) {
 
 	contextProvider := utils.ContextProvider{}
 	contextProvider.Init("config/config.json")
@@ -35,11 +33,12 @@ func Translator(lagQueue chan protocol.LagStatus, produceQueue chan string, rcsT
 
 	for lag := range lagQueue {
 		// if lag doesn't change, sends it per 60s. Otherwise 30s.
-		shouldSendIt := tsm.Put(lag.Status.Cluster+lag.Status.Group, lag.Status.Totallag)
-		if !shouldSendIt {
-			continue
-		}
-
+		// shouldSendIt := tsm.Put(lag.Status.Cluster+lag.Status.Group, lag.Status.Totallag)
+		// if !shouldSendIt {
+		// continue
+		// }
+		// fmt.Println(lag)
+		// produceQueue <- "ok"
 		go parseInfo(lag, produceQueue, postfix, rcsTotal, rcsValid, tsm)
 	}
 }
@@ -48,7 +47,7 @@ func combineInfo(prefix []string, postfix []string) string {
 	return strings.Join(prefix, ".") + " " + strings.Join(postfix, " ")
 }
 
-func parseInfo(lag protocol.LagStatus, produceQueue chan string, postfix string,
+func parseInfo(lag protocol.LagStatus, produceQueue chan<- string, postfix string,
 	rcsTotal *utils.RequestCountService, rcsValid *utils.RequestCountService, tsm *utils.TwinStateMachine) {
 	// lag is 0 or non-zero.
 	// parse it into lower level(partitions, maxlag).
@@ -69,9 +68,9 @@ func parseInfo(lag protocol.LagStatus, produceQueue chan string, postfix string,
 	sb.WriteString(group)
 	prefix := sb.String()
 
-	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
-	fmt.Printf("Handled: %s at %s with totalLag %s\n", group, timestamp, totalLag)
-	log.Printf("Handled: %s at %s with totalLag %s\n", group, timestamp, totalLag)
+	// timestamp := strconv.FormatInt(time.Now().Unix(), 10)
+	// fmt.Printf("Handled: %s at %s with totalLag %s\n", group, timestamp, totalLag)
+	// log.Printf("Handled: %s at %s with totalLag %s\n", group, timestamp, totalLag)
 
 	produceQueue <- combineInfo([]string{prefix, "totalLag"}, []string{totalLag, newPostfix})
 
@@ -83,7 +82,7 @@ func parseInfo(lag protocol.LagStatus, produceQueue chan string, postfix string,
 	go parseMaxLagInfo(lag.Status.Maxlag, produceQueue, prefix, newPostfix)
 }
 
-func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan string, prefix string, postfix string, tsm *utils.TwinStateMachine) {
+func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan<- string, prefix string, postfix string, tsm *utils.TwinStateMachine) {
 	for _, partition := range partitions {
 		partitionID := strconv.Itoa(partition.Partition)
 		currentLag := partition.CurrentLag
@@ -120,7 +119,7 @@ func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan strin
 	}
 }
 
-func parseMaxLagInfo(maxLag protocol.MaxLag, produceQueue chan string, prefix string, postfix string) {
+func parseMaxLagInfo(maxLag protocol.MaxLag, produceQueue chan<- string, prefix string, postfix string) {
 	// tags: owner
 	// metrics: partitionID, currentLag, startOffset, endOffset, topic
 

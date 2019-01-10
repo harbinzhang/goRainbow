@@ -87,7 +87,7 @@ func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan strin
 	for _, partition := range partitions {
 		partitionID := strconv.Itoa(partition.Partition)
 		currentLag := partition.CurrentLag
-		shouldSendIt, shouldSendPreviousLag := tsm.PartitionPut(prefix+partitionID, currentLag)
+		shouldSendIt, _ := tsm.PartitionPut(prefix+partitionID, currentLag)
 		if !shouldSendIt {
 			continue
 		}
@@ -104,15 +104,15 @@ func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan strin
 		partitionTag := "partition=" + partitionID
 		ownerTag := "owner=" + owner
 
-		if shouldSendPreviousLag {
-			previousTimestamp, err := strconv.ParseInt(strings.Split(postfix, " ")[0], 10, 64)
-			previousTimestamp -= 60
-			if err != nil {
-				log.Println("ERROR: Cannot parse previousTimestamp in shouldSendPreviousLag.")
-				return
-			}
-			produceQueue <- combineInfo([]string{prefix, topic, partitionID, "Lag"}, []string{"0", strconv.FormatInt(previousTimestamp, 10), postfix, topicTag, partitionTag, ownerTag})
-		}
+		// if shouldSendPreviousLag {
+		// 	previousTimestamp, err := strconv.ParseInt(strings.Split(postfix, " ")[0], 10, 64)
+		// 	previousTimestamp -= 60
+		// 	if err != nil {
+		// 		log.Println("ERROR: Cannot parse previousTimestamp in shouldSendPreviousLag.")
+		// 		return
+		// 	}
+		// 	produceQueue <- combineInfo([]string{prefix, topic, partitionID, "Lag"}, []string{"0", strconv.FormatInt(previousTimestamp, 10), postfix, topicTag, partitionTag, ownerTag})
+		// }
 
 		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "Lag"}, []string{strconv.Itoa(currentLag), endOffsetTimestamp, postfix, topicTag, partitionTag, ownerTag})
 		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "startOffset"}, []string{startOffset, startOffsetTimestamp, postfix, topicTag, partitionTag, ownerTag})

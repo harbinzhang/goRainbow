@@ -39,7 +39,7 @@ func Translator(lagQueue <-chan protocol.LagStatus, produceQueue chan<- string, 
 		// }
 		// fmt.Println(lag)
 		// produceQueue <- "ok"
-		go parseInfo(lag, produceQueue, postfix, rcsTotal, rcsValid, tsm)
+		parseInfo(lag, produceQueue, postfix, rcsTotal, rcsValid, tsm)
 	}
 }
 
@@ -78,8 +78,8 @@ func parseInfo(lag protocol.LagStatus, produceQueue chan<- string, postfix strin
 		go rcsValid.Increase(cluster)
 	}
 
-	go parsePartitionInfo(lag.Status.Partitions, produceQueue, prefix, newPostfix, tsm)
-	go parseMaxLagInfo(lag.Status.Maxlag, produceQueue, prefix, newPostfix)
+	parsePartitionInfo(lag.Status.Partitions, produceQueue, prefix, newPostfix, tsm)
+	parseMaxLagInfo(lag.Status.Maxlag, produceQueue, prefix, newPostfix)
 }
 
 func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan<- string, prefix string, postfix string, tsm *utils.TwinStateMachine) {

@@ -14,6 +14,29 @@ import (
 	"github.com/HarbinZhang/goRainbow/core/utils"
 )
 
+func TestWithProducer(t *testing.T) {
+
+	// contextProvider := utils.ContextProvider{}
+	// contextProvider.Init("../../config/config.json")
+	// postfix := contextProvider.GetPostfix()
+
+	// fmt.Println(contextProvider.GetConf())
+	// fmt.Println(postfix)
+
+	lagStatusQueue, produceQueue := preparePipeline()
+	pull := prepareLag()
+
+	go Produce(produceQueue)
+
+	for i := 0; i < 100; i++ {
+		lagStatusQueue <- pull
+		time.Sleep(10 * time.Second)
+	}
+
+	select {}
+
+}
+
 func TestBasic(t *testing.T) {
 
 	lagStatusQueue, produceQueue := preparePipeline()
@@ -90,7 +113,7 @@ func TestMany(t *testing.T) {
 // 	assert.Equal(t, strconv.FormatInt(time.Now().Unix(), 10), getEpochTime("0001-01-01 00:00:00"), "Not passed")
 // }
 
-func preparePipeline() (chan<- protocol.LagStatus, <-chan string) {
+func preparePipeline() (chan<- protocol.LagStatus, chan string) {
 	// prepare
 	lagStatusQueue := make(chan protocol.LagStatus, 1000)
 	produceQueue := make(chan string, 9000)

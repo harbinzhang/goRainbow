@@ -68,7 +68,8 @@ func parseInfo(lag protocol.LagStatus, produceQueue chan<- string, postfix strin
 	sb.WriteString(group)
 	prefix := sb.String()
 
-	// timestamp := strconv.FormatInt(time.Now().Unix(), 10)
+	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
+	newPostfix = strings.Join([]string{timestamp, newPostfix}, " ")
 	// fmt.Printf("Handled: %s at %s with totalLag %s\n", group, timestamp, totalLag)
 	// log.Printf("Handled: %s at %s with totalLag %s\n", group, timestamp, totalLag)
 
@@ -97,9 +98,9 @@ func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan<- str
 		topic := partition.Topic
 
 		startOffset := strconv.Itoa(partition.Start.Offset)
-		startOffsetTimestamp := strconv.FormatInt(partition.Start.Timestamp, 10)
+		// startOffsetTimestamp := strconv.FormatInt(partition.Start.Timestamp, 10)
 		endOffset := strconv.Itoa(partition.End.Offset)
-		endOffsetTimestamp := strconv.FormatInt(partition.End.Timestamp, 10)
+		// endOffsetTimestamp := strconv.FormatInt(partition.End.Timestamp, 10)
 		owner := partition.Owner
 
 		topicTag := "topic=" + topic
@@ -116,9 +117,9 @@ func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan<- str
 		// 	produceQueue <- combineInfo([]string{prefix, topic, partitionID, "Lag"}, []string{"0", strconv.FormatInt(previousTimestamp, 10), postfix, topicTag, partitionTag, ownerTag})
 		// }
 
-		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "Lag"}, []string{strconv.Itoa(currentLag), endOffsetTimestamp, postfix, topicTag, partitionTag, ownerTag})
-		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "startOffset"}, []string{startOffset, startOffsetTimestamp, postfix, topicTag, partitionTag, ownerTag})
-		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "endOffset"}, []string{endOffset, endOffsetTimestamp, postfix, topicTag, partitionTag, ownerTag})
+		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "Lag"}, []string{strconv.Itoa(currentLag), postfix, topicTag, partitionTag, ownerTag})
+		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "startOffset"}, []string{startOffset, postfix, topicTag, partitionTag, ownerTag})
+		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "endOffset"}, []string{endOffset, postfix, topicTag, partitionTag, ownerTag})
 	}
 }
 
@@ -129,8 +130,6 @@ func parseMaxLagInfo(maxLag protocol.MaxLag, produceQueue chan<- string, prefix 
 	owner := maxLag.Owner
 	ownerTag := "owner=" + owner
 
-	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
-
 	// MaxLagPartition Level handle
 	maxLagMap := make(map[string]string)
 	maxLagMap["maxLagmaxLagPartitionID"] = strconv.Itoa(maxLag.Partition)
@@ -140,7 +139,7 @@ func parseMaxLagInfo(maxLag protocol.MaxLag, produceQueue chan<- string, prefix 
 	maxLagMap["maxLagTopic"] = maxLag.Topic
 
 	for key, value := range maxLagMap {
-		produceQueue <- combineInfo([]string{prefix, key}, []string{value, timestamp, postfix, ownerTag})
+		produceQueue <- combineInfo([]string{prefix, key}, []string{value, postfix, ownerTag})
 	}
 
 }

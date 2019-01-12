@@ -3,14 +3,14 @@
     "message": "consumer status returned",
     "status": {
         "cluster": "test",
-        "group": "console-consumer-3939",
+        "group": "console-consumer-0",
         "status": "OK",
         "complete": 0,
         "partitions": [
             {
                 "topic": "fourth_topic",
                 "partition": 0,
-                "owner": "",
+                "owner": "192.168.0.1",
                 "status": "OK",
                 "start": {
                     "offset": 44975,
@@ -28,7 +28,7 @@
             {
                 "topic": "fourth_topic",
                 "partition": 1,
-                "owner": "",
+                "owner": "192.168.0.1",
                 "status": "OK",
                 "start": {
                     "offset": 44985,
@@ -46,7 +46,7 @@
             {
                 "topic": "fourth_topic",
                 "partition": 2,
-                "owner": "",
+                "owner": "192.168.0.1",
                 "status": "OK",
                 "start": {
                     "offset": 44998,
@@ -64,7 +64,7 @@
             {
                 "topic": "fourth_topic",
                 "partition": 3,
-                "owner": "",
+                "owner": "192.168.0.1",
                 "status": "OK",
                 "start": {
                     "offset": 44833,
@@ -82,7 +82,7 @@
             {
                 "topic": "fourth_topic",
                 "partition": 4,
-                "owner": "",
+                "owner": "192.168.0.1",
                 "status": "OK",
                 "start": {
                     "offset": 44837,
@@ -100,7 +100,7 @@
             {
                 "topic": "fourth_topic",
                 "partition": 5,
-                "owner": "",
+                "owner": "192.168.0.1",
                 "status": "OK",
                 "start": {
                     "offset": 44994,
@@ -118,7 +118,7 @@
             {
                 "topic": "fourth_topic",
                 "partition": 6,
-                "owner": "",
+                "owner": "192.168.0.1",
                 "status": "OK",
                 "start": {
                     "offset": 44843,
@@ -136,7 +136,7 @@
             {
                 "topic": "fourth_topic",
                 "partition": 7,
-                "owner": "",
+                "owner": "192.168.0.1",
                 "status": "OK",
                 "start": {
                     "offset": 44994,
@@ -156,7 +156,7 @@
         "maxlag": {
             "topic": "fourth_topic",
             "partition": 0,
-            "owner": "",
+            "owner": "192.168.0.1",
             "status": "OK",
             "start": {
                 "offset": 44975,

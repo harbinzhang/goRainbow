@@ -39,8 +39,18 @@ func (cp *ContextProvider) GetPostfix() string {
 	metricFormat := "metric_format=" + conf.Translator.MetricFormat
 
 	// Prepare tags from env variables
-	dataCenter := "data_center=" + os.Getenv("DATACENTER")
-	planet := "planet=" + os.Getenv("ENV")
+	var dataCenter string
+	if os.Getenv("DATACENTER") != "" {
+		dataCenter = "data_center=" + os.Getenv("DATACENTER")
+	} else {
+		dataCenter = "data_center=slv"
+	}
+	var planet string
+	if os.Getenv("ENV") != "" {
+		dataCenter = "planet=" + os.Getenv("ENV")
+	} else {
+		dataCenter = "planet=test"
+	}
 
 	dcaZone := "dca_zone=local"
 	source := "source=fjord-burrow"

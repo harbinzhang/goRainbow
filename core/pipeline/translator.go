@@ -87,13 +87,13 @@ func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan<- str
 	for _, partition := range partitions {
 		partitionID := strconv.Itoa(partition.Partition)
 		currentLag := partition.CurrentLag
-		// shouldSendIt, _ := tsm.PartitionPut(prefix+partitionID, currentLag)
-		// if !shouldSendIt {
-		// 	continue
-		// }
-		if currentLag == 0 {
+		shouldSendIt, _ := tsm.PartitionPut(prefix+partitionID, currentLag)
+		if !shouldSendIt {
 			continue
 		}
+		// if currentLag == 0 {
+		// 	continue
+		// }
 
 		topic := partition.Topic
 

@@ -52,10 +52,11 @@ func parseInfo(lag protocol.LagStatus, produceQueue chan<- string, postfix strin
 	cluster := lag.Status.Cluster
 	group := lag.Status.Group
 	totalLag := strconv.Itoa(lag.Status.Totallag)
+	timestamp := getEpochTime()
 
 	envTag := "env=" + cluster
 	consumerTag := "consumer=" + group
-	newPostfix := strings.Join([]string{postfix, envTag, consumerTag}, " ")
+	newPostfix := strings.Join([]string{timestamp, postfix, envTag, consumerTag}, " ")
 
 	go rcsTotal.Increase(cluster)
 
@@ -66,16 +67,16 @@ func parseInfo(lag protocol.LagStatus, produceQueue chan<- string, postfix strin
 	sb.WriteString(group)
 	prefix := sb.String()
 
-	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
-	newPostfix = strings.Join([]string{timestamp, newPostfix}, " ")
 	// fmt.Printf("Handled: %s at %s with totalLag %s\n", group, timestamp, totalLag)
 	// log.Printf("Handled: %s at %s with totalLag %s\n", group, timestamp, totalLag)
 
 	produceQueue <- combineInfo([]string{prefix, "totalLag"}, []string{totalLag, newPostfix})
 
-	if totalLag != "0" {
-		go rcsValid.Increase(cluster)
+	if totalLag == "0" {
+		return
 	}
+
+	go rcsValid.Increase(cluster)
 
 	go parsePartitionInfo(lag.Status.Partitions, produceQueue, prefix, newPostfix, tsm)
 	go parseMaxLagInfo(lag.Status.Maxlag, produceQueue, prefix, newPostfix)
@@ -85,13 +86,13 @@ func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan<- str
 	for _, partition := range partitions {
 		partitionID := strconv.Itoa(partition.Partition)
 		currentLag := partition.CurrentLag
-		shouldSendIt, _ := tsm.PartitionPut(prefix+partitionID, currentLag)
-		if !shouldSendIt {
-			continue
-		}
-		// if currentLag == 0 {
+		// shouldSendIt, _ := tsm.PartitionPut(prefix+partitionID, currentLag)
+		// if !shouldSendIt {
 		// 	continue
 		// }
+		if currentLag == 0 {
+			continue
+		}
 
 		topic := partition.Topic
 
@@ -142,21 +143,8 @@ func parseMaxLagInfo(maxLag protocol.MaxLag, produceQueue chan<- string, prefix 
 
 }
 
-func getEpochTime(str string) string {
+func getEpochTime() string {
 	// Skipping Burrow's timestamp because it's not precise now.
 	// I think it's because cluster not stable
 	return strconv.FormatInt(time.Now().Unix(), 10)
-
-	// layout := "2006-01-02 15:04:05"
-	// // layout := "2006-01-02T15:04:05Z07:00"
-	// if str == "0001-01-01 00:00:00" {
-	//	// Burrow info level would provide this date, need to verify.
-	// 	return strconv.FormatInt(time.Now().Unix(), 10)
-	// }
-	// t, err := time.Parse(layout, str)
-	// if err != nil {
-	// 	fmt.Println("err: ", err)
-	// }
-
-	// return strconv.FormatInt(t.Unix(), 10)
 }

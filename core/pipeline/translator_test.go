@@ -30,11 +30,40 @@ func TestWithProducer(t *testing.T) {
 
 	for i := 0; i < 100; i++ {
 		lagStatusQueue <- pull
-		time.Sleep(10 * time.Second)
+		time.Sleep(30 * time.Second)
 	}
 
 	select {}
 
+}
+
+func TestStartFrom0(t *testing.T) {
+
+	contextProvider := utils.ContextProvider{}
+	contextProvider.Init("../../config/config.json")
+	// postfix := contextProvider.GetPostfix()
+
+	// fmt.Println(contextProvider.GetConf())
+	// fmt.Println(postfix)
+
+	lagStatusQueue, produceQueue := preparePipeline()
+	pull := prepareLag()
+
+	go Produce(produceQueue)
+
+	pull.Status.Partitions[0].CurrentLag = 0
+	for i := 0; i < 5; i++ {
+		lagStatusQueue <- pull
+		time.Sleep(30 * time.Second)
+	}
+
+	pull.Status.Partitions[0].CurrentLag = 50
+	for i := 0; i < 5; i++ {
+		lagStatusQueue <- pull
+		time.Sleep(30 * time.Second)
+	}
+
+	select {}
 }
 
 func TestBasic(t *testing.T) {

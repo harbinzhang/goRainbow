@@ -47,9 +47,9 @@ func (cp *ContextProvider) GetPostfix() string {
 	}
 	var planet string
 	if os.Getenv("ENV") != "" {
-		dataCenter = "planet=" + os.Getenv("ENV")
+		planet = "planet=" + os.Getenv("ENV")
 	} else {
-		dataCenter = "planet=test"
+		planet = "planet=test"
 	}
 
 	dcaZone := "dca_zone=local"

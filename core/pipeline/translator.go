@@ -26,10 +26,10 @@ func Translator(lagQueue <-chan protocol.LagStatus, produceQueue chan<- string,
 
 	for lag := range lagQueue {
 		// if lag doesn't change, sends it per 60s. Otherwise 30s.
-		// shouldSendIt := tsm.Put(lag.Status.Cluster+lag.Status.Group, lag.Status.Totallag)
-		// if !shouldSendIt {
-		// 	continue
-		// }
+		shouldSendIt := tsm.Put(lag.Status.Cluster+lag.Status.Group, lag.Status.Totallag)
+		if !shouldSendIt {
+			continue
+		}
 		go parseInfo(lag, produceQueue, postfix, rcsTotal, rcsValid, tsm)
 	}
 }
@@ -79,10 +79,10 @@ func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan<- str
 	for _, partition := range partitions {
 		partitionID := strconv.Itoa(partition.Partition)
 		currentLag := partition.CurrentLag
-		// shouldSendIt, _ := tsm.PartitionPut(prefix+partitionID, currentLag)
-		// if !shouldSendIt {
-		// 	continue
-		// }
+		shouldSendIt, _ := tsm.PartitionPut(prefix+partitionID, currentLag)
+		if !shouldSendIt {
+			continue
+		}
 		if currentLag == 0 {
 			continue
 		}

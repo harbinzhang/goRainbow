@@ -83,9 +83,6 @@ func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan<- str
 		if !shouldSendIt {
 			continue
 		}
-		if currentLag == 0 {
-			continue
-		}
 
 		topic := partition.Topic
 

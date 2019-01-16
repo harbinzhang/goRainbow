@@ -13,9 +13,18 @@ import (
 
 // AliveConsumersMaintainer is a maintainer for alive consumers
 // It checks Burrow periodically to see if there is a new consumer, then creates a new thread for this consumer.
-func AliveConsumersMaintainer(link string, lagStatusQueue chan protocol.LagStatus) {
+func AliveConsumersMaintainer(link string, produceQueue chan string, rcsTotal *utils.RequestCountService) {
 	clusterConsumerMap := &utils.SyncNestedMap{}
 	clusterConsumerMap.Init()
+
+	// rcsValid for valid data traffic(i.e. message with totalLag > 0)
+	rcsValid := &utils.RequestCountService{
+		Name:         "validMessage",
+		Interval:     60 * time.Second,
+		ProducerChan: produceQueue,
+	}
+	rcsValid.Init()
+
 	for {
 		clusters, clusterLink := GetClusters(link)
 		if clusters == nil {
@@ -38,7 +47,7 @@ func AliveConsumersMaintainer(link string, lagStatusQueue chan protocol.LagStatu
 				if _, ok := consumersSet[consumerString]; !ok {
 					// A new consumer found, need to 1. create new thread 2. put it into map.
 					consumersSet[consumerString] = true
-					go NewConsumerForLag(consumersLink, consumerString, clusterString, lagStatusQueue, clusterConsumerMap)
+					go NewConsumerForLag(consumersLink, consumerString, clusterString, clusterConsumerMap, produceQueue, rcsTotal, rcsValid)
 				}
 			}
 
@@ -49,11 +58,17 @@ func AliveConsumersMaintainer(link string, lagStatusQueue chan protocol.LagStatu
 }
 
 // NewConsumerForLag is a thread to handle new found consumer
-func NewConsumerForLag(consumersLink string, consumer string, cluster string, lagStatusQueue chan protocol.LagStatus, snm *utils.SyncNestedMap) {
+func NewConsumerForLag(consumersLink string, consumer string, cluster string, snm *utils.SyncNestedMap,
+	produceQueue chan string, rcsTotal *utils.RequestCountService, rcsValid *utils.RequestCountService) {
 	fmt.Println("New consumer found: ", consumersLink, consumer)
 	var lagStatus protocol.LagStatus
 
+	lagStatusQueue := make(chan protocol.LagStatus)
+
 	ticker := time.NewTicker(30 * time.Second)
+
+	go Translator(lagStatusQueue, produceQueue, rcsTotal, rcsValid)
+
 	for {
 		// check its consumer lag from Burrow periodically
 		<-ticker.C
@@ -66,6 +81,8 @@ func NewConsumerForLag(consumersLink string, consumer string, cluster string, la
 	}
 
 	snm.DeregisterChild(cluster, consumer)
+
+	close(lagStatusQueue)
 	log.Fatalf("Consumer is invalid: %s\tcluster:%s\n", consumer, cluster)
 }
 

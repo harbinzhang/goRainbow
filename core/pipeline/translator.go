@@ -1,7 +1,6 @@
 package pipeline
 
 import (
-	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -12,22 +11,15 @@ import (
 )
 
 // Translator for message translate from struct to string
-func Translator(lagQueue chan protocol.LagStatus, produceQueue chan string, rcsTotal *utils.RequestCountService) {
+func Translator(lagQueue <-chan protocol.LagStatus, produceQueue chan<- string,
+	rcsTotal *utils.RequestCountService, rcsValid *utils.RequestCountService) {
 
 	contextProvider := utils.ContextProvider{}
 	contextProvider.Init("config/config.json")
 	postfix := contextProvider.GetPostfix()
 
-	// Init RequestCountService for data traffic statistic
 	rcsTotal.Postfix = postfix
-	// rcsValid for valid data traffic(i.e. message with totalLag > 0)
-	rcsValid := &utils.RequestCountService{
-		Name:         "validMessage",
-		Interval:     60 * time.Second,
-		ProducerChan: produceQueue,
-		Postfix:      postfix,
-	}
-	rcsValid.Init()
+	rcsValid.Postfix = postfix
 
 	// Prepare metrics traffic control
 	tsm := &utils.TwinStateMachine{}
@@ -39,7 +31,6 @@ func Translator(lagQueue chan protocol.LagStatus, produceQueue chan string, rcsT
 		if !shouldSendIt {
 			continue
 		}
-
 		go parseInfo(lag, produceQueue, postfix, rcsTotal, rcsValid, tsm)
 	}
 }
@@ -48,17 +39,18 @@ func combineInfo(prefix []string, postfix []string) string {
 	return strings.Join(prefix, ".") + " " + strings.Join(postfix, " ")
 }
 
-func parseInfo(lag protocol.LagStatus, produceQueue chan string, postfix string,
+func parseInfo(lag protocol.LagStatus, produceQueue chan<- string, postfix string,
 	rcsTotal *utils.RequestCountService, rcsValid *utils.RequestCountService, tsm *utils.TwinStateMachine) {
 	// lag is 0 or non-zero.
 	// parse it into lower level(partitions, maxlag).
 	cluster := lag.Status.Cluster
 	group := lag.Status.Group
 	totalLag := strconv.Itoa(lag.Status.Totallag)
+	timestamp := getEpochTime()
 
 	envTag := "env=" + cluster
 	consumerTag := "consumer=" + group
-	newPostfix := strings.Join([]string{postfix, envTag, consumerTag}, " ")
+	newPostfix := strings.Join([]string{timestamp, postfix, envTag, consumerTag}, " ")
 
 	go rcsTotal.Increase(cluster)
 
@@ -69,21 +61,22 @@ func parseInfo(lag protocol.LagStatus, produceQueue chan string, postfix string,
 	sb.WriteString(group)
 	prefix := sb.String()
 
-	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
-	fmt.Printf("Handled: %s at %s with totalLag %s\n", group, timestamp, totalLag)
-	log.Printf("Handled: %s at %s with totalLag %s\n", group, timestamp, totalLag)
+	// fmt.Printf("Handled: %s at %s with totalLag %s\n", group, timestamp, totalLag)
+	// log.Printf("Handled: %s at %s with totalLag %s\n", group, timestamp, totalLag)
 
 	produceQueue <- combineInfo([]string{prefix, "totalLag"}, []string{totalLag, newPostfix})
 
-	if totalLag != "0" {
-		go rcsValid.Increase(cluster)
+	if totalLag == "0" {
+		return
 	}
+
+	go rcsValid.Increase(cluster)
 
 	go parsePartitionInfo(lag.Status.Partitions, produceQueue, prefix, newPostfix, tsm)
 	go parseMaxLagInfo(lag.Status.Maxlag, produceQueue, prefix, newPostfix)
 }
 
-func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan string, prefix string, postfix string, tsm *utils.TwinStateMachine) {
+func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan<- string, prefix string, postfix string, tsm *utils.TwinStateMachine) {
 	for _, partition := range partitions {
 		partitionID := strconv.Itoa(partition.Partition)
 		currentLag := partition.CurrentLag
@@ -95,9 +88,9 @@ func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan strin
 		topic := partition.Topic
 
 		startOffset := strconv.Itoa(partition.Start.Offset)
-		startOffsetTimestamp := strconv.FormatInt(partition.Start.Timestamp, 10)
+		// startOffsetTimestamp := strconv.FormatInt(partition.Start.Timestamp, 10)
 		endOffset := strconv.Itoa(partition.End.Offset)
-		endOffsetTimestamp := strconv.FormatInt(partition.End.Timestamp, 10)
+		// endOffsetTimestamp := strconv.FormatInt(partition.End.Timestamp, 10)
 		owner := partition.Owner
 
 		topicTag := "topic=" + topic
@@ -114,20 +107,18 @@ func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan strin
 			produceQueue <- combineInfo([]string{prefix, topic, partitionID, "Lag"}, []string{"0", strconv.FormatInt(previousTimestamp, 10), postfix, topicTag, partitionTag, ownerTag})
 		}
 
-		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "Lag"}, []string{strconv.Itoa(currentLag), endOffsetTimestamp, postfix, topicTag, partitionTag, ownerTag})
-		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "startOffset"}, []string{startOffset, startOffsetTimestamp, postfix, topicTag, partitionTag, ownerTag})
-		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "endOffset"}, []string{endOffset, endOffsetTimestamp, postfix, topicTag, partitionTag, ownerTag})
+		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "Lag"}, []string{strconv.Itoa(currentLag), postfix, topicTag, partitionTag, ownerTag})
+		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "startOffset"}, []string{startOffset, postfix, topicTag, partitionTag, ownerTag})
+		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "endOffset"}, []string{endOffset, postfix, topicTag, partitionTag, ownerTag})
 	}
 }
 
-func parseMaxLagInfo(maxLag protocol.MaxLag, produceQueue chan string, prefix string, postfix string) {
+func parseMaxLagInfo(maxLag protocol.MaxLag, produceQueue chan<- string, prefix string, postfix string) {
 	// tags: owner
 	// metrics: partitionID, currentLag, startOffset, endOffset, topic
 
 	owner := maxLag.Owner
 	ownerTag := "owner=" + owner
-
-	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
 
 	// MaxLagPartition Level handle
 	maxLagMap := make(map[string]string)
@@ -138,26 +129,13 @@ func parseMaxLagInfo(maxLag protocol.MaxLag, produceQueue chan string, prefix st
 	maxLagMap["maxLagTopic"] = maxLag.Topic
 
 	for key, value := range maxLagMap {
-		produceQueue <- combineInfo([]string{prefix, key}, []string{value, timestamp, postfix, ownerTag})
+		produceQueue <- combineInfo([]string{prefix, key}, []string{value, postfix, ownerTag})
 	}
 
 }
 
-func getEpochTime(str string) string {
+func getEpochTime() string {
 	// Skipping Burrow's timestamp because it's not precise now.
 	// I think it's because cluster not stable
 	return strconv.FormatInt(time.Now().Unix(), 10)
-
-	// layout := "2006-01-02 15:04:05"
-	// // layout := "2006-01-02T15:04:05Z07:00"
-	// if str == "0001-01-01 00:00:00" {
-	//	// Burrow info level would provide this date, need to verify.
-	// 	return strconv.FormatInt(time.Now().Unix(), 10)
-	// }
-	// t, err := time.Parse(layout, str)
-	// if err != nil {
-	// 	fmt.Println("err: ", err)
-	// }
-
-	// return strconv.FormatInt(t.Unix(), 10)
 }

@@ -40,11 +40,11 @@ func TestPartitionPutBasic(t *testing.T) {
 	res, _ := tsm.PartitionPut("test", 1)
 	assert.Equal(t, true, res, "Not passed")
 	res, _ = tsm.PartitionPut("test", 1)
-	assert.Equal(t, false, res, "Not passed")
+	assert.Equal(t, true, res, "Not passed")
 	res, _ = tsm.PartitionPut("test", 1)
 	assert.Equal(t, true, res, "Not passed")
 	res, _ = tsm.PartitionPut("test", 1)
-	assert.Equal(t, false, res, "Not passed")
+	assert.Equal(t, true, res, "Not passed")
 }
 
 func TestPartitionPutShouldSendPreviousLag(t *testing.T) {

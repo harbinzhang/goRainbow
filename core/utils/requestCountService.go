@@ -15,7 +15,7 @@ type RequestCountService struct {
 	unavailableCount int
 
 	Interval     time.Duration
-	ProducerChan chan string
+	ProducerChan chan<- string
 	Name         string
 	Postfix      string
 }

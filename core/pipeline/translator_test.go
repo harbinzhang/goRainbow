@@ -16,8 +16,8 @@ import (
 
 func TestWithProducer(t *testing.T) {
 
-	// contextProvider := utils.ContextProvider{}
-	// contextProvider.Init("../../config/config.json")
+	contextProvider := utils.ContextProvider{}
+	contextProvider.Init("../../config/config.json")
 	// postfix := contextProvider.GetPostfix()
 
 	// fmt.Println(contextProvider.GetConf())
@@ -125,7 +125,14 @@ func preparePipeline() (chan<- protocol.LagStatus, chan string) {
 	}
 	rcsTotal.Init()
 
-	go Translator(lagStatusQueue, produceQueue, rcsTotal)
+	rcsValid := &utils.RequestCountService{
+		Name:         "totalMessage",
+		Interval:     60 * time.Second,
+		ProducerChan: produceQueue,
+	}
+	rcsValid.Init()
+
+	go Translator(lagStatusQueue, produceQueue, rcsTotal, rcsValid)
 
 	return lagStatusQueue, produceQueue
 }

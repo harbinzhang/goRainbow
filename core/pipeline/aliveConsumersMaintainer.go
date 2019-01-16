@@ -16,6 +16,15 @@ import (
 func AliveConsumersMaintainer(link string, produceQueue chan string, rcsTotal *utils.RequestCountService) {
 	clusterConsumerMap := &utils.SyncNestedMap{}
 	clusterConsumerMap.Init()
+
+	// rcsValid for valid data traffic(i.e. message with totalLag > 0)
+	rcsValid := &utils.RequestCountService{
+		Name:         "validMessage",
+		Interval:     60 * time.Second,
+		ProducerChan: produceQueue,
+	}
+	rcsValid.Init()
+
 	for {
 		clusters, clusterLink := GetClusters(link)
 		if clusters == nil {
@@ -38,7 +47,7 @@ func AliveConsumersMaintainer(link string, produceQueue chan string, rcsTotal *u
 				if _, ok := consumersSet[consumerString]; !ok {
 					// A new consumer found, need to 1. create new thread 2. put it into map.
 					consumersSet[consumerString] = true
-					go NewConsumerForLag(consumersLink, consumerString, clusterString, clusterConsumerMap, produceQueue, rcsTotal)
+					go NewConsumerForLag(consumersLink, consumerString, clusterString, clusterConsumerMap, produceQueue, rcsTotal, rcsValid)
 				}
 			}
 
@@ -50,7 +59,7 @@ func AliveConsumersMaintainer(link string, produceQueue chan string, rcsTotal *u
 
 // NewConsumerForLag is a thread to handle new found consumer
 func NewConsumerForLag(consumersLink string, consumer string, cluster string, snm *utils.SyncNestedMap,
-	produceQueue chan string, rcsTotal *utils.RequestCountService) {
+	produceQueue chan string, rcsTotal *utils.RequestCountService, rcsValid *utils.RequestCountService) {
 	fmt.Println("New consumer found: ", consumersLink, consumer)
 	var lagStatus protocol.LagStatus
 
@@ -58,7 +67,7 @@ func NewConsumerForLag(consumersLink string, consumer string, cluster string, sn
 
 	ticker := time.NewTicker(30 * time.Second)
 
-	go Translator(lagStatusQueue, produceQueue, rcsTotal)
+	go Translator(lagStatusQueue, produceQueue, rcsTotal, rcsValid)
 
 	for {
 		// check its consumer lag from Burrow periodically

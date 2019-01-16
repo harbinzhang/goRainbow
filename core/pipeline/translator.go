@@ -10,22 +10,15 @@ import (
 )
 
 // Translator for message translate from struct to string
-func Translator(lagQueue <-chan protocol.LagStatus, produceQueue chan<- string, rcsTotal *utils.RequestCountService) {
+func Translator(lagQueue <-chan protocol.LagStatus, produceQueue chan<- string,
+	rcsTotal *utils.RequestCountService, rcsValid *utils.RequestCountService) {
 
 	contextProvider := utils.ContextProvider{}
 	contextProvider.Init("config/config.json")
 	postfix := contextProvider.GetPostfix()
 
-	// Init RequestCountService for data traffic statistic
 	rcsTotal.Postfix = postfix
-	// rcsValid for valid data traffic(i.e. message with totalLag > 0)
-	rcsValid := &utils.RequestCountService{
-		Name:         "validMessage",
-		Interval:     60 * time.Second,
-		ProducerChan: produceQueue,
-		Postfix:      postfix,
-	}
-	rcsValid.Init()
+	rcsValid.Postfix = postfix
 
 	// Prepare metrics traffic control
 	tsm := &utils.TwinStateMachine{}

@@ -1,4 +1,4 @@
-package core
+package utils
 
 import "sync"
 
@@ -20,7 +20,7 @@ func (snm *SyncNestedMap) Init() {
 }
 
 // SetLock to set a refined lock, on cluster-level,
-// to improve performance
+// to avoid blocking, to improve performance
 func (snm *SyncNestedMap) SetLock(cluster string) bool {
 	snm.Lock()
 	defer snm.Unlock()
@@ -43,7 +43,7 @@ func (snm *SyncNestedMap) ReleaseLock(cluster string) bool {
 	return true
 }
 
-func (snm *SyncNestedMap) GetConsumers(cluster string) map[string]bool {
+func (snm *SyncNestedMap) GetChild(cluster string) map[string]bool {
 	snm.Lock()
 	defer snm.Unlock()
 	if _, ok := snm.infoMap[cluster]; ok {
@@ -55,7 +55,7 @@ func (snm *SyncNestedMap) GetConsumers(cluster string) map[string]bool {
 	return snm.infoMap[cluster]
 }
 
-func (snm *SyncNestedMap) DeregisterConsumer(cluster string, consumer string) {
+func (snm *SyncNestedMap) DeregisterChild(cluster string, consumer string) {
 	// Refined cluster-level lock.
 	snm.SetLock(cluster)
 	defer snm.ReleaseLock(cluster)

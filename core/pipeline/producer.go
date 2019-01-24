@@ -1,42 +1,22 @@
-package core
+package pipeline
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
-	"strings"
 	"time"
 
-	"github.com/HarbinZhang/goRainbow/config"
+	"github.com/HarbinZhang/goRainbow/core/utils"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
 // Produce message to kafka
 func Produce(produceQueue chan string) {
 
-	var conf config.Config
-	configFile, _ := os.Open("config/config.json")
-	defer configFile.Close()
-	decoder := json.NewDecoder(configFile)
-	if err := decoder.Decode(&conf); err != nil {
-		fmt.Println("Err conf for produce: ", err)
-	}
-
-	// Prepare tags
-	department := "department=" + conf.Service.Department
-	serviceName := "service_name=" + conf.Service.Name
-	metricFormat := "metric_format=" + conf.Translator.MetricFormat
-
-	// Prepare tags from env variables
-	dataCenter := "data_center=" + os.Getenv("DATACENTER")
-	planet := "planet=" + os.Getenv("ENV")
-
-	dcaZone := "dca_zone=local"
-	source := "source=fjord-burrow"
-
-	// postfix := "source=192.168.3.169 data_center=slv dca_zone=local department=fjord planet=sbx888 service_name=porter_rainbow porter_tools=porter-rainbow"
-	postfix := strings.Join([]string{source, dataCenter, dcaZone, department, planet, serviceName, metricFormat}, " ")
+	contextProvider := utils.ContextProvider{}
+	contextProvider.Init("config/config.json")
+	postfix := contextProvider.GetPostfix()
+	conf := contextProvider.GetConf()
 
 	kafkaConfig := kafka.ConfigMap{
 		"batch.num.messages": 2000,
@@ -73,7 +53,7 @@ func Produce(produceQueue chan string) {
 	}()
 
 	// rcsMetricsSent is for metrics level traffic, how many metrics sent to wavefront
-	rcsMetricsSent := &RequestCountService{
+	rcsMetricsSent := &utils.RequestCountService{
 		Name:         "metricsSent",
 		Interval:     60 * time.Second,
 		ProducerChan: produceQueue,

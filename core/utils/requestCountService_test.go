@@ -1,4 +1,4 @@
-package core
+package utils
 
 import (
 	"testing"
@@ -10,9 +10,9 @@ import (
 func TestRequestCountServiceSingle(t *testing.T) {
 	producerChan := make(chan string, 10)
 	rc := &RequestCountService{
-		name:         "totalMessage",
-		interval:     1 * time.Second,
-		producerChan: producerChan,
+		Name:         "totalMessage",
+		Interval:     1 * time.Second,
+		ProducerChan: producerChan,
 	}
 	rc.Init()
 	rc.Increase("test")
@@ -33,9 +33,9 @@ func TestRequestCountServiceSingle(t *testing.T) {
 func TestRequestCountServiceMulti(t *testing.T) {
 	producerChan := make(chan string, 10)
 	rc := &RequestCountService{
-		name:         "totalMessage",
-		interval:     100 * time.Millisecond,
-		producerChan: producerChan,
+		Name:         "totalMessage",
+		Interval:     100 * time.Millisecond,
+		ProducerChan: producerChan,
 	}
 	rc.Init()
 	rc.Increase("test")
@@ -51,9 +51,9 @@ func TestRequestCountServiceMulti(t *testing.T) {
 func TestMetricsIsAvailable(t *testing.T) {
 	producerChan := make(chan string, 10)
 	rc := &RequestCountService{
-		name:         "totalMessage",
-		interval:     10 * time.Millisecond,
-		producerChan: producerChan,
+		Name:         "totalMessage",
+		Interval:     10 * time.Millisecond,
+		ProducerChan: producerChan,
 	}
 	rc.Init()
 	// t.Log(rc.envCount["test"])

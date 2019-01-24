@@ -57,10 +57,19 @@ You may check rainbow-push-model branch for details. [push-model](https://github
    2. leave heavy workload to goroutine.
 2. Twin-state-machine to guarantee metrics start and end with 0.
 # TODO
-(From High priority to low)  
-1. Exception Handle to be robust.
-2. Logging.(finished)
-3. Performance and memory usage check.
-4. Send in seconds, deduplicate feature.
-5. Producer is blocking?
-6. How to to resend data if fails.
+- (From High priority to low)  
+  1. Exception Handler to be robust.
+  2. Every partition metrics start from 0
+  3. Transferred all hardcoded constant into setting file.
+  4. Migrant goRainbow to fjord-burrow.
+  5. Performance and memory usage check.
+  6. Send in seconds, deduplicate feature.
+  7. Producer is blocking?
+  8. How to to resend data if fails.
+- Finished
+  - ~~change push-model to pull-model~~
+  - ~~dynamically metrics sent~~
+  - ~~every partition metrics end with 0~~
+  - ~~partition producer offset.~~
+  - ~~code structure refine.~~
+  - ~~Logging.~~

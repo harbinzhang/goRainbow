@@ -66,11 +66,9 @@ func parseInfo(lag protocol.LagStatus, produceQueue chan<- string, postfix strin
 
 	produceQueue <- combineInfo([]string{prefix, "totalLag"}, []string{totalLag, newPostfix})
 
-	if totalLag == "0" {
-		return
+	if totalLag != "0" {
+		go rcsValid.Increase(cluster)
 	}
-
-	go rcsValid.Increase(cluster)
 
 	go parsePartitionInfo(lag.Status.Partitions, produceQueue, prefix, newPostfix, tsm)
 	go parseMaxLagInfo(lag.Status.Maxlag, produceQueue, prefix, newPostfix)

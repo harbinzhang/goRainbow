@@ -44,7 +44,6 @@ func main() {
 	// Prepare pipeline routines
 	go pipeline.AliveConsumersMaintainer(link, produceQueue, rcsTotal)
 	go pipeline.AliveTopicsMaintainer(link, produceQueue)
-	// go pipeline.Translator(lagStatusQueue, produceQueue, rcsTotal)
 	go pipeline.Produce(produceQueue)
 
 	// health_check server

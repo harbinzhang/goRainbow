@@ -90,6 +90,9 @@ func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan<- str
 		endOffset := strconv.Itoa(partition.End.Offset)
 		// endOffsetTimestamp := strconv.FormatInt(partition.End.Timestamp, 10)
 		owner := partition.Owner
+		if owner == "" {
+			owner = "null"
+		}
 
 		topicTag := "topic=" + topic
 		partitionTag := "partition=" + partitionID
@@ -116,6 +119,9 @@ func parseMaxLagInfo(maxLag protocol.MaxLag, produceQueue chan<- string, prefix 
 	// metrics: partitionID, currentLag, startOffset, endOffset, topic
 
 	owner := maxLag.Owner
+	if owner == "" {
+		owner = "null"
+	}
 	ownerTag := "owner=" + owner
 
 	// MaxLagPartition Level handle

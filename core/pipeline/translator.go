@@ -76,6 +76,13 @@ func parseInfo(lag protocol.LagStatus, produceQueue chan<- string, postfix strin
 
 func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan<- string, prefix string, postfix string, tsm *utils.TwinStateMachine) {
 	for _, partition := range partitions {
+
+		owner := partition.Owner
+		// it happens when info is invalid, skip this info.
+		if owner == "" {
+			return
+		}
+
 		partitionID := strconv.Itoa(partition.Partition)
 		currentLag := partition.CurrentLag
 		shouldSendIt, shouldSendPreviousLag := tsm.PartitionPut(prefix+partitionID, currentLag)
@@ -89,10 +96,6 @@ func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan<- str
 		// startOffsetTimestamp := strconv.FormatInt(partition.Start.Timestamp, 10)
 		endOffset := strconv.Itoa(partition.End.Offset)
 		// endOffsetTimestamp := strconv.FormatInt(partition.End.Timestamp, 10)
-		owner := partition.Owner
-		if owner == "" {
-			owner = "null"
-		}
 
 		topicTag := "topic=" + topic
 		partitionTag := "partition=" + partitionID
@@ -119,8 +122,9 @@ func parseMaxLagInfo(maxLag protocol.MaxLag, produceQueue chan<- string, prefix 
 	// metrics: partitionID, currentLag, startOffset, endOffset, topic
 
 	owner := maxLag.Owner
+	// it happens when info is invalid, skip this info.
 	if owner == "" {
-		owner = "null"
+		return
 	}
 	ownerTag := "owner=" + owner
 
@@ -135,7 +139,6 @@ func parseMaxLagInfo(maxLag protocol.MaxLag, produceQueue chan<- string, prefix 
 	for key, value := range maxLagMap {
 		produceQueue <- combineInfo([]string{prefix, key}, []string{value, postfix, ownerTag})
 	}
-
 }
 
 func getEpochTime() string {

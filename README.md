@@ -14,7 +14,7 @@ A big thanks to porter-rainbow, which gave a basic idea about how to design the 
 
 port-rainbow is mainly based on socket connection. goRainbow is like a RESTful service.
 # Rainbow structure
-![](burrow/rainbow_structure.png)
+![](burrow/rainbow_structure)
 1. Each `consumer handler` is responsible for one consumer and has one specific url(`burrow/{cluster}/{consumer}`) to pull the consumer info from Burrow.
 2. `alive consumers maintainer` checks Burrow periodically to see whether there is a new consumer or not. If so, it would raise a new `consumer handler` for the new consumer.
 3. `consumer handler` would deregister itself in `alive consumers maintainer` when its consumer is not valid any longer.

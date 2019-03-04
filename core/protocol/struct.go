@@ -16,4 +16,7 @@ type Config struct {
 		Name       string `json:"name"`
 		Department string `json:"department"`
 	} `json:"service"`
+	Consumer struct {
+		Blacklist string `json:"blacklist"`
+	} `json:"consumer"`
 }

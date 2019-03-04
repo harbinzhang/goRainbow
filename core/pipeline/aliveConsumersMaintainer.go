@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"regexp"
 	"time"
 
 	"github.com/HarbinZhang/goRainbow/core/protocol"
@@ -16,6 +17,10 @@ import (
 func AliveConsumersMaintainer(link string, produceQueue chan string, rcsTotal *utils.RequestCountService) {
 	clusterConsumerMap := &utils.SyncNestedMap{}
 	clusterConsumerMap.Init()
+
+	contextProvider := utils.ContextProvider{}
+	contextProvider.Init("config/config.json")
+	blacklist := contextProvider.GetBlacklist()
 
 	// rcsValid for valid data traffic(i.e. message with totalLag > 0)
 	rcsValid := &utils.RequestCountService{
@@ -45,7 +50,11 @@ func AliveConsumersMaintainer(link string, produceQueue chan string, rcsTotal *u
 			for _, consumer := range consumers.([]interface{}) {
 				consumerString := consumer.(string)
 				if _, ok := consumersSet[consumerString]; !ok {
-					// A new consumer found, need to 1. create new thread 2. put it into map.
+					// A new consumer found, need to: 1. create new thread 2. put it into map.
+					if m, _ := regexp.MatchString(blacklist, consumerString); m {
+						// if consumer name is in blacklist.
+						continue
+					}
 					consumersSet[consumerString] = true
 					go NewConsumerForLag(consumersLink, consumerString, clusterString, clusterConsumerMap, produceQueue, rcsTotal, rcsValid)
 				}

@@ -51,7 +51,7 @@ func AliveConsumersMaintainer(link string, produceQueue chan string, rcsTotal *u
 				consumerString := consumer.(string)
 				if _, ok := consumersSet[consumerString]; !ok {
 					// A new consumer found, need to: 1. create new thread 2. put it into map.
-					if m, _ := regexp.MatchString(blacklist, consumerString); m {
+					if inBlacklist, _ := regexp.MatchString(blacklist, consumerString); inBlacklist {
 						// if consumer name is in blacklist.
 						continue
 					}

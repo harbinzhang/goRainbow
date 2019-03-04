@@ -51,11 +51,12 @@ func AliveConsumersMaintainer(link string, produceQueue chan string, rcsTotal *u
 				consumerString := consumer.(string)
 				if _, ok := consumersSet[consumerString]; !ok {
 					// A new consumer found, need to: 1. create new thread 2. put it into map.
+					consumersSet[consumerString] = true
 					if isInBlacklist, _ := regexp.MatchString(blacklist, consumerString); isInBlacklist {
-						// if consumer name is in blacklist.
+						// if consumer name is in blacklist, put it in map and
+						// skip initiating its consumer handler.
 						continue
 					}
-					consumersSet[consumerString] = true
 					go NewConsumerForLag(consumersLink, consumerString, clusterString, clusterConsumerMap, produceQueue, rcsTotal, rcsValid)
 				}
 			}

@@ -7,7 +7,7 @@ import "sync"
 // and two threads would write.
 type SyncNestedMap struct {
 	sync.Mutex
-	infoMap     map[string]map[string]bool
+	infoMap     map[string]map[string]interface{}
 	clusterLock map[string]*sync.Mutex
 }
 
@@ -15,7 +15,7 @@ func (snm *SyncNestedMap) Init() {
 	snm.Lock()
 	defer snm.Unlock()
 
-	snm.infoMap = make(map[string]map[string]bool)
+	snm.infoMap = make(map[string]map[string]interface{})
 	snm.clusterLock = make(map[string]*sync.Mutex)
 }
 
@@ -43,13 +43,13 @@ func (snm *SyncNestedMap) ReleaseLock(cluster string) bool {
 	return true
 }
 
-func (snm *SyncNestedMap) GetChild(cluster string) map[string]bool {
+func (snm *SyncNestedMap) GetChild(cluster string) map[string]interface{} {
 	snm.Lock()
 	defer snm.Unlock()
 	if _, ok := snm.infoMap[cluster]; ok {
 
 	} else {
-		snm.infoMap[cluster] = make(map[string]bool)
+		snm.infoMap[cluster] = make(map[string]interface{})
 		snm.clusterLock[cluster] = &sync.Mutex{}
 	}
 	return snm.infoMap[cluster]

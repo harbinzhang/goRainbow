@@ -9,6 +9,7 @@ import (
 	"github.com/HarbinZhang/goRainbow/core/protocol"
 )
 
+// ContextProvider is for loading rainbow config from config.json.
 type ContextProvider struct {
 	filename string
 }
@@ -59,4 +60,9 @@ func (cp *ContextProvider) GetPostfix() string {
 	postfix := strings.Join([]string{source, dataCenter, dcaZone, department, planet, serviceName, metricFormat}, " ")
 
 	return postfix
+}
+
+func (cp *ContextProvider) GetBlacklist() string {
+	conf := cp.GetConf()
+	return conf.Consumer.Blacklist
 }

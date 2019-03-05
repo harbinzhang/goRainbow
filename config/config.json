@@ -12,5 +12,8 @@
     "customTags": "",
     "name": "go_rainbow",
     "department": "fjord"
+  },
+  "consumer": {
+    "blacklist":"^(console-consumer-|heartbeat-|KMOffsetCache-).*$"
   }
 }

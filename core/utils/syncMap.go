@@ -2,64 +2,66 @@ package utils
 
 import "sync"
 
-// SyncNestedMap is used for goRainbow cluster-info mapping
+// SyncNestedMap is used for goRainbow parent-info mapping
 // No need to use RWMutex, because only main thread would read
 // and two threads would write.
 type SyncNestedMap struct {
 	sync.Mutex
-	infoMap     map[string]map[string]bool
-	clusterLock map[string]*sync.Mutex
+	infoMap    map[string]interface{}
+	parentLock map[string]*sync.Mutex
 }
 
 func (snm *SyncNestedMap) Init() {
 	snm.Lock()
 	defer snm.Unlock()
 
-	snm.infoMap = make(map[string]map[string]bool)
-	snm.clusterLock = make(map[string]*sync.Mutex)
+	snm.infoMap = make(map[string]interface{})
+	snm.parentLock = make(map[string]*sync.Mutex)
 }
 
-// SetLock to set a refined lock, on cluster-level,
+// SetLock to set a refined lock, on parent-level,
 // to avoid blocking, to improve performance
-func (snm *SyncNestedMap) SetLock(cluster string) bool {
+func (snm *SyncNestedMap) SetLock(parent string) bool {
 	snm.Lock()
 	defer snm.Unlock()
 
-	if _, ok := snm.infoMap[cluster]; !ok {
+	if _, ok := snm.infoMap[parent]; !ok {
 		return false
 	}
-	snm.clusterLock[cluster].Lock()
+	snm.parentLock[parent].Lock()
 	return true
 }
 
-func (snm *SyncNestedMap) ReleaseLock(cluster string) bool {
+func (snm *SyncNestedMap) ReleaseLock(parent string) bool {
 	snm.Lock()
 	defer snm.Unlock()
 
-	if _, ok := snm.infoMap[cluster]; !ok {
+	if _, ok := snm.infoMap[parent]; !ok {
 		return false
 	}
-	snm.clusterLock[cluster].Unlock()
+	snm.parentLock[parent].Unlock()
 	return true
 }
 
-func (snm *SyncNestedMap) GetChild(cluster string) map[string]bool {
+func (snm *SyncNestedMap) GetChild(parent string, child interface{}) interface{} {
+
 	snm.Lock()
 	defer snm.Unlock()
-	if _, ok := snm.infoMap[cluster]; ok {
+	if _, ok := snm.infoMap[parent]; ok {
 
 	} else {
-		snm.infoMap[cluster] = make(map[string]bool)
-		snm.clusterLock[cluster] = &sync.Mutex{}
+		snm.infoMap[parent] = child
+		snm.parentLock[parent] = &sync.Mutex{}
 	}
-	return snm.infoMap[cluster]
+	return snm.infoMap[parent]
 }
 
-func (snm *SyncNestedMap) DeregisterChild(cluster string, consumer string) {
-	// Refined cluster-level lock.
-	snm.SetLock(cluster)
-	defer snm.ReleaseLock(cluster)
+// I cannot enable this method now due to data type conflict, I will dive into it.
+// func (snm *SyncNestedMap) DeregisterChild(parent string, consumer string) {
+// 	// Refined parent-level lock.
+// 	snm.SetLock(parent)
+// 	defer snm.ReleaseLock(parent)
 
-	// May need to add a judge
-	delete(snm.infoMap[cluster], consumer)
-}
+// 	// May need to add a judge
+// 	delete(snm.infoMap[parent].(map[string]interface{}), consumer)
+// }

@@ -25,6 +25,10 @@ func Translator(lagQueue <-chan protocol.LagStatus, produceQueue chan<- string,
 	tsm := &utils.TwinStateMachine{}
 	tsm.Init()
 
+	// Prepare consumer side offset moves map
+	ownerPartitionOffsetMove := &utils.SyncNestedMap{}
+	ownerPartitionOffsetMove.Init()
+
 	for lag := range lagQueue {
 		// if lag doesn't change, sends it per 60s. Otherwise 30s.
 		shouldSendIt := tsm.Put(lag.Status.Cluster+lag.Status.Group, lag.Status.Totallag)

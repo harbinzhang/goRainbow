@@ -29,7 +29,7 @@ func AliveTopicsMaintainer(link string, produceQueue chan string) {
 		}
 		for _, cluster := range clusters.([]interface{}) {
 			clusterString := cluster.(string)
-			topicsSet := clusterTopicMap.GetChild(clusterString)
+			topicsSet := clusterTopicMap.GetChild(clusterString, make(map[string]interface{})).(map[string]interface{})
 
 			clusterTopicMap.SetLock(clusterString)
 
@@ -70,7 +70,11 @@ func newTopic(topicLink string, topic string, cluster string, produceQueue chan 
 		topicOffsetHandler(topicOffset, prefix, postfix+" topic="+topic, produceQueue)
 	}
 
-	snm.DeregisterChild(cluster, topic)
+	// snm.DeregisterChild(cluster, topic)
+	snm.SetLock(cluster)
+	delete(snm.GetChild(cluster, nil).(map[string]interface{}), topic)
+	snm.ReleaseLock(cluster)
+
 	log.Fatalf("Topic is invalid: %s\tcluster:%s\n", topic, cluster)
 }
 

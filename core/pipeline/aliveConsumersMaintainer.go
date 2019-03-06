@@ -39,7 +39,7 @@ func AliveConsumersMaintainer(link string, produceQueue chan string, rcsTotal *u
 		}
 		for _, cluster := range clusters.([]interface{}) {
 			clusterString := cluster.(string)
-			consumersSet := clusterConsumerMap.GetChild(clusterString)
+			consumersSet := clusterConsumerMap.GetChild(clusterString, make(map[string]interface{})).(map[string]interface{})
 
 			clusterConsumerMap.SetLock(clusterString)
 
@@ -90,7 +90,10 @@ func NewConsumerForLag(consumersLink string, consumer string, cluster string, sn
 		lagStatusQueue <- lagStatus
 	}
 
-	snm.DeregisterChild(cluster, consumer)
+	// snm.DeregisterChild(cluster, consumer)
+	snm.SetLock(cluster)
+	delete(snm.GetChild(cluster, nil).(map[string]interface{}), consumer)
+	snm.ReleaseLock(cluster)
 
 	close(lagStatusQueue)
 	log.Fatalf("Consumer is invalid: %s\tcluster:%s\n", consumer, cluster)

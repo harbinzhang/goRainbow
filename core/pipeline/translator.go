@@ -97,7 +97,7 @@ func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan<- str
 		endOffset := strconv.Itoa(partition.End.Offset)
 		// endOffsetTimestamp := strconv.FormatInt(partition.End.Timestamp, 10)
 
-		oom.Update(owner+"."+partitionID, partition.End.Offset, partition.End.Timestamp)
+		oom.Update(owner+":"+partitionID, partition.End.Offset, partition.End.Timestamp)
 
 		shouldSendIt, _ := tsm.PartitionPut(prefix+partitionID, currentLag)
 		if !shouldSendIt {

@@ -20,3 +20,11 @@ type Config struct {
 		Blacklist string `json:"blacklist"`
 	} `json:"consumer"`
 }
+
+// PartitionOffsetMove is for calculating offset moves per consumer host
+type PartitionOffsetMove struct {
+	CurtTimestamp int64 `json:"curtTimestamp"`
+	CurtOffset    int   `json:"curtOffset"`
+	LastTimestamp int64 `json:"lastTimestamp"`
+	LastOffset    int   `json:"lastOffset"`
+}

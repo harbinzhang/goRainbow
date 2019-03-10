@@ -77,7 +77,9 @@ func NewConsumerForLag(consumersLink string, consumer string, cluster string, sn
 
 	ticker := time.NewTicker(30 * time.Second)
 
-	go Translator(lagStatusQueue, produceQueue, rcsTotal, rcsValid)
+	prefix := "fjord.burrow." + cluster + "." + consumer
+
+	go Translator(lagStatusQueue, produceQueue, rcsTotal, rcsValid, prefix)
 
 	for {
 		// check its consumer lag from Burrow periodically

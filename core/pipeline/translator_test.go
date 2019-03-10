@@ -161,7 +161,7 @@ func preparePipeline() (chan<- protocol.LagStatus, chan string) {
 	}
 	rcsValid.Init()
 
-	go Translator(lagStatusQueue, produceQueue, rcsTotal, rcsValid)
+	go Translator(lagStatusQueue, produceQueue, rcsTotal, rcsValid, "")
 
 	return lagStatusQueue, produceQueue
 }

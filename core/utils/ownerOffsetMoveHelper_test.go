@@ -39,27 +39,27 @@ func TestUpdate(t *testing.T) {
 	oom := &OwnerOffsetMoveHelper{}
 	oom.Init(produceQueue, "prefix", "postfix")
 
-	oom.Update("test1", 10, 30)
+	oom.Update("test1:1", 10, 30)
 	keys := oom.GetSyncMap().GetKeys()
 	assert.Equal(t, 1, len(keys), "keys length should be 1")
 
-	partitionOffsetMove := oom.GetSyncMap().GetChild("test1", nil).(protocol.PartitionOffsetMove)
+	partitionOffsetMove := oom.GetSyncMap().GetChild("test1:1", nil).(protocol.PartitionOffsetMove)
 	assert.Equal(t, 10, partitionOffsetMove.CurtOffset, "curt offset should be 10")
 
-	oom.Update("test2", 20, 50)
-	partitionOffsetMove = oom.GetSyncMap().GetChild("test2", nil).(protocol.PartitionOffsetMove)
+	oom.Update("test2:2", 20, 50)
+	partitionOffsetMove = oom.GetSyncMap().GetChild("test2:2", nil).(protocol.PartitionOffsetMove)
 	assert.Equal(t, 20, partitionOffsetMove.CurtOffset, "curt offset should be 20")
 
-	oom.Update("test1", 30, 60)
-	partitionOffsetMove = oom.GetSyncMap().GetChild("test1", nil).(protocol.PartitionOffsetMove)
+	oom.Update("test1:1", 30, 60)
+	partitionOffsetMove = oom.GetSyncMap().GetChild("test1:1", nil).(protocol.PartitionOffsetMove)
 	assert.Equal(t, 30, partitionOffsetMove.CurtOffset, "curt offset should be 30")
 
 	oom.generateMetrics()
 	res1 := <-produceQueue
 	res2 := <-produceQueue
 
-	assert.Equal(t, "prefix.test1 40 60 postfix", res1, "wrong")
-	assert.Equal(t, "prefix.test2 24 50 postfix", res2, "wrong")
+	assert.Equal(t, "prefix.hosts.1 20 60 postfix owner=test1", res1, "wrong")
+	assert.Equal(t, "prefix.hosts.2 20 50 postfix owner=test2", res2, "wrong")
 
 	close(produceQueue)
 }
@@ -73,9 +73,9 @@ func TestGenerateMetrics(t *testing.T) {
 	keys := oom.GetSyncMap().GetKeys()
 	assert.Equal(t, 0, len(keys), "keys length should be 0")
 
-	oom.GetSyncMap().GetChild("test1", protocol.PartitionOffsetMove{4, 3, 2, 1})
-	oom.GetSyncMap().GetChild("testInvalid", protocol.PartitionOffsetMove{})
-	oom.GetSyncMap().GetChild("test2", protocol.PartitionOffsetMove{60, 100, 30, 50})
+	oom.GetSyncMap().GetChild("test1:1", protocol.PartitionOffsetMove{4, 3, 2, 1})
+	oom.GetSyncMap().GetChild("testInvalid:2", protocol.PartitionOffsetMove{})
+	oom.GetSyncMap().GetChild("test2:2", protocol.PartitionOffsetMove{60, 100, 30, 50})
 
 	keys = oom.GetSyncMap().GetKeys()
 	assert.Equal(t, 3, len(keys), "keys length should be 3")
@@ -84,8 +84,8 @@ func TestGenerateMetrics(t *testing.T) {
 	res1 := <-produceQueue
 	res2 := <-produceQueue
 
-	assert.Equal(t, "prefix.test1 60 4 postfix", res1, "wrong")
-	assert.Equal(t, "prefix.test2 100 60 postfix", res2, "wrong")
+	assert.Equal(t, "prefix.hosts.1 2 4 postfix owner=test1", res1, "wrong")
+	assert.Equal(t, "prefix.hosts.2 50 60 postfix owner=test2", res2, "wrong")
 
 	close(produceQueue)
 }

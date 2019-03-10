@@ -56,12 +56,12 @@ func (oom *OwnerOffsetMoveHelper) generateMetrics() {
 		ks := strings.Split(k, ":")
 		// populate offset move metric
 		partitionOffsetMove := oom.syncMap.GetChild(k, protocol.PartitionOffsetMove{}).(protocol.PartitionOffsetMove)
-		if partitionOffsetMove.CurtTimestamp != 0 {
-			// timeDiff := partitionOffsetMove.CurtTimestamp - partitionOffsetMove.LastTimestamp
+		timeDiff := partitionOffsetMove.CurtTimestamp - partitionOffsetMove.LastTimestamp
+		if timeDiff != 0 {
 			offsetDiff := partitionOffsetMove.CurtOffset - partitionOffsetMove.LastOffset
-			offsetMove := strconv.Itoa(offsetDiff)
 			ownerTag := "owner=" + ks[0]
-			// offsetMove := strconv.FormatInt(int64(float64(offsetDiff*60)/float64(timeDiff)), 10)
+			// offsetMove := strconv.Itoa(offsetDiff)
+			offsetMove := strconv.FormatInt(int64(float64(offsetDiff*60)/float64(timeDiff)), 10)
 			oom.produceQueue <- combineInfo([]string{oom.prefix, "hosts", ks[1]},
 				[]string{offsetMove, strconv.FormatInt(partitionOffsetMove.CurtTimestamp, 10), oom.postfix, ownerTag})
 		}

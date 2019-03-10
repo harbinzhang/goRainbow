@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -19,14 +20,14 @@ func TestRequestCountServiceSingle(t *testing.T) {
 	// t.Log(rc.envCount["test"])
 	time.Sleep(1 * time.Second)
 	res := <-producerChan
-	assert.Equal(t, "fjord.burrow.test.totalMessage 1", res, "message not correct")
+	assert.Equal(t, "1", strings.Split(res, " ")[1], "message not correct")
 
 	rc.Increase("test")
 	rc.Increase("test")
 	// t.Log(rc.envCount["test"])
 	time.Sleep(1 * time.Second)
 	res = <-producerChan
-	assert.Equal(t, "fjord.burrow.test.totalMessage 2", res, "message not correct")
+	assert.Equal(t, "2", strings.Split(res, " ")[1], "message not correct")
 
 }
 
@@ -39,13 +40,14 @@ func TestRequestCountServiceMulti(t *testing.T) {
 	}
 	rc.Init()
 	rc.Increase("test")
+	rc.Increase("test")
 	rc.Increase("staging2")
 	rc.Increase("staging2")
 	time.Sleep(120 * time.Millisecond)
 	res := <-producerChan
-	assert.Equal(t, "fjord.burrow.test.totalMessage 1", res, "message not correct")
+	assert.Equal(t, "2", strings.Split(res, " ")[1], "message not correct")
 	res = <-producerChan
-	assert.Equal(t, "fjord.burrow.staging2.totalMessage 2", res, "message not correct")
+	assert.Equal(t, "2", strings.Split(res, " ")[1], "message not correct")
 }
 
 func TestMetricsIsAvailable(t *testing.T) {

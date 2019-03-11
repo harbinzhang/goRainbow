@@ -53,20 +53,36 @@ func (oom *OwnerOffsetMoveHelper) generateMetrics() {
 	keys := oom.syncMap.GetKeys()
 
 	for _, k := range keys {
-		oom.syncMap.SetLock(k)
+
 		ks := strings.Split(k, ":")
+		if len(ks) != 2 {
+			// the params are not "host:port" format, skip this one.
+			continue
+		}
+
+		oom.syncMap.SetLock(k)
 		// populate offset move metric
 		partitionOffsetMove := oom.syncMap.GetChild(k, protocol.PartitionOffsetMove{}).(protocol.PartitionOffsetMove)
 		timeDiff := partitionOffsetMove.CurtTimestamp - partitionOffsetMove.LastTimestamp
+		offsetDiff := partitionOffsetMove.CurtOffset - partitionOffsetMove.LastOffset
+		ownerTag := "owner=" + ks[0]
+
 		if timeDiff == 30 {
-			offsetDiff := partitionOffsetMove.CurtOffset - partitionOffsetMove.LastOffset
-			ownerTag := "owner=" + ks[0]
-			// offsetMove := strconv.Itoa(offsetDiff)
-			// offsetMove := strconv.FormatInt(int64(float64(offsetDiff*60)/float64(timeDiff)), 10)
+			// it's a risky logic.
+			// From my observation, the timeDiff is always stable
+			// but it may change when tasks overload
+			// just because this way is easy to implement and good for now.
+			// I will think of how to get a better solution.
 			offsetMove := strconv.Itoa(offsetDiff * 2)
 			oom.produceQueue <- combineInfo([]string{oom.prefix, "hosts", ks[1]},
 				[]string{offsetMove, strconv.FormatInt(partitionOffsetMove.CurtTimestamp, 10), oom.postfix, ownerTag})
+		} else if timeDiff == 60 {
+			offsetMove := strconv.Itoa(offsetDiff)
+			oom.produceQueue <- combineInfo([]string{oom.prefix, "hosts", ks[1]},
+				[]string{offsetMove, strconv.FormatInt(partitionOffsetMove.CurtTimestamp, 10), oom.postfix, ownerTag})
 		} else {
+			// the precise result should be
+			// offsetMove := strconv.FormatInt(int64(float64(offsetDiff*60)/float64(timeDiff)), 10)
 			fmt.Println("current time diff is" + strconv.FormatInt(timeDiff, 10))
 		}
 		oom.syncMap.ReleaseLock(k)

@@ -1,10 +1,11 @@
 package pipeline
 
 import (
-	"github.com/HarbinZhang/goRainbow/core/modules"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/HarbinZhang/goRainbow/core/modules"
 
 	"github.com/HarbinZhang/goRainbow/core/protocol"
 	"github.com/HarbinZhang/goRainbow/core/utils"
@@ -12,7 +13,7 @@ import (
 
 // Translator for message translate from struct to string
 func Translator(lagQueue <-chan protocol.LagStatus, produceQueue chan<- string,
-	rcsTotal *utils.RequestCountService, rcsValid *utils.RequestCountService, prefix string) {
+	countService *modules.CountService, prefix string, env string) {
 
 	defer logger.Sync()
 
@@ -20,16 +21,13 @@ func Translator(lagQueue <-chan protocol.LagStatus, produceQueue chan<- string,
 	contextProvider.Init("config/config.json")
 	postfix := contextProvider.GetPostfix()
 
-	rcsTotal.Postfix = postfix
-	rcsValid.Postfix = postfix
-
 	// Prepare metrics traffic control
 	tsm := &utils.TwinStateMachine{}
 	tsm.Init()
 
 	// Prepare consumer side offset change per minute
-	oom := &modules.OwnerOffsetMoveHelper{}
-	oom.Init(produceQueue, prefix, postfix)
+	oom := &modules.OwnerOffsetMoveHelper{CountService: countService}
+	oom.Init(produceQueue, prefix, postfix, env)
 
 	for lag := range lagQueue {
 		// if lag doesn't change, sends it per 60s. Otherwise 30s.
@@ -37,7 +35,7 @@ func Translator(lagQueue <-chan protocol.LagStatus, produceQueue chan<- string,
 		if !shouldSendIt {
 			continue
 		}
-		go parseInfo(lag, produceQueue, postfix, rcsTotal, rcsValid, tsm, oom)
+		go parseInfo(lag, produceQueue, postfix, countService, tsm, oom)
 	}
 }
 
@@ -45,8 +43,8 @@ func combineInfo(prefix []string, postfix []string) string {
 	return strings.Join(prefix, ".") + " " + strings.Join(postfix, " ")
 }
 
-func parseInfo(lag protocol.LagStatus, produceQueue chan<- string, postfix string, rcsTotal *utils.RequestCountService,
-	rcsValid *utils.RequestCountService, tsm *utils.TwinStateMachine, oom *modules.OwnerOffsetMoveHelper) {
+func parseInfo(lag protocol.LagStatus, produceQueue chan<- string, postfix string, countService *modules.CountService,
+	tsm *utils.TwinStateMachine, oom *modules.OwnerOffsetMoveHelper) {
 	// lag is 0 or non-zero.
 	// parse it into lower level(partitions, maxlag).
 	cluster := lag.Status.Cluster
@@ -58,7 +56,7 @@ func parseInfo(lag protocol.LagStatus, produceQueue chan<- string, postfix strin
 	consumerTag := "consumer=" + group
 	newPostfix := strings.Join([]string{timestamp, postfix, envTag, consumerTag}, " ")
 
-	go rcsTotal.Increase(cluster)
+	countService.Increase("rcsTotal", cluster)
 
 	// prepare prefix = "fjord.burrow.{cluster}.{group}"
 	var sb strings.Builder
@@ -73,15 +71,15 @@ func parseInfo(lag protocol.LagStatus, produceQueue chan<- string, postfix strin
 	produceQueue <- combineInfo([]string{prefix, "totalLag"}, []string{totalLag, newPostfix})
 
 	if totalLag != "0" {
-		go rcsValid.Increase(cluster)
+		countService.Increase("rcsValid", cluster)
 	}
 
-	go parsePartitionInfo(lag.Status.Partitions, produceQueue, prefix, newPostfix, tsm, oom)
+	go parsePartitionInfo(lag.Status.Partitions, produceQueue, prefix, newPostfix, countService, tsm, oom)
 	go parseMaxLagInfo(lag.Status.Maxlag, produceQueue, prefix, newPostfix)
 }
 
-func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan<- string, prefix string,
-	postfix string, tsm *utils.TwinStateMachine, oom *modules.OwnerOffsetMoveHelper) {
+func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan<- string, prefix string, postfix string,
+	countService *modules.CountService, tsm *utils.TwinStateMachine, oom *modules.OwnerOffsetMoveHelper) {
 	for _, partition := range partitions {
 
 		owner := partition.Owner

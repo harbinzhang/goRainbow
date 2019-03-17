@@ -16,15 +16,18 @@ type OwnerOffsetMoveHelper struct {
 	syncMap      *utils.SyncNestedMap
 	prefix       string
 	postfix      string
+	env          string
+	CountService *CountService
 	produceQueue chan<- string
 }
 
-func (oom *OwnerOffsetMoveHelper) Init(produceQueue chan<- string, prefix string, postfix string) {
+func (oom *OwnerOffsetMoveHelper) Init(produceQueue chan<- string, prefix string, postfix string, env string) {
 	oom.syncMap = &utils.SyncNestedMap{}
 	oom.syncMap.Init()
 
 	oom.prefix = prefix
 	oom.postfix = postfix
+	oom.env = env
 	oom.produceQueue = produceQueue
 
 	go func() {
@@ -84,6 +87,7 @@ func (oom *OwnerOffsetMoveHelper) generateMetrics() {
 		} else {
 			// the precise result should be
 			// offsetMove := strconv.FormatInt(int64(float64(offsetDiff*60)/float64(timeDiff)), 10)
+			oom.CountService.Increase("exceptionCount", oom.env)
 			fmt.Println("current time diff is" + strconv.FormatInt(timeDiff, 10))
 		}
 		oom.syncMap.ReleaseLock(k)

@@ -8,8 +8,8 @@ import (
 	"time"
 )
 
-// RequestCountService is for count data traffic in go-rainbow
-type RequestCountService struct {
+// RequestCounter is for counting events in go-rainbow
+type RequestCounter struct {
 	sync.Mutex
 	envCount         map[string]int
 	unavailableCount int
@@ -20,8 +20,8 @@ type RequestCountService struct {
 	Postfix      string
 }
 
-// Init is to initial a RequestCountService
-func (rc *RequestCountService) Init() {
+// Init is to initial a RequestCounter
+func (rc *RequestCounter) Init() {
 	rc.envCount = make(map[string]int)
 	rc.unavailableCount = 0
 	go func() {
@@ -34,7 +34,7 @@ func (rc *RequestCountService) Init() {
 }
 
 // Increase is for increase message count increase per env
-func (rc *RequestCountService) Increase(env string) {
+func (rc *RequestCounter) Increase(env string) {
 	rc.Lock()
 	defer rc.Unlock()
 	if value, ok := rc.envCount[env]; ok {
@@ -45,7 +45,7 @@ func (rc *RequestCountService) Increase(env string) {
 }
 
 // translate all count to metrics and push it to chan
-func (rc *RequestCountService) generateMetric() {
+func (rc *RequestCounter) generateMetric() {
 	rc.Lock()
 	defer rc.Unlock()
 	timestamp := getCurrentEpochTime()
@@ -73,7 +73,7 @@ func getCurrentEpochTime() string {
 }
 
 // MetricsIsAvailable is for test if Burrow is sending Lag information to Rainbow
-func (rc *RequestCountService) MetricsIsAvailable() bool {
+func (rc *RequestCounter) IsMetricAvailable() bool {
 	rc.Lock()
 	defer rc.Unlock()
 	// We set healthy threshold is 8 here, i.e. 8 min

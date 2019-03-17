@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/HarbinZhang/goRainbow/core/modules"
+
 	"github.com/HarbinZhang/goRainbow/core/protocol"
 	"github.com/HarbinZhang/goRainbow/core/utils"
 	"go.uber.org/zap"
@@ -12,7 +14,7 @@ import (
 
 // AliveTopicsMaintainer is a maintainer for alive topics
 // It checks Burrow periodically to see if there is a new topic, then creates a new thread for this topic.
-func AliveTopicsMaintainer(link string, produceQueue chan string) {
+func AliveTopicsMaintainer(link string, produceQueue chan string, countService *modules.CountService) {
 
 	defer logger.Sync()
 

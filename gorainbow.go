@@ -20,7 +20,7 @@ func main() {
 
 	// Prepare count service
 	countService := &modules.CountService{}
-	countService.Init()
+	countService.Init(produceQueue)
 
 	// Prepare pipeline routines
 	pipeline.PrepareLogger()

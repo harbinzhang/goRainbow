@@ -2,17 +2,19 @@ package pipeline
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 	"time"
 
 	"github.com/HarbinZhang/goRainbow/core/protocol"
 	"github.com/HarbinZhang/goRainbow/core/utils"
+	"go.uber.org/zap"
 )
 
 // AliveTopicsMaintainer is a maintainer for alive topics
 // It checks Burrow periodically to see if there is a new topic, then creates a new thread for this topic.
 func AliveTopicsMaintainer(link string, produceQueue chan string) {
+
+	defer logger.Sync()
 
 	contextProvider := utils.ContextProvider{}
 	contextProvider.Init("config/config.json")
@@ -75,7 +77,9 @@ func newTopic(topicLink string, topic string, cluster string, produceQueue chan 
 	delete(snm.GetChild(cluster, nil).(map[string]interface{}), topic)
 	snm.ReleaseLock(cluster)
 
-	log.Fatalf("Topic is invalid: %s\tcluster:%s\n", topic, cluster)
+	logger.Warn("Topic is invalid",
+		zap.String("topic", topic),
+		zap.String("cluster", cluster))
 }
 
 func getTopics(link string, cluster string) (interface{}, string) {

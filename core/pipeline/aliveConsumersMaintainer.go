@@ -3,10 +3,11 @@ package pipeline
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"regexp"
 	"time"
+
+	"go.uber.org/zap"
 
 	"github.com/HarbinZhang/goRainbow/core/protocol"
 	"github.com/HarbinZhang/goRainbow/core/utils"
@@ -15,6 +16,9 @@ import (
 // AliveConsumersMaintainer is a maintainer for alive consumers
 // It checks Burrow periodically to see if there is a new consumer, then creates a new thread for this consumer.
 func AliveConsumersMaintainer(link string, produceQueue chan string, rcsTotal *utils.RequestCountService) {
+
+	defer logger.Sync()
+
 	clusterConsumerMap := &utils.SyncNestedMap{}
 	clusterConsumerMap.Init()
 
@@ -98,7 +102,9 @@ func NewConsumerForLag(consumersLink string, consumer string, cluster string, sn
 	snm.ReleaseLock(cluster)
 
 	close(lagStatusQueue)
-	log.Fatalf("Consumer is invalid: %s\tcluster:%s\n", consumer, cluster)
+	logger.Warn("Consumer is invalid",
+		zap.String("consumer", consumer),
+		zap.String("cluster", cluster))
 }
 
 // GetConsumers gets consumers based on cluster
@@ -120,7 +126,7 @@ func HTTPGetStruct(link string, target interface{}) {
 
 	resp, err := client.Get(link)
 	if err != nil {
-		log.Println(err)
+		logger.Error(err.Error())
 	}
 
 	defer resp.Body.Close()
@@ -131,7 +137,7 @@ func HTTPGetStruct(link string, target interface{}) {
 func HTTPGetSubSlice(link string, key string) interface{} {
 	resp, err := http.Get(link)
 	if err != nil {
-		log.Println(err)
+		logger.Error(err.Error())
 		return nil
 	}
 
@@ -140,7 +146,7 @@ func HTTPGetSubSlice(link string, key string) interface{} {
 	var s interface{}
 	err = decode.Decode(&s)
 	if err != nil {
-		log.Println(err)
+		logger.Error(err.Error())
 		return nil
 	}
 

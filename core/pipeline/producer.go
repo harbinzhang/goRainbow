@@ -2,7 +2,6 @@ package pipeline
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -10,8 +9,10 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
-// Produce message to kafka
-func Produce(produceQueue chan string) {
+// Producer send metrics to Kafka
+func Producer(produceQueue chan string) {
+
+	defer logger.Sync()
 
 	contextProvider := utils.ContextProvider{}
 	contextProvider.Init("config/config.json")
@@ -74,7 +75,7 @@ func Produce(produceQueue chan string) {
 	for message := range produceQueue {
 		go rcsMetricsSent.Increase(env)
 		// fmt.Println(message)
-		log.Println("Produced to speed-racer: " + message)
+		logger.Info("Produced to speed-racer: " + message)
 		p.Produce(&kafka.Message{
 			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
 			Value:          []byte(message),

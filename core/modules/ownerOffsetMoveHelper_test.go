@@ -1,6 +1,7 @@
-package utils
+package modules
 
 import (
+	"github.com/HarbinZhang/goRainbow/core/utils"
 	"testing"
 
 	"github.com/HarbinZhang/goRainbow/core/protocol"
@@ -9,7 +10,7 @@ import (
 
 func TestOwnerOffsetMoveHelper_generateMetrics(t *testing.T) {
 	type fields struct {
-		syncMap      *SyncNestedMap
+		syncMap      *utils.SyncNestedMap
 		prefix       string
 		postfix      string
 		produceQueue chan<- string

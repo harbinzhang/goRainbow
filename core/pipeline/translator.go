@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"github.com/HarbinZhang/goRainbow/core/modules"
 	"strconv"
 	"strings"
 	"time"
@@ -27,7 +28,7 @@ func Translator(lagQueue <-chan protocol.LagStatus, produceQueue chan<- string,
 	tsm.Init()
 
 	// Prepare consumer side offset change per minute
-	oom := &utils.OwnerOffsetMoveHelper{}
+	oom := &modules.OwnerOffsetMoveHelper{}
 	oom.Init(produceQueue, prefix, postfix)
 
 	for lag := range lagQueue {
@@ -45,7 +46,7 @@ func combineInfo(prefix []string, postfix []string) string {
 }
 
 func parseInfo(lag protocol.LagStatus, produceQueue chan<- string, postfix string, rcsTotal *utils.RequestCountService,
-	rcsValid *utils.RequestCountService, tsm *utils.TwinStateMachine, oom *utils.OwnerOffsetMoveHelper) {
+	rcsValid *utils.RequestCountService, tsm *utils.TwinStateMachine, oom *modules.OwnerOffsetMoveHelper) {
 	// lag is 0 or non-zero.
 	// parse it into lower level(partitions, maxlag).
 	cluster := lag.Status.Cluster
@@ -80,7 +81,7 @@ func parseInfo(lag protocol.LagStatus, produceQueue chan<- string, postfix strin
 }
 
 func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan<- string, prefix string,
-	postfix string, tsm *utils.TwinStateMachine, oom *utils.OwnerOffsetMoveHelper) {
+	postfix string, tsm *utils.TwinStateMachine, oom *modules.OwnerOffsetMoveHelper) {
 	for _, partition := range partitions {
 
 		owner := partition.Owner

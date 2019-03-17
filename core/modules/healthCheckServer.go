@@ -1,10 +1,11 @@
-package utils
+package modules
 
 import (
+	"github.com/HarbinZhang/goRainbow/core/utils"
 	"net/http"
 )
 
-func HealthChecker(rcsTotal *RequestCountService) func(http.ResponseWriter, *http.Request) {
+func HealthChecker(rcsTotal *utils.RequestCountService) func(http.ResponseWriter, *http.Request) {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		if rcsTotal.MetricsIsAvailable() {

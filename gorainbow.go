@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/HarbinZhang/goRainbow/core/modules"
 	"net/http"
 	"time"
 
@@ -34,7 +35,7 @@ func main() {
 	go pipeline.Producer(produceQueue)
 
 	// health_check server
-	healthCheckHandler := utils.HealthChecker(rcsTotal)
+	healthCheckHandler := modules.HealthChecker(rcsTotal)
 	http.HandleFunc("/health_check", healthCheckHandler)
 	http.ListenAndServe(":7099", nil)
 

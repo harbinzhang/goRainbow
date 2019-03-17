@@ -26,13 +26,21 @@ func AliveConsumersMaintainer(link string, produceQueue chan string, rcsTotal *u
 	contextProvider.Init("config/config.json")
 	blacklist := contextProvider.GetBlacklist()
 
-	// rcsValid for valid data traffic(i.e. message with totalLag > 0)
+	// rcsValid is for valid data traffic(i.e. message with totalLag > 0)
 	rcsValid := &utils.RequestCountService{
 		Name:         "validMessage",
 		Interval:     60 * time.Second,
 		ProducerChan: produceQueue,
 	}
 	rcsValid.Init()
+
+	// rcsException is for # of exceptions per minute.
+	rcsException := &utils.RequestCountService{
+		Name:         "exceptionCount",
+		Interval:     60 * time.Second,
+		ProducerChan: produceQueue,
+	}
+	rcsException.Init()
 
 	for {
 		clusters, clusterLink := GetClusters(link)

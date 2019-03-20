@@ -24,6 +24,7 @@ func AliveTopicsMaintainer(link string, produceQueue chan string, countService *
 
 	clusterTopicMap := &utils.SyncNestedMap{}
 	clusterTopicMap.Init()
+
 	for {
 		clusters, clusterLink := GetClusters(link)
 		if clusters == nil {
@@ -45,7 +46,8 @@ func AliveTopicsMaintainer(link string, produceQueue chan string, countService *
 				if _, ok := topicsSet[topicString]; !ok {
 					// A new consumer found, need to 1. create new thread 2. put it into map.
 					topicsSet[topicString] = true
-					go newTopic(topicsLink, topicString, clusterString, produceQueue, clusterTopicMap, postfix)
+					go newTopic(topicsLink, topicString, clusterString, produceQueue, clusterTopicMap,
+						postfix, clusterString, countService)
 				}
 			}
 
@@ -56,11 +58,17 @@ func AliveTopicsMaintainer(link string, produceQueue chan string, countService *
 }
 
 // NewConsumerForLag is a thread to handle new found consumer
-func newTopic(topicLink string, topic string, cluster string, produceQueue chan string, snm *utils.SyncNestedMap, postfix string) {
+func newTopic(topicLink string, topic string, cluster string, produceQueue chan string, snm *utils.SyncNestedMap,
+	postfix string, env string, countService *modules.CountService) {
+
 	fmt.Println("New topic found: ", topicLink, topic)
 	var topicOffset protocol.TopicOffset
 
 	prefix := "fjord.burrow." + cluster + ".topic." + topic
+
+	// Prepare producer side offset change per minute
+	oom := &modules.OwnerOffsetMoveHelper{CountService: countService}
+	oom.Init(produceQueue, prefix, postfix, env)
 
 	ticker := time.NewTicker(60 * time.Second)
 	for {
@@ -71,7 +79,7 @@ func newTopic(topicLink string, topic string, cluster string, produceQueue chan 
 			break
 		}
 		// fmt.Println(lagStatus)
-		topicOffsetHandler(topicOffset, prefix, postfix+" topic="+topic, produceQueue)
+		topicOffsetHandler(topicOffset, prefix, postfix+" topic="+topic, produceQueue, oom)
 	}
 
 	// snm.DeregisterChild(cluster, topic)
@@ -89,11 +97,12 @@ func getTopics(link string, cluster string) (interface{}, string) {
 	return HTTPGetSubSlice(topicsLink, "topics"), topicsLink + "/"
 }
 
-func topicOffsetHandler(topicOffset protocol.TopicOffset, prefix string, postfix string, produceQueue chan string) {
+func topicOffsetHandler(topicOffset protocol.TopicOffset, prefix string, postfix string,
+	produceQueue chan string, oom *modules.OwnerOffsetMoveHelper) {
 	for id, offset := range topicOffset.Offsets {
-		time := strconv.FormatInt(time.Now().Unix(), 10)
+		timeString := strconv.FormatInt(time.Now().Unix(), 10)
 		partitionIDTag := "partitionId=" + strconv.Itoa(id)
-		produceQueue <- combineInfo([]string{prefix, strconv.Itoa(id), "offset"}, []string{strconv.Itoa(offset), time, postfix, partitionIDTag})
+		oom.Update(strconv.Itoa(id), offset, time.Now().Unix())
+		produceQueue <- combineInfo([]string{prefix, strconv.Itoa(id), "offset"}, []string{strconv.Itoa(offset), timeString, postfix, partitionIDTag})
 	}
-
 }

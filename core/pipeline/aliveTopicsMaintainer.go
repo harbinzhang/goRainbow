@@ -68,7 +68,7 @@ func newTopic(topicLink string, topic string, cluster string, produceQueue chan 
 
 	// Prepare producer side offset change per minute
 	oom := &modules.OwnerOffsetMoveHelper{CountService: countService}
-	oom.Init(produceQueue, prefix, postfix, env)
+	oom.Init(produceQueue, prefix, postfix, env, "topic")
 
 	ticker := time.NewTicker(60 * time.Second)
 	for {

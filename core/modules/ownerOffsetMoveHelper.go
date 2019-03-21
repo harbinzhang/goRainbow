@@ -17,17 +17,19 @@ type OwnerOffsetMoveHelper struct {
 	prefix       string
 	postfix      string
 	env          string
+	tag          string
 	CountService *CountService
 	produceQueue chan<- string
 }
 
-func (oom *OwnerOffsetMoveHelper) Init(produceQueue chan<- string, prefix string, postfix string, env string) {
+func (oom *OwnerOffsetMoveHelper) Init(produceQueue chan<- string, prefix string, postfix string, env string, tag string) {
 	oom.syncMap = &utils.SyncNestedMap{}
 	oom.syncMap.Init()
 
 	oom.prefix = prefix
 	oom.postfix = postfix
 	oom.env = env
+	oom.tag = tag
 	oom.produceQueue = produceQueue
 
 	go func() {
@@ -78,16 +80,17 @@ func (oom *OwnerOffsetMoveHelper) generateMetrics() {
 			// just because this way is easy to implement and good for now.
 			// I will think of how to get a better solution.
 			offsetMove := strconv.Itoa(offsetDiff * 2)
-			oom.produceQueue <- combineInfo([]string{oom.prefix, "hosts", ks[1]},
+			oom.produceQueue <- combineInfo([]string{oom.prefix, oom.tag, ks[1]},
 				[]string{offsetMove, strconv.FormatInt(partitionOffsetMove.CurtTimestamp, 10), oom.postfix, ownerTag})
 		} else if timeDiff == 60 {
 			offsetMove := strconv.Itoa(offsetDiff)
-			oom.produceQueue <- combineInfo([]string{oom.prefix, "hosts", ks[1]},
+			oom.produceQueue <- combineInfo([]string{oom.prefix, oom.tag, ks[1]},
 				[]string{offsetMove, strconv.FormatInt(partitionOffsetMove.CurtTimestamp, 10), oom.postfix, ownerTag})
 		} else {
 			// the precise result should be
 			// offsetMove := strconv.FormatInt(int64(float64(offsetDiff*60)/float64(timeDiff)), 10)
 			oom.CountService.Increase("exceptionCount", oom.env)
+
 			fmt.Println("current time diff is" + strconv.FormatInt(timeDiff, 10))
 		}
 		oom.syncMap.ReleaseLock(k)

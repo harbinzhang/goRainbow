@@ -27,7 +27,7 @@ func Translator(lagQueue <-chan protocol.LagStatus, produceQueue chan<- string,
 
 	// Prepare consumer side offset change per minute
 	oom := &modules.OwnerOffsetMoveHelper{CountService: countService}
-	oom.Init(produceQueue, prefix, postfix, env)
+	oom.Init(produceQueue, prefix, postfix, env, "hosts")
 
 	for lag := range lagQueue {
 		// if lag doesn't change, sends it per 60s. Otherwise 30s.

@@ -1,10 +1,11 @@
 package pipeline
 
 import (
-	"log"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/HarbinZhang/goRainbow/core/modules"
 
 	"github.com/HarbinZhang/goRainbow/core/protocol"
 	"github.com/HarbinZhang/goRainbow/core/utils"
@@ -12,22 +13,21 @@ import (
 
 // Translator for message translate from struct to string
 func Translator(lagQueue <-chan protocol.LagStatus, produceQueue chan<- string,
-	rcsTotal *utils.RequestCountService, rcsValid *utils.RequestCountService) {
+	countService *modules.CountService, prefix string, env string) {
+
+	defer logger.Sync()
 
 	contextProvider := utils.ContextProvider{}
 	contextProvider.Init("config/config.json")
 	postfix := contextProvider.GetPostfix()
 
-	rcsTotal.Postfix = postfix
-	rcsValid.Postfix = postfix
-
 	// Prepare metrics traffic control
 	tsm := &utils.TwinStateMachine{}
 	tsm.Init()
 
-	// Prepare consumer side offset moves map
-	ownerPartitionOffsetMove := &utils.SyncNestedMap{}
-	ownerPartitionOffsetMove.Init()
+	// Prepare consumer side offset change per minute
+	oom := &modules.OwnerOffsetMoveHelper{CountService: countService}
+	oom.Init(produceQueue, prefix, postfix, env, "hosts")
 
 	for lag := range lagQueue {
 		// if lag doesn't change, sends it per 60s. Otherwise 30s.
@@ -35,7 +35,7 @@ func Translator(lagQueue <-chan protocol.LagStatus, produceQueue chan<- string,
 		if !shouldSendIt {
 			continue
 		}
-		go parseInfo(lag, produceQueue, postfix, rcsTotal, rcsValid, tsm)
+		go parseInfo(lag, produceQueue, postfix, countService, tsm, oom)
 	}
 }
 
@@ -43,8 +43,8 @@ func combineInfo(prefix []string, postfix []string) string {
 	return strings.Join(prefix, ".") + " " + strings.Join(postfix, " ")
 }
 
-func parseInfo(lag protocol.LagStatus, produceQueue chan<- string, postfix string,
-	rcsTotal *utils.RequestCountService, rcsValid *utils.RequestCountService, tsm *utils.TwinStateMachine) {
+func parseInfo(lag protocol.LagStatus, produceQueue chan<- string, postfix string, countService *modules.CountService,
+	tsm *utils.TwinStateMachine, oom *modules.OwnerOffsetMoveHelper) {
 	// lag is 0 or non-zero.
 	// parse it into lower level(partitions, maxlag).
 	cluster := lag.Status.Cluster
@@ -56,7 +56,7 @@ func parseInfo(lag protocol.LagStatus, produceQueue chan<- string, postfix strin
 	consumerTag := "consumer=" + group
 	newPostfix := strings.Join([]string{timestamp, postfix, envTag, consumerTag}, " ")
 
-	go rcsTotal.Increase(cluster)
+	countService.Increase("totalMessage", cluster)
 
 	// prepare prefix = "fjord.burrow.{cluster}.{group}"
 	var sb strings.Builder
@@ -71,14 +71,15 @@ func parseInfo(lag protocol.LagStatus, produceQueue chan<- string, postfix strin
 	produceQueue <- combineInfo([]string{prefix, "totalLag"}, []string{totalLag, newPostfix})
 
 	if totalLag != "0" {
-		go rcsValid.Increase(cluster)
+		countService.Increase("validMessage", cluster)
 	}
 
-	go parsePartitionInfo(lag.Status.Partitions, produceQueue, prefix, newPostfix, tsm)
+	go parsePartitionInfo(lag.Status.Partitions, produceQueue, prefix, newPostfix, countService, tsm, oom)
 	go parseMaxLagInfo(lag.Status.Maxlag, produceQueue, prefix, newPostfix)
 }
 
-func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan<- string, prefix string, postfix string, tsm *utils.TwinStateMachine) {
+func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan<- string, prefix string, postfix string,
+	countService *modules.CountService, tsm *utils.TwinStateMachine, oom *modules.OwnerOffsetMoveHelper) {
 	for _, partition := range partitions {
 
 		owner := partition.Owner
@@ -89,10 +90,6 @@ func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan<- str
 
 		partitionID := strconv.Itoa(partition.Partition)
 		currentLag := partition.CurrentLag
-		shouldSendIt, shouldSendPreviousLag := tsm.PartitionPut(prefix+partitionID, currentLag)
-		if !shouldSendIt {
-			continue
-		}
 
 		topic := partition.Topic
 
@@ -101,19 +98,28 @@ func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan<- str
 		endOffset := strconv.Itoa(partition.End.Offset)
 		// endOffsetTimestamp := strconv.FormatInt(partition.End.Timestamp, 10)
 
+		oom.Update(owner+":"+partitionID, partition.End.Offset, time.Now().Unix())
+
+		shouldSendIt, _ := tsm.PartitionPut(prefix+partitionID, currentLag)
+		if !shouldSendIt {
+			continue
+		}
+
 		topicTag := "topic=" + topic
 		partitionTag := "partition=" + partitionID
 		ownerTag := "owner=" + owner
 
-		if shouldSendPreviousLag {
-			previousTimestamp, err := strconv.ParseInt(strings.Split(postfix, " ")[0], 10, 64)
-			previousTimestamp -= 60
-			if err != nil {
-				log.Println("ERROR: Cannot parse previousTimestamp in shouldSendPreviousLag.")
-				return
-			}
-			produceQueue <- combineInfo([]string{prefix, topic, partitionID, "Lag"}, []string{"0", strconv.FormatInt(previousTimestamp, 10), postfix, topicTag, partitionTag, ownerTag})
-		}
+		// This part code doesn't work.
+		// The goal is to send previous "lag=0" to make metric look better.
+		// if shouldSendPreviousLag {
+		// 	previousTimestamp, err := strconv.ParseInt(strings.Split(postfix, " ")[0], 10, 64)
+		// 	previousTimestamp -= 60
+		// 	if err != nil {
+		// 		log.Println("ERROR: Cannot parse previousTimestamp in shouldSendPreviousLag.")
+		// 		return
+		// 	}
+		// 	produceQueue <- combineInfo([]string{prefix, topic, partitionID, "Lag"}, []string{"0", strconv.FormatInt(previousTimestamp, 10), postfix, topicTag, partitionTag, ownerTag})
+		// }
 
 		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "Lag"}, []string{strconv.Itoa(currentLag), postfix, topicTag, partitionTag, ownerTag})
 		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "startOffset"}, []string{startOffset, postfix, topicTag, partitionTag, ownerTag})
@@ -146,7 +152,5 @@ func parseMaxLagInfo(maxLag protocol.MaxLag, produceQueue chan<- string, prefix 
 }
 
 func getEpochTime() string {
-	// Skipping Burrow's timestamp because it's not precise now.
-	// I think it's because cluster not stable
 	return strconv.FormatInt(time.Now().Unix(), 10)
 }

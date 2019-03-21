@@ -1,6 +1,8 @@
 package utils
 
-import "sync"
+import (
+	"sync"
+)
 
 // SyncNestedMap is used for goRainbow parent-info mapping
 // No need to use RWMutex, because only main thread would read
@@ -54,6 +56,28 @@ func (snm *SyncNestedMap) GetChild(parent string, child interface{}) interface{}
 		snm.parentLock[parent] = &sync.Mutex{}
 	}
 	return snm.infoMap[parent]
+}
+
+func (snm *SyncNestedMap) PutChild(parent string, child interface{}) {
+	snm.Lock()
+	defer snm.Unlock()
+
+	if _, ok := snm.infoMap[parent]; !ok {
+		snm.parentLock[parent] = &sync.Mutex{}
+	}
+	snm.infoMap[parent] = child
+}
+
+func (snm *SyncNestedMap) GetKeys() []string {
+	snm.Lock()
+	defer snm.Unlock()
+
+	keys := make([]string, 0, len(snm.infoMap))
+	for k := range snm.infoMap {
+		keys = append(keys, k)
+	}
+
+	return keys
 }
 
 // I cannot enable this method now due to data type conflict, I will dive into it.

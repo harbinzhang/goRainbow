@@ -14,6 +14,6 @@
     "department": "fjord"
   },
   "consumer": {
-    "blacklist":"^(console-consumer-|heartbeat-|KMOffsetCache-).*$"
+    "blacklist":"^(console-consumer-|heartbeat-|KMOffsetCache-|KafkaManager-).*$"
   }
 }

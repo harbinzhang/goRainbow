@@ -14,19 +14,19 @@ import (
 	"github.com/HarbinZhang/goRainbow/core/utils"
 )
 
+func TestMain(m *testing.M) {
+	PrepareLogger()
+}
+
 func TestWithProducer(t *testing.T) {
 
 	contextProvider := utils.ContextProvider{}
 	contextProvider.Init("../../config/config.json")
-	// postfix := contextProvider.GetPostfix()
-
-	// fmt.Println(contextProvider.GetConf())
-	// fmt.Println(postfix)
 
 	lagStatusQueue, produceQueue := preparePipeline()
 	pull := prepareLag()
 
-	go Produce(produceQueue)
+	go Producer(produceQueue)
 
 	for i := 0; i < 100; i++ {
 		lagStatusQueue <- pull
@@ -41,15 +41,11 @@ func TestStartFrom0(t *testing.T) {
 
 	contextProvider := utils.ContextProvider{}
 	contextProvider.Init("../../config/config.json")
-	// postfix := contextProvider.GetPostfix()
-
-	// fmt.Println(contextProvider.GetConf())
-	// fmt.Println(postfix)
 
 	lagStatusQueue, produceQueue := preparePipeline()
 	pull := prepareLag()
 
-	go Produce(produceQueue)
+	go Producer(produceQueue)
 
 	pull.Status.Partitions[0].CurrentLag = 0
 	for i := 0; i < 5; i++ {
@@ -161,7 +157,7 @@ func preparePipeline() (chan<- protocol.LagStatus, chan string) {
 	}
 	rcsValid.Init()
 
-	go Translator(lagStatusQueue, produceQueue, rcsTotal, rcsValid)
+	go Translator(lagStatusQueue, produceQueue, rcsTotal, rcsValid, "")
 
 	return lagStatusQueue, produceQueue
 }

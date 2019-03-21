@@ -3,10 +3,13 @@ package pipeline
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"regexp"
 	"time"
+
+	"github.com/HarbinZhang/goRainbow/core/modules"
+
+	"go.uber.org/zap"
 
 	"github.com/HarbinZhang/goRainbow/core/protocol"
 	"github.com/HarbinZhang/goRainbow/core/utils"
@@ -14,21 +17,16 @@ import (
 
 // AliveConsumersMaintainer is a maintainer for alive consumers
 // It checks Burrow periodically to see if there is a new consumer, then creates a new thread for this consumer.
-func AliveConsumersMaintainer(link string, produceQueue chan string, rcsTotal *utils.RequestCountService) {
+func AliveConsumersMaintainer(link string, produceQueue chan string, countService *modules.CountService) {
+
+	defer logger.Sync()
+
 	clusterConsumerMap := &utils.SyncNestedMap{}
 	clusterConsumerMap.Init()
 
 	contextProvider := utils.ContextProvider{}
 	contextProvider.Init("config/config.json")
 	blacklist := contextProvider.GetBlacklist()
-
-	// rcsValid for valid data traffic(i.e. message with totalLag > 0)
-	rcsValid := &utils.RequestCountService{
-		Name:         "validMessage",
-		Interval:     60 * time.Second,
-		ProducerChan: produceQueue,
-	}
-	rcsValid.Init()
 
 	for {
 		clusters, clusterLink := GetClusters(link)
@@ -57,7 +55,7 @@ func AliveConsumersMaintainer(link string, produceQueue chan string, rcsTotal *u
 						// skip initiating its consumer handler.
 						continue
 					}
-					go NewConsumerForLag(consumersLink, consumerString, clusterString, clusterConsumerMap, produceQueue, rcsTotal, rcsValid)
+					go NewConsumerForLag(consumersLink, consumerString, clusterString, clusterConsumerMap, produceQueue, countService)
 				}
 			}
 
@@ -69,7 +67,7 @@ func AliveConsumersMaintainer(link string, produceQueue chan string, rcsTotal *u
 
 // NewConsumerForLag is a thread to handle new found consumer
 func NewConsumerForLag(consumersLink string, consumer string, cluster string, snm *utils.SyncNestedMap,
-	produceQueue chan string, rcsTotal *utils.RequestCountService, rcsValid *utils.RequestCountService) {
+	produceQueue chan string, countService *modules.CountService) {
 	fmt.Println("New consumer found: ", consumersLink, consumer)
 	var lagStatus protocol.LagStatus
 
@@ -77,7 +75,9 @@ func NewConsumerForLag(consumersLink string, consumer string, cluster string, sn
 
 	ticker := time.NewTicker(30 * time.Second)
 
-	go Translator(lagStatusQueue, produceQueue, rcsTotal, rcsValid)
+	prefix := "fjord.burrow." + cluster + "." + consumer
+
+	go Translator(lagStatusQueue, produceQueue, countService, prefix, cluster)
 
 	for {
 		// check its consumer lag from Burrow periodically
@@ -96,7 +96,9 @@ func NewConsumerForLag(consumersLink string, consumer string, cluster string, sn
 	snm.ReleaseLock(cluster)
 
 	close(lagStatusQueue)
-	log.Fatalf("Consumer is invalid: %s\tcluster:%s\n", consumer, cluster)
+	logger.Warn("Consumer is invalid",
+		zap.String("consumer", consumer),
+		zap.String("cluster", cluster))
 }
 
 // GetConsumers gets consumers based on cluster
@@ -118,7 +120,7 @@ func HTTPGetStruct(link string, target interface{}) {
 
 	resp, err := client.Get(link)
 	if err != nil {
-		log.Println(err)
+		logger.Error(err.Error())
 	}
 
 	defer resp.Body.Close()
@@ -129,7 +131,7 @@ func HTTPGetStruct(link string, target interface{}) {
 func HTTPGetSubSlice(link string, key string) interface{} {
 	resp, err := http.Get(link)
 	if err != nil {
-		log.Println(err)
+		logger.Error(err.Error())
 		return nil
 	}
 
@@ -138,7 +140,7 @@ func HTTPGetSubSlice(link string, key string) interface{} {
 	var s interface{}
 	err = decode.Decode(&s)
 	if err != nil {
-		log.Println(err)
+		logger.Error(err.Error())
 		return nil
 	}
 

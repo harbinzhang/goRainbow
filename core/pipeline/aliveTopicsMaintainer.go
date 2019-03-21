@@ -68,7 +68,7 @@ func newTopic(topicLink string, topic string, cluster string, produceQueue chan 
 
 	// Prepare producer side offset change per minute
 	oom := &modules.OwnerOffsetMoveHelper{CountService: countService}
-	oom.Init(produceQueue, prefix, postfix, env, "topic")
+	oom.Init(produceQueue, prefix, postfix, env, "offsetRate")
 
 	ticker := time.NewTicker(60 * time.Second)
 	for {
@@ -79,7 +79,7 @@ func newTopic(topicLink string, topic string, cluster string, produceQueue chan 
 			break
 		}
 		// fmt.Println(lagStatus)
-		topicOffsetHandler(topicOffset, prefix, postfix+" topic="+topic, produceQueue, oom)
+		go topicOffsetHandler(topicOffset, prefix, postfix, topic, produceQueue, oom)
 	}
 
 	// snm.DeregisterChild(cluster, topic)
@@ -98,11 +98,13 @@ func getTopics(link string, cluster string) (interface{}, string) {
 }
 
 func topicOffsetHandler(topicOffset protocol.TopicOffset, prefix string, postfix string,
-	produceQueue chan string, oom *modules.OwnerOffsetMoveHelper) {
+	topic string, produceQueue chan string, oom *modules.OwnerOffsetMoveHelper) {
+	topicTag := "topic=" + topic
 	for id, offset := range topicOffset.Offsets {
 		timeString := strconv.FormatInt(time.Now().Unix(), 10)
 		partitionIDTag := "partitionId=" + strconv.Itoa(id)
-		oom.Update(strconv.Itoa(id), offset, time.Now().Unix())
-		produceQueue <- combineInfo([]string{prefix, strconv.Itoa(id), "offset"}, []string{strconv.Itoa(offset), timeString, postfix, partitionIDTag})
+		oom.Update(topic+":"+strconv.Itoa(id), offset, time.Now().Unix())
+		produceQueue <- combineInfo([]string{prefix, strconv.Itoa(id), "offset"},
+			[]string{strconv.Itoa(offset), timeString, postfix, topicTag, partitionIDTag})
 	}
 }

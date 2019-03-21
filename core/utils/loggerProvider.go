@@ -13,7 +13,7 @@ func GetLogger() *zap.Logger {
 		"encoding": "json",
 		"outputPaths": ["./rainbow_log"],
 		"errorOutputPaths": ["stderr"],
-		"initialFields": {"foo": "bar"},
+		"initialFields": {"service": "goRainbow"},
 		"encoderConfig": {
 		  "messageKey": "message",
 		  "levelKey": "level",

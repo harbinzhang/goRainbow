@@ -63,6 +63,7 @@ func (oom *OwnerOffsetMoveHelper) generateMetrics() {
 		ks := strings.Split(k, ":")
 		if len(ks) != 2 {
 			// the params are not "host:port" format, skip this one.
+			oom.CountService.Increase("exceptionCount", oom.env)
 			continue
 		}
 

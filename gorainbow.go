@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/HarbinZhang/goRainbow/core/module"
+	"github.com/HarbinZhang/goRainbow/core/util"
 
 	"github.com/HarbinZhang/goRainbow/core/pipeline"
 )
@@ -22,10 +23,27 @@ func main() {
 	countService := &module.CountService{}
 	countService.Init(produceQueue)
 
+	//prepare logger
+	logger := util.GetLogger()
+
 	// Prepare pipeline routines
-	pipeline.PrepareLogger()
-	go pipeline.AliveConsumersMaintainer(link, produceQueue, countService)
-	go pipeline.AliveTopicsMaintainer(link, produceQueue, countService)
+	aliveConsumersMaintainer := &pipeline.AliveConsumersMaintainer{
+		BurrowURL:    link,
+		ProduceQueue: produceQueue,
+		CountService: countService,
+		Logger:       logger,
+	}
+
+	aliveTopicsMaintainer := &pipeline.AliveTopicsMaintainer{
+		BurrowURL:    link,
+		ProduceQueue: produceQueue,
+		CountService: countService,
+		Logger:       logger,
+	}
+
+	go aliveConsumersMaintainer.Start()
+	go aliveTopicsMaintainer.Start()
+
 	go pipeline.Producer(produceQueue, countService)
 
 	// health_check server

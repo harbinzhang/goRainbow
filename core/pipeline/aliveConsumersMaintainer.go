@@ -15,10 +15,10 @@ import (
 // AliveConsumersMaintainer is a maintainer for alive consumers
 // It checks Burrow periodically to see if there is a new consumer, then creates a new thread for this consumer.
 type AliveConsumersMaintainer struct {
-	BurrowURL     string
-	ProducerQueue chan string
-	CountService  *module.CountService
-	Logger        *zap.Logger
+	BurrowURL    string
+	ProduceQueue chan string
+	CountService *module.CountService
+	Logger       *zap.Logger
 
 	clusterConsumerMap *util.SyncNestedMap
 }
@@ -26,8 +26,8 @@ type AliveConsumersMaintainer struct {
 func (acm *AliveConsumersMaintainer) Start() {
 	defer logger.Sync()
 
-	clusterConsumerMap := &util.SyncNestedMap{}
-	clusterConsumerMap.Init()
+	acm.clusterConsumerMap = &util.SyncNestedMap{}
+	acm.clusterConsumerMap.Init()
 
 	contextProvider := util.ContextProvider{}
 	contextProvider.Init("config/config.json")
@@ -42,9 +42,9 @@ func (acm *AliveConsumersMaintainer) Start() {
 		}
 		for _, cluster := range clusters.([]interface{}) {
 			clusterString := cluster.(string)
-			consumersSet := clusterConsumerMap.GetChild(clusterString, make(map[string]interface{})).(map[string]interface{})
+			consumersSet := acm.clusterConsumerMap.GetChild(clusterString, make(map[string]interface{})).(map[string]interface{})
 
-			clusterConsumerMap.SetLock(clusterString)
+			acm.clusterConsumerMap.SetLock(clusterString)
 
 			consumers, consumersLink := getConsumers(clusterLink, clusterString)
 			fmt.Println(consumers, consumersLink)
@@ -61,16 +61,17 @@ func (acm *AliveConsumersMaintainer) Start() {
 						continue
 					}
 					consumerHandler := &ConsumerHandler{
-						ProduceQueue:       acm.ProducerQueue,
+						ProduceQueue:       acm.ProduceQueue,
 						CountService:       acm.CountService,
 						Logger:             acm.Logger,
 						ClusterConsumerMap: acm.clusterConsumerMap,
 					}
+					consumerHandler.Init(consumersLink, consumerString, clusterString)
 					go consumerHandler.Start()
 				}
 			}
 
-			clusterConsumerMap.ReleaseLock(clusterString)
+			acm.clusterConsumerMap.ReleaseLock(clusterString)
 		}
 		time.Sleep(5 * time.Minute)
 	}

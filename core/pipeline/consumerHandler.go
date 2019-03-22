@@ -51,7 +51,9 @@ func (ch *ConsumerHandler) Start() {
 	}
 
 	// snm.DeregisterChild(cluster, ch.consumer)
+	ch.ClusterConsumerMap.SetLock(ch.cluster)
 	delete(ch.ClusterConsumerMap.GetChild(ch.cluster, nil).(map[string]interface{}), ch.consumer)
+	ch.ClusterConsumerMap.ReleaseLock(ch.cluster)
 
 	close(lagStatusQueue)
 	logger.Warn("consumer is invalid",

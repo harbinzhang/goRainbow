@@ -43,7 +43,7 @@ The consumer subsystem is responsible for getting consumer offset information an
 
 2. Includes
 
-    1. Coordinator: manage all consumer module.
+    1. Coordinator: manage all consumer modules.
     2. Kafka_client: a consumer module consumes __consumer_offsets.
     3. kafka_zk_client: a consumer module for old Kafka version. Parse the /consumers tree of a Kafka cluster's metadata to get consumer information (old consumer)
 #### Kafka_client
@@ -51,7 +51,7 @@ KafkaClient is a consumer module which connects to a single Apache Kafka cluster
 
 3. Process
 
-    1. Start consumer module:
+    1. Start consumer modules:
         1. Connect Kafka client: Do an initial fetch of all cluster metadata by specifying an empty list of topics. (**Still not understand**)
         2. Start consumers, one consumer per partition.
         3. Process consumer offset message when msg reach the es consumer. Handling msg by buffer read. Include the ng decode process.

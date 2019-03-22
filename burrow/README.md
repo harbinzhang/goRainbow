@@ -51,11 +51,11 @@ KafkaClient is a consumer module which connects to a single Apache Kafka cluster
 
 3. Process
 
-    1. Start consumer modules:
+    1. Start consumer module:
         1. Connect Kafka client: Do an initial fetch of all cluster metadata by specifying an empty list of topics. (**Still not understand**)
         2. Start consumers, one consumer per partition.
         3. Process consumer offset message when msg reach the es consumer. Handling msg by buffer read. Include the ng decode process.
-    2. Start all consumer module.
+    2. Start all consumer modules.
 
 ## Cluster Coordinator
 1. What it is

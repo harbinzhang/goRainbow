@@ -5,28 +5,28 @@ import (
 	"strings"
 	"time"
 
-	"github.com/HarbinZhang/goRainbow/core/modules"
+	"github.com/HarbinZhang/goRainbow/core/module"
 
 	"github.com/HarbinZhang/goRainbow/core/protocol"
-	"github.com/HarbinZhang/goRainbow/core/utils"
+	"github.com/HarbinZhang/goRainbow/core/util"
 )
 
 // Translator for message translate from struct to string
 func Translator(lagQueue <-chan protocol.LagStatus, produceQueue chan<- string,
-	countService *modules.CountService, prefix string, env string) {
+	countService *module.CountService, prefix string, env string) {
 
 	defer logger.Sync()
 
-	contextProvider := utils.ContextProvider{}
+	contextProvider := util.ContextProvider{}
 	contextProvider.Init("config/config.json")
 	postfix := contextProvider.GetPostfix()
 
 	// Prepare metrics traffic control
-	tsm := &utils.TwinStateMachine{}
+	tsm := &util.TwinStateMachine{}
 	tsm.Init()
 
 	// Prepare consumer side offset change per minute
-	oom := &modules.OwnerOffsetMoveHelper{CountService: countService}
+	oom := &module.OwnerOffsetMoveHelper{CountService: countService}
 	oom.Init(produceQueue, prefix, postfix, env, "hosts")
 
 	for lag := range lagQueue {
@@ -43,8 +43,8 @@ func combineInfo(prefix []string, postfix []string) string {
 	return strings.Join(prefix, ".") + " " + strings.Join(postfix, " ")
 }
 
-func parseInfo(lag protocol.LagStatus, produceQueue chan<- string, postfix string, countService *modules.CountService,
-	tsm *utils.TwinStateMachine, oom *modules.OwnerOffsetMoveHelper) {
+func parseInfo(lag protocol.LagStatus, produceQueue chan<- string, postfix string, countService *module.CountService,
+	tsm *util.TwinStateMachine, oom *module.OwnerOffsetMoveHelper) {
 	// lag is 0 or non-zero.
 	// parse it into lower level(partitions, maxlag).
 	cluster := lag.Status.Cluster
@@ -79,7 +79,7 @@ func parseInfo(lag protocol.LagStatus, produceQueue chan<- string, postfix strin
 }
 
 func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan<- string, prefix string, postfix string,
-	countService *modules.CountService, tsm *utils.TwinStateMachine, oom *modules.OwnerOffsetMoveHelper) {
+	countService *module.CountService, tsm *util.TwinStateMachine, oom *module.OwnerOffsetMoveHelper) {
 	for _, partition := range partitions {
 
 		owner := partition.Owner

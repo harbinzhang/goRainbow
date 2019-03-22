@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/HarbinZhang/goRainbow/core/modules"
+	"github.com/HarbinZhang/goRainbow/core/module"
 
 	"github.com/HarbinZhang/goRainbow/core/pipeline"
 )
@@ -19,7 +19,7 @@ func main() {
 	produceQueue := make(chan string, ProduceQueueSize)
 
 	// Prepare count service
-	countService := &modules.CountService{}
+	countService := &module.CountService{}
 	countService.Init(produceQueue)
 
 	// Prepare pipeline routines
@@ -29,7 +29,7 @@ func main() {
 	go pipeline.Producer(produceQueue, countService)
 
 	// health_check server
-	healthCheckHandler := modules.HealthChecker(countService)
+	healthCheckHandler := module.HealthChecker(countService)
 	http.HandleFunc("/health_check", healthCheckHandler)
 	http.ListenAndServe(":7099", nil)
 

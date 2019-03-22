@@ -1,4 +1,4 @@
-package modules
+package module
 
 import (
 	"fmt"
@@ -7,23 +7,24 @@ import (
 	"time"
 
 	"github.com/HarbinZhang/goRainbow/core/protocol"
-	"github.com/HarbinZhang/goRainbow/core/utils"
+	"github.com/HarbinZhang/goRainbow/core/util"
 )
 
 // OwnerOffsetMoveHelper is for statistics of how many records
 // handled per partiton per host per minute.
 type OwnerOffsetMoveHelper struct {
-	syncMap      *utils.SyncNestedMap
+	CountService *CountService
+
+	syncMap      *util.SyncNestedMap
 	prefix       string
 	postfix      string
 	env          string
 	tag          string
-	CountService *CountService
 	produceQueue chan<- string
 }
 
 func (oom *OwnerOffsetMoveHelper) Init(produceQueue chan<- string, prefix string, postfix string, env string, tag string) {
-	oom.syncMap = &utils.SyncNestedMap{}
+	oom.syncMap = &util.SyncNestedMap{}
 	oom.syncMap.Init()
 
 	oom.prefix = prefix
@@ -98,7 +99,7 @@ func (oom *OwnerOffsetMoveHelper) generateMetrics() {
 	}
 }
 
-func (oom *OwnerOffsetMoveHelper) GetSyncMap() *utils.SyncNestedMap {
+func (oom *OwnerOffsetMoveHelper) GetSyncMap() *util.SyncNestedMap {
 	return oom.syncMap
 }
 

@@ -5,28 +5,28 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/HarbinZhang/goRainbow/core/modules"
+	"github.com/HarbinZhang/goRainbow/core/module"
 
 	"github.com/HarbinZhang/goRainbow/core/protocol"
-	"github.com/HarbinZhang/goRainbow/core/utils"
+	"github.com/HarbinZhang/goRainbow/core/util"
 	"go.uber.org/zap"
 )
 
 // AliveTopicsMaintainer is a maintainer for alive topics
 // It checks Burrow periodically to see if there is a new topic, then creates a new thread for this topic.
-func AliveTopicsMaintainer(link string, produceQueue chan string, countService *modules.CountService) {
+func AliveTopicsMaintainer(link string, produceQueue chan string, countService *module.CountService) {
 
 	defer logger.Sync()
 
-	contextProvider := utils.ContextProvider{}
+	contextProvider := util.ContextProvider{}
 	contextProvider.Init("config/config.json")
 	postfix := contextProvider.GetPostfix()
 
-	clusterTopicMap := &utils.SyncNestedMap{}
+	clusterTopicMap := &util.SyncNestedMap{}
 	clusterTopicMap.Init()
 
 	for {
-		clusters, clusterLink := GetClusters(link)
+		clusters, clusterLink := getClusters(link)
 		if clusters == nil {
 			// Burrow server is not ready
 			time.Sleep(1 * time.Minute)
@@ -58,8 +58,8 @@ func AliveTopicsMaintainer(link string, produceQueue chan string, countService *
 }
 
 // NewConsumerForLag is a thread to handle new found consumer
-func newTopic(topicLink string, topic string, cluster string, produceQueue chan string, snm *utils.SyncNestedMap,
-	postfix string, env string, countService *modules.CountService) {
+func newTopic(topicLink string, topic string, cluster string, produceQueue chan string, snm *util.SyncNestedMap,
+	postfix string, env string, countService *module.CountService) {
 
 	fmt.Println("New topic found: ", topicLink, topic)
 	var topicOffset protocol.TopicOffset
@@ -67,14 +67,14 @@ func newTopic(topicLink string, topic string, cluster string, produceQueue chan 
 	prefix := "fjord.burrow." + cluster + ".topic." + topic
 
 	// Prepare producer side offset change per minute
-	oom := &modules.OwnerOffsetMoveHelper{CountService: countService}
+	oom := &module.OwnerOffsetMoveHelper{CountService: countService}
 	oom.Init(produceQueue, prefix, postfix, env, "offsetRate")
 
 	ticker := time.NewTicker(60 * time.Second)
 	for {
 		// check its topic offset from Burrow periodically
 		<-ticker.C
-		HTTPGetStruct(topicLink+topic, &topicOffset)
+		getHTTPStruct(topicLink+topic, &topicOffset)
 		if topicOffset.Error {
 			break
 		}
@@ -94,11 +94,11 @@ func newTopic(topicLink string, topic string, cluster string, produceQueue chan 
 
 func getTopics(link string, cluster string) (interface{}, string) {
 	topicsLink := link + cluster + "/topic"
-	return HTTPGetSubSlice(topicsLink, "topics"), topicsLink + "/"
+	return getHTTPSubSlice(topicsLink, "topics"), topicsLink + "/"
 }
 
 func topicOffsetHandler(topicOffset protocol.TopicOffset, prefix string, postfix string,
-	topic string, produceQueue chan string, oom *modules.OwnerOffsetMoveHelper) {
+	topic string, produceQueue chan string, oom *module.OwnerOffsetMoveHelper) {
 	topicTag := "topic=" + topic
 	for id, offset := range topicOffset.Offsets {
 		timeString := strconv.FormatInt(time.Now().Unix(), 10)

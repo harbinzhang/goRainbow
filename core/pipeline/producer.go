@@ -5,18 +5,18 @@ import (
 	"os"
 	"time"
 
-	"github.com/HarbinZhang/goRainbow/core/modules"
+	"github.com/HarbinZhang/goRainbow/core/module"
 
-	"github.com/HarbinZhang/goRainbow/core/utils"
+	"github.com/HarbinZhang/goRainbow/core/util"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
 // Producer send metrics to Kafka
-func Producer(produceQueue chan string, countService *modules.CountService) {
+func Producer(produceQueue chan string, countService *module.CountService) {
 
 	defer logger.Sync()
 
-	contextProvider := utils.ContextProvider{}
+	contextProvider := util.ContextProvider{}
 	contextProvider.Init("config/config.json")
 	postfix := contextProvider.GetPostfix()
 	conf := contextProvider.GetConf()
@@ -56,7 +56,7 @@ func Producer(produceQueue chan string, countService *modules.CountService) {
 	}()
 
 	// rcsMetricsSent is for metrics level traffic, how many metrics sent to wavefront
-	rcsMetricsSent := &utils.RequestCounter{
+	rcsMetricsSent := &util.RequestCounter{
 		Name:         "metricsSent",
 		Interval:     60 * time.Second,
 		ProducerChan: produceQueue,

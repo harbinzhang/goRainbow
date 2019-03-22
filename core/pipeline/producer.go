@@ -1,7 +1,6 @@
 package pipeline
 
 import (
-	"fmt"
 	"os"
 	"time"
 
@@ -54,13 +53,11 @@ func (producer *Producer) Start() {
 			switch ev := e.(type) {
 			case *kafka.Message:
 				if ev.TopicPartition.Error != nil {
-					fmt.Printf("Delivery failed: %v\n", ev.TopicPartition)
 					producer.Logger.Warn("Delivery failed",
 						zap.String("topicPartition", ev.TopicPartition.String()),
 					)
 				} else {
 					// fmt.Printf("Delivered message to %v\n", ev.TopicPartition)
-					producer.Logger.Warn("Delivered message")
 				}
 			}
 		}

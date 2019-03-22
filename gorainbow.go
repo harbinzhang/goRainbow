@@ -6,6 +6,7 @@ import (
 
 	"github.com/HarbinZhang/goRainbow/core/module"
 	"github.com/HarbinZhang/goRainbow/core/util"
+	"go.uber.org/zap"
 
 	"github.com/HarbinZhang/goRainbow/core/pipeline"
 )
@@ -31,14 +32,18 @@ func main() {
 		BurrowURL:    link,
 		ProduceQueue: produceQueue,
 		CountService: countService,
-		Logger:       logger,
+		Logger: logger.With(
+			zap.String("name", "aliveConsumersMaintainer"),
+		),
 	}
 
 	aliveTopicsMaintainer := &pipeline.AliveTopicsMaintainer{
 		BurrowURL:    link,
 		ProduceQueue: produceQueue,
 		CountService: countService,
-		Logger:       logger,
+		Logger: logger.With(
+			zap.String("name", "aliveTopicsMaintainer"),
+		),
 	}
 
 	go aliveConsumersMaintainer.Start()

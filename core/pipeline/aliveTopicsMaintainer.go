@@ -22,8 +22,7 @@ type AliveTopicsMaintainer struct {
 }
 
 func (atm *AliveTopicsMaintainer) Start() {
-
-	defer logger.Sync()
+	defer atm.Logger.Sync()
 
 	contextProvider := util.ContextProvider{}
 	contextProvider.Init("config/config.json")
@@ -57,6 +56,9 @@ func (atm *AliveTopicsMaintainer) Start() {
 						ProduceQueue:    atm.ProduceQueue,
 						ClusterTopicMap: atm.clusterTopicMap,
 						CountService:    atm.CountService,
+						Logger: atm.Logger.With(
+							zap.String("name", "topicHandler"),
+						),
 					}
 					topicHandler.Init(topicsLink, topicString, clusterString, postfix)
 					go topicHandler.Start()
@@ -66,6 +68,10 @@ func (atm *AliveTopicsMaintainer) Start() {
 		}
 		time.Sleep(5 * time.Minute)
 	}
+}
+
+func (atm *AliveTopicsMaintainer) Stop() {
+
 }
 
 func getTopics(link string, cluster string) (interface{}, string) {

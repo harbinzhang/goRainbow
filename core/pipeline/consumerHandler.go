@@ -28,6 +28,8 @@ func (ch *ConsumerHandler) Init(consumersLink string, consumer string, cluster s
 }
 
 func (ch *ConsumerHandler) Start() {
+	defer ch.Logger.Sync()
+
 	fmt.Println("New consumer found: ", ch.consumersLink, ch.consumer)
 	var lagStatus protocol.LagStatus
 

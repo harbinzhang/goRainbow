@@ -24,7 +24,7 @@ type AliveConsumersMaintainer struct {
 }
 
 func (acm *AliveConsumersMaintainer) Start() {
-	defer logger.Sync()
+	defer acm.Logger.Sync()
 
 	acm.clusterConsumerMap = &util.SyncNestedMap{}
 	acm.clusterConsumerMap.Init()
@@ -63,8 +63,10 @@ func (acm *AliveConsumersMaintainer) Start() {
 					consumerHandler := &ConsumerHandler{
 						ProduceQueue:       acm.ProduceQueue,
 						CountService:       acm.CountService,
-						Logger:             acm.Logger,
 						ClusterConsumerMap: acm.clusterConsumerMap,
+						Logger: acm.Logger.With(
+							zap.String("name", "consumerHandler"),
+						),
 					}
 					consumerHandler.Init(consumersLink, consumerString, clusterString)
 					go consumerHandler.Start()
@@ -73,6 +75,7 @@ func (acm *AliveConsumersMaintainer) Start() {
 
 			acm.clusterConsumerMap.ReleaseLock(clusterString)
 		}
+		// AliveConsumerMaintainer refresh its alive Consumers list every 5 minutes.
 		time.Sleep(5 * time.Minute)
 	}
 }

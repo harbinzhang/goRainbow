@@ -15,8 +15,6 @@ import (
 func Translator(lagQueue <-chan protocol.LagStatus, produceQueue chan<- string,
 	countService *module.CountService, prefix string, env string) {
 
-	defer logger.Sync()
-
 	contextProvider := util.ContextProvider{}
 	contextProvider.Init("config/config.json")
 	postfix := contextProvider.GetPostfix()

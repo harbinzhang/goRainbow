@@ -15,6 +15,7 @@ type TopicHandler struct {
 	ProduceQueue    chan string
 	ClusterTopicMap *util.SyncNestedMap
 	CountService    *module.CountService
+	Logger          *zap.Logger
 
 	topicLink string
 	topic     string
@@ -31,6 +32,7 @@ func (th *TopicHandler) Init(topicLink string, topic string, cluster string, pos
 }
 
 func (th *TopicHandler) Start() {
+	defer th.Logger.Sync()
 
 	fmt.Println("New topic found: ", th.topicLink, th.topic)
 	var topicOffset protocol.TopicOffset

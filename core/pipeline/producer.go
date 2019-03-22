@@ -5,6 +5,8 @@ import (
 	"os"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/HarbinZhang/goRainbow/core/module"
 
 	"github.com/HarbinZhang/goRainbow/core/util"
@@ -12,9 +14,14 @@ import (
 )
 
 // Producer send metrics to Kafka
-func Producer(produceQueue chan string, countService *module.CountService) {
+type Producer struct {
+	ProduceQueue chan string
+	CountService *module.CountService
+	Logger       *zap.Logger
+}
 
-	defer logger.Sync()
+func (producer *Producer) Start() {
+	defer producer.Logger.Sync()
 
 	contextProvider := util.ContextProvider{}
 	contextProvider.Init("config/config.json")
@@ -48,8 +55,12 @@ func Producer(produceQueue chan string, countService *module.CountService) {
 			case *kafka.Message:
 				if ev.TopicPartition.Error != nil {
 					fmt.Printf("Delivery failed: %v\n", ev.TopicPartition)
+					producer.Logger.Warn("Delivery failed",
+						zap.String("topicPartition", ev.TopicPartition.String()),
+					)
 				} else {
 					// fmt.Printf("Delivered message to %v\n", ev.TopicPartition)
+					producer.Logger.Warn("Delivered message")
 				}
 			}
 		}
@@ -59,7 +70,7 @@ func Producer(produceQueue chan string, countService *module.CountService) {
 	rcsMetricsSent := &util.RequestCounter{
 		Name:         "metricsSent",
 		Interval:     60 * time.Second,
-		ProducerChan: produceQueue,
+		ProducerChan: producer.ProduceQueue,
 		Postfix:      postfix,
 	}
 	rcsMetricsSent.Init()
@@ -74,7 +85,7 @@ func Producer(produceQueue chan string, countService *module.CountService) {
 
 	env := os.Getenv("ENV")
 
-	for message := range produceQueue {
+	for message := range producer.ProduceQueue {
 		go rcsMetricsSent.Increase(env)
 		// fmt.Println(message)
 		logger.Info("Produced to speed-racer: " + message)

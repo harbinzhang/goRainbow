@@ -26,6 +26,7 @@ func main() {
 
 	//prepare logger
 	logger := util.GetLogger()
+	pipeline.PrepareLogger()
 
 	// Prepare pipeline routines
 	aliveConsumersMaintainer := &pipeline.AliveConsumersMaintainer{

@@ -108,6 +108,7 @@ func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan<- str
 		ownerTag := "owner=" + owner
 
 		// This part code doesn't work.
+		// ie. send a 30s before timestamp doesn't work in wavefront.
 		// The goal is to send previous "lag=0" to make metric look better.
 		// if shouldSendPreviousLag {
 		// 	previousTimestamp, err := strconv.ParseInt(strings.Split(postfix, " ")[0], 10, 64)

@@ -39,8 +39,14 @@ func (t *Translator) Init(prefix string, env string) {
 	t.tsm.Init()
 
 	// Prepare consumer side offset change per minute
-	t.oom = &module.OwnerOffsetMoveHelper{CountService: t.CountService}
-	t.oom.Init(t.ProduceQueue, prefix, t.postfix, t.env, "hosts")
+	t.oom = &module.OwnerOffsetMoveHelper{
+		CountService: t.CountService,
+		ProduceQueue: t.ProduceQueue,
+		Logger: t.Logger.With(
+			zap.String("name", "consumerOwnerOffsetMoveHelper"),
+		),
+	}
+	t.oom.Init(t.prefix, t.postfix, t.env, "hosts")
 }
 
 func (t *Translator) Start() {

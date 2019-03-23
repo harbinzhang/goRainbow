@@ -40,8 +40,14 @@ func (th *TopicHandler) Start() {
 	prefix := "fjord.burrow." + th.cluster + ".topic." + th.topic
 
 	// Prepare producer side offset change per minute
-	th.oom = &module.OwnerOffsetMoveHelper{CountService: th.CountService}
-	th.oom.Init(th.ProduceQueue, prefix, th.postfix, th.cluster, "offsetRate")
+	th.oom = &module.OwnerOffsetMoveHelper{
+		CountService: th.CountService,
+		ProduceQueue: th.ProduceQueue,
+		Logger: th.Logger.With(
+			zap.String("name", "topicOwnerOffsetMoveHelper"),
+		),
+	}
+	th.oom.Init(prefix, th.postfix, th.cluster, "offsetRate")
 
 	ticker := time.NewTicker(60 * time.Second)
 	for {
@@ -51,7 +57,6 @@ func (th *TopicHandler) Start() {
 		if topicOffset.Error {
 			break
 		}
-		// fmt.Println(lagStatus)
 
 		go th.handleTopicOffset(topicOffset, prefix)
 

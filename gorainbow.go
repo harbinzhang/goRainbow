@@ -47,10 +47,17 @@ func main() {
 		),
 	}
 
+	producer := &pipeline.Producer{
+		ProduceQueue: produceQueue,
+		CountService: countService,
+		Logger: logger.With(
+			zap.String("name", "producer"),
+		),
+	}
+
 	go aliveConsumersMaintainer.Start()
 	go aliveTopicsMaintainer.Start()
-
-	go pipeline.Producer(produceQueue, countService)
+	go producer.Start()
 
 	// health_check server
 	healthCheckHandler := module.HealthChecker(countService)

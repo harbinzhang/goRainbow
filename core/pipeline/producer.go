@@ -91,5 +91,4 @@ func (producer *Producer) Start() {
 			Value:          []byte(message),
 		}, nil)
 	}
-
 }

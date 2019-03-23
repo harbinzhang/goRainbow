@@ -19,8 +19,8 @@ type Producer struct {
 	Logger       *zap.Logger
 }
 
-func (producer *Producer) Start() {
-	defer producer.Logger.Sync()
+func (p *Producer) Start() {
+	defer p.Logger.Sync()
 
 	contextProvider := util.ContextProvider{}
 	contextProvider.Init("config/config.json")
@@ -40,20 +40,20 @@ func (producer *Producer) Start() {
 		"compression.type":   "gzip",
 		"request.timeout.ms": 900000,
 	}
-	p, err := kafka.NewProducer(&kafkaConfig)
+	kafkaProducer, err := kafka.NewProducer(&kafkaConfig)
 	if err != nil {
 		panic(err)
 	}
 
-	defer p.Close()
+	defer kafkaProducer.Close()
 
 	// Delivery report handler for produced messages
 	go func() {
-		for e := range p.Events() {
+		for e := range kafkaProducer.Events() {
 			switch ev := e.(type) {
 			case *kafka.Message:
 				if ev.TopicPartition.Error != nil {
-					producer.Logger.Warn("Delivery failed",
+					p.Logger.Warn("Delivery failed",
 						zap.String("topicPartition", ev.TopicPartition.String()),
 					)
 				} else {
@@ -67,7 +67,7 @@ func (producer *Producer) Start() {
 	rcsMetricsSent := &util.RequestCounter{
 		Name:         "metricsSent",
 		Interval:     60 * time.Second,
-		ProducerChan: producer.ProduceQueue,
+		ProducerChan: p.ProduceQueue,
 		Postfix:      postfix,
 	}
 	rcsMetricsSent.Init()
@@ -75,18 +75,18 @@ func (producer *Producer) Start() {
 	// message := "fjord.burrow.test3.python-consumer-1.BusinessEvent.0.maxLag 0.00 1541214139 source=192.168.3.169 data_center=slv dca_zone=local department=fjord planet=sbx888 service_name=porter_rainbow porter_tools=porter-rainbow"
 
 	// Wait for message deliveries before shutting down
-	go p.Flush(15 * 1000)
+	go kafkaProducer.Flush(15 * 1000)
 
 	// Produce messages to topic (asynchronously)
 	topic := conf.Kafka.Topic
 
 	env := os.Getenv("ENV")
 
-	for message := range producer.ProduceQueue {
+	for message := range p.ProduceQueue {
 		go rcsMetricsSent.Increase(env)
 		// fmt.Println(message)
-		logger.Info("Produced to speed-racer: " + message)
-		p.Produce(&kafka.Message{
+		p.Logger.Info("Produced to speed-racer: " + message)
+		kafkaProducer.Produce(&kafka.Message{
 			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
 			Value:          []byte(message),
 		}, nil)

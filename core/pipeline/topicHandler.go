@@ -63,7 +63,7 @@ func (th *TopicHandler) Start() {
 	delete(th.ClusterTopicMap.GetChild(th.cluster, nil).(map[string]interface{}), th.topic)
 	th.ClusterTopicMap.ReleaseLock(th.cluster)
 
-	logger.Warn("Topic is invalid",
+	th.Logger.Warn("Topic is invalid",
 		zap.String("topic", th.topic),
 		zap.String("cluster", th.cluster))
 }

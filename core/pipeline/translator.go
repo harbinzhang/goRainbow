@@ -6,43 +6,57 @@ import (
 	"time"
 
 	"github.com/HarbinZhang/goRainbow/core/module"
+	"go.uber.org/zap"
 
 	"github.com/HarbinZhang/goRainbow/core/protocol"
 	"github.com/HarbinZhang/goRainbow/core/util"
 )
 
 // Translator for message translate from struct to string
-func Translator(lagQueue <-chan protocol.LagStatus, produceQueue chan<- string,
-	countService *module.CountService, prefix string, env string) {
+type Translator struct {
+	LagQueue     <-chan protocol.LagStatus
+	ProduceQueue chan<- string
+	CountService *module.CountService
+	Logger       *zap.Logger
+
+	prefix  string
+	env     string
+	postfix string
+	tsm     *util.TwinStateMachine
+	oom     *module.OwnerOffsetMoveHelper
+}
+
+func (t *Translator) Init(prefix string, env string) {
+	t.prefix = prefix
+	t.env = env
 
 	contextProvider := util.ContextProvider{}
 	contextProvider.Init("config/config.json")
-	postfix := contextProvider.GetPostfix()
+	t.postfix = contextProvider.GetPostfix()
 
 	// Prepare metrics traffic control
-	tsm := &util.TwinStateMachine{}
-	tsm.Init()
+	t.tsm = &util.TwinStateMachine{}
+	t.tsm.Init()
 
 	// Prepare consumer side offset change per minute
-	oom := &module.OwnerOffsetMoveHelper{CountService: countService}
-	oom.Init(produceQueue, prefix, postfix, env, "hosts")
+	t.oom = &module.OwnerOffsetMoveHelper{CountService: t.CountService}
+	t.oom.Init(t.ProduceQueue, prefix, t.postfix, t.env, "hosts")
+}
 
-	for lag := range lagQueue {
+func (t *Translator) Start() {
+	defer t.Logger.Sync()
+
+	for lag := range t.LagQueue {
 		// if lag doesn't change, sends it per 60s. Otherwise 30s.
-		shouldSendIt := tsm.Put(lag.Status.Cluster+lag.Status.Group, lag.Status.Totallag)
+		shouldSendIt := t.tsm.Put(lag.Status.Cluster+lag.Status.Group, lag.Status.Totallag)
 		if !shouldSendIt {
 			continue
 		}
-		go parseInfo(lag, produceQueue, postfix, countService, tsm, oom)
+		go t.parseInfo(lag)
 	}
 }
 
-func combineInfo(prefix []string, postfix []string) string {
-	return strings.Join(prefix, ".") + " " + strings.Join(postfix, " ")
-}
-
-func parseInfo(lag protocol.LagStatus, produceQueue chan<- string, postfix string, countService *module.CountService,
-	tsm *util.TwinStateMachine, oom *module.OwnerOffsetMoveHelper) {
+func (t *Translator) parseInfo(lag protocol.LagStatus) {
 	// lag is 0 or non-zero.
 	// parse it into lower level(partitions, maxlag).
 	cluster := lag.Status.Cluster
@@ -52,32 +66,21 @@ func parseInfo(lag protocol.LagStatus, produceQueue chan<- string, postfix strin
 
 	envTag := "env=" + cluster
 	consumerTag := "consumer=" + group
-	newPostfix := strings.Join([]string{timestamp, postfix, envTag, consumerTag}, " ")
+	newPostfix := strings.Join([]string{timestamp, t.postfix, envTag, consumerTag}, " ")
 
-	countService.Increase("totalMessage", cluster)
+	t.CountService.Increase("totalMessage", cluster)
 
-	// prepare prefix = "fjord.burrow.{cluster}.{group}"
-	var sb strings.Builder
-	sb.WriteString("fjord.burrow.")
-	sb.WriteString(cluster + ".")
-	sb.WriteString(group)
-	prefix := sb.String()
-
-	// fmt.Printf("Handled: %s at %s with totalLag %s\n", group, timestamp, totalLag)
-	// log.Printf("Handled: %s at %s with totalLag %s\n", group, timestamp, totalLag)
-
-	produceQueue <- combineInfo([]string{prefix, "totalLag"}, []string{totalLag, newPostfix})
+	t.ProduceQueue <- combineInfo([]string{t.prefix, "totalLag"}, []string{totalLag, newPostfix})
 
 	if totalLag != "0" {
-		countService.Increase("validMessage", cluster)
+		t.CountService.Increase("validMessage", cluster)
 	}
 
-	go parsePartitionInfo(lag.Status.Partitions, produceQueue, prefix, newPostfix, countService, tsm, oom)
-	go parseMaxLagInfo(lag.Status.Maxlag, produceQueue, prefix, newPostfix)
+	go t.parsePartitionInfo(lag.Status.Partitions, newPostfix)
+	go t.parseMaxLagInfo(lag.Status.Maxlag, newPostfix)
 }
 
-func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan<- string, prefix string, postfix string,
-	countService *module.CountService, tsm *util.TwinStateMachine, oom *module.OwnerOffsetMoveHelper) {
+func (t *Translator) parsePartitionInfo(partitions []protocol.Partition, postfix string) {
 	for _, partition := range partitions {
 
 		owner := partition.Owner
@@ -96,9 +99,9 @@ func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan<- str
 		endOffset := strconv.Itoa(partition.End.Offset)
 		// endOffsetTimestamp := strconv.FormatInt(partition.End.Timestamp, 10)
 
-		oom.Update(owner+":"+partitionID, partition.End.Offset, time.Now().Unix())
+		t.oom.Update(owner+":"+partitionID, partition.End.Offset, time.Now().Unix())
 
-		shouldSendIt, _ := tsm.PartitionPut(prefix+partitionID, currentLag)
+		shouldSendIt, _ := t.tsm.PartitionPut(t.prefix+partitionID, currentLag)
 		if !shouldSendIt {
 			continue
 		}
@@ -120,13 +123,13 @@ func parsePartitionInfo(partitions []protocol.Partition, produceQueue chan<- str
 		// 	produceQueue <- combineInfo([]string{prefix, topic, partitionID, "Lag"}, []string{"0", strconv.FormatInt(previousTimestamp, 10), postfix, topicTag, partitionTag, ownerTag})
 		// }
 
-		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "Lag"}, []string{strconv.Itoa(currentLag), postfix, topicTag, partitionTag, ownerTag})
-		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "startOffset"}, []string{startOffset, postfix, topicTag, partitionTag, ownerTag})
-		produceQueue <- combineInfo([]string{prefix, topic, partitionID, "endOffset"}, []string{endOffset, postfix, topicTag, partitionTag, ownerTag})
+		t.ProduceQueue <- combineInfo([]string{t.prefix, topic, partitionID, "Lag"}, []string{strconv.Itoa(currentLag), postfix, topicTag, partitionTag, ownerTag})
+		t.ProduceQueue <- combineInfo([]string{t.prefix, topic, partitionID, "startOffset"}, []string{startOffset, postfix, topicTag, partitionTag, ownerTag})
+		t.ProduceQueue <- combineInfo([]string{t.prefix, topic, partitionID, "endOffset"}, []string{endOffset, postfix, topicTag, partitionTag, ownerTag})
 	}
 }
 
-func parseMaxLagInfo(maxLag protocol.MaxLag, produceQueue chan<- string, prefix string, postfix string) {
+func (t *Translator) parseMaxLagInfo(maxLag protocol.MaxLag, postfix string) {
 	// tags: owner
 	// metrics: partitionID, currentLag, startOffset, endOffset, topic
 
@@ -146,10 +149,14 @@ func parseMaxLagInfo(maxLag protocol.MaxLag, produceQueue chan<- string, prefix 
 	maxLagMap["maxLagTopic"] = maxLag.Topic
 
 	for key, value := range maxLagMap {
-		produceQueue <- combineInfo([]string{prefix, key}, []string{value, postfix, ownerTag})
+		t.ProduceQueue <- combineInfo([]string{t.prefix, key}, []string{value, postfix, ownerTag})
 	}
 }
 
 func getEpochTime() string {
 	return strconv.FormatInt(time.Now().Unix(), 10)
+}
+
+func combineInfo(prefix []string, postfix []string) string {
+	return strings.Join(prefix, ".") + " " + strings.Join(postfix, " ")
 }

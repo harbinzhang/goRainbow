@@ -39,7 +39,16 @@ func (ch *ConsumerHandler) Start() {
 
 	prefix := "fjord.burrow." + ch.cluster + "." + ch.consumer
 
-	go Translator(lagStatusQueue, ch.ProduceQueue, ch.CountService, prefix, ch.cluster)
+	translator := &Translator{
+		LagQueue:     lagStatusQueue,
+		ProduceQueue: ch.ProduceQueue,
+		CountService: ch.CountService,
+		Logger: ch.Logger.With(
+			zap.String("name", "Translator"),
+		),
+	}
+	translator.Init(prefix, ch.cluster)
+	go translator.Start()
 
 	for {
 		// check its ch.consumer lag from Burrow periodically
@@ -58,7 +67,7 @@ func (ch *ConsumerHandler) Start() {
 	ch.ClusterConsumerMap.ReleaseLock(ch.cluster)
 
 	close(lagStatusQueue)
-	logger.Warn("consumer is invalid",
+	ch.Logger.Warn("consumer is invalid",
 		zap.String("consumer", ch.consumer),
 		zap.String("cluster", ch.cluster))
 }

@@ -55,6 +55,9 @@ func (ch *ConsumerHandler) Start() {
 		<-ticker.C
 		getHTTPStruct(ch.consumersLink+ch.consumer+"/lag", &lagStatus)
 		if lagStatus.Error {
+			ch.Logger.Warn("Get consumer /lag error",
+				zap.String("message", lagStatus.Message),
+			)
 			break
 		}
 		// fmt.Println(lagStatus)
@@ -67,7 +70,7 @@ func (ch *ConsumerHandler) Start() {
 	ch.ClusterConsumerMap.ReleaseLock(ch.cluster)
 
 	close(lagStatusQueue)
-	ch.Logger.Warn("consumer is invalid",
+	ch.Logger.Warn("consumer is invalid, will stop handler.",
 		zap.String("consumer", ch.consumer),
 		zap.String("cluster", ch.cluster))
 }

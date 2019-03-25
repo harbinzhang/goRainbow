@@ -35,7 +35,7 @@ func (cc *CountService) isExistOrInit(RequestCounterName string) {
 	if _, ok := cc.counterMap[RequestCounterName]; !ok {
 		cc.RUnlock()
 		// It may have a problem. the same counter can be inited multiple times.
-		// Here is a race condition.
+		// Here is a race condition.I
 		// But it is acceptable.
 		cc.Lock()
 		// init counter

@@ -55,6 +55,9 @@ func (th *TopicHandler) Start() {
 		<-ticker.C
 		getHTTPStruct(th.topicLink+th.topic, &topicOffset)
 		if topicOffset.Error {
+			th.Logger.Warn("Get consumer /lag error",
+				zap.String("message", topicOffset.Message),
+			)
 			break
 		}
 
@@ -63,12 +66,12 @@ func (th *TopicHandler) Start() {
 	}
 
 	// snm.DeregisterChild(cluster, topic)
-	// this can be deadlock in some cases.
+	// this can be deadlock in some extreme cases.
 	th.ClusterTopicMap.SetLock(th.cluster)
 	delete(th.ClusterTopicMap.GetChild(th.cluster, nil).(map[string]interface{}), th.topic)
 	th.ClusterTopicMap.ReleaseLock(th.cluster)
 
-	th.Logger.Warn("Topic is invalid",
+	th.Logger.Warn("Topic is invalid, will stop handler",
 		zap.String("topic", th.topic),
 		zap.String("cluster", th.cluster))
 }

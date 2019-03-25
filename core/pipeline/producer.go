@@ -84,8 +84,7 @@ func (p *Producer) Start() {
 
 	for message := range p.ProduceQueue {
 		go rcsMetricsSent.Increase(env)
-		// fmt.Println(message)
-		p.Logger.Info("Produced to speed-racer: " + message)
+		p.Logger.Debug("Produced to speed-racer: " + message)
 		kafkaProducer.Produce(&kafka.Message{
 			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
 			Value:          []byte(message),

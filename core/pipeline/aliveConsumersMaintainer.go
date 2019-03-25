@@ -37,6 +37,7 @@ func (acm *AliveConsumersMaintainer) Start() {
 		clusters, clusterLink := getClusters(acm.BurrowURL)
 		if clusters == nil {
 			// Burrow server is not ready
+			acm.Logger.Info("Burrow server not ready.")
 			time.Sleep(1 * time.Minute)
 			continue
 		}
@@ -49,7 +50,7 @@ func (acm *AliveConsumersMaintainer) Start() {
 			consumers, consumersLink := getConsumers(clusterLink, clusterString)
 			fmt.Println(consumers, consumersLink)
 
-			// create new go routine if consumer not exists.
+			// create new consumer handler if it does not exist.
 			for _, consumer := range consumers.([]interface{}) {
 				consumerString := consumer.(string)
 				if _, ok := consumersSet[consumerString]; !ok {
@@ -58,6 +59,9 @@ func (acm *AliveConsumersMaintainer) Start() {
 					if isInBlacklist, _ := regexp.MatchString(blacklist, consumerString); isInBlacklist {
 						// if consumer name is in blacklist, put it in map and
 						// skip initiating its consumer handler.
+						acm.Logger.Info("the current consumer is in blacklist",
+							zap.String("consumer", consumerString),
+						)
 						continue
 					}
 					consumerHandler := &ConsumerHandler{
@@ -70,6 +74,10 @@ func (acm *AliveConsumersMaintainer) Start() {
 					}
 					consumerHandler.Init(consumersLink, consumerString, clusterString)
 					go consumerHandler.Start()
+					acm.Logger.Info("create a new consumer handler",
+						zap.String("consumer", consumerString),
+						zap.String("cluster", clusterString),
+					)
 				}
 			}
 

@@ -60,6 +60,10 @@ func (t *Translator) Start() {
 		}
 		go t.parseInfo(lag)
 	}
+
+	t.Logger.Warn("translator exit",
+		zap.String("prefix", t.prefix),
+	)
 }
 
 func (t *Translator) parseInfo(lag protocol.LagStatus) {
@@ -89,14 +93,20 @@ func (t *Translator) parseInfo(lag protocol.LagStatus) {
 func (t *Translator) parsePartitionInfo(partitions []protocol.Partition, postfix string) {
 	for _, partition := range partitions {
 
+		partitionID := strconv.Itoa(partition.Partition)
+		currentLag := partition.CurrentLag
+
 		owner := partition.Owner
 		// it happens when info is invalid, skip this info.
 		if owner == "" {
+			t.Logger.Warn("owner invalid",
+				zap.String("prefix", t.prefix),
+				zap.Int("currentLag", currentLag),
+				zap.String("partitionID", partitionID),
+			)
+			t.CountService.Increase("exception.ownerInvalid", t.env)
 			return
 		}
-
-		partitionID := strconv.Itoa(partition.Partition)
-		currentLag := partition.CurrentLag
 
 		topic := partition.Topic
 
@@ -142,6 +152,11 @@ func (t *Translator) parseMaxLagInfo(maxLag protocol.MaxLag, postfix string) {
 	owner := maxLag.Owner
 	// it happens when info is invalid, skip this info.
 	if owner == "" {
+		t.Logger.Warn("owner invalid",
+			zap.String("prefix", t.prefix),
+			zap.Int("maxLagPartitionID", maxLag.Partition),
+		)
+		t.CountService.Increase("exception.ownerInvalid", t.env)
 		return
 	}
 	ownerTag := "owner=" + owner

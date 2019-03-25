@@ -1,4 +1,4 @@
-package modules
+package module
 
 import (
 	"fmt"
@@ -6,31 +6,34 @@ import (
 	"strings"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/HarbinZhang/goRainbow/core/protocol"
-	"github.com/HarbinZhang/goRainbow/core/utils"
+	"github.com/HarbinZhang/goRainbow/core/util"
 )
 
 // OwnerOffsetMoveHelper is for statistics of how many records
 // handled per partiton per host per minute.
 type OwnerOffsetMoveHelper struct {
-	syncMap      *utils.SyncNestedMap
-	prefix       string
-	postfix      string
-	env          string
-	tag          string
 	CountService *CountService
-	produceQueue chan<- string
+	ProduceQueue chan<- string
+	Logger       *zap.Logger
+
+	syncMap *util.SyncNestedMap
+	prefix  string
+	postfix string
+	env     string
+	tag     string
 }
 
-func (oom *OwnerOffsetMoveHelper) Init(produceQueue chan<- string, prefix string, postfix string, env string, tag string) {
-	oom.syncMap = &utils.SyncNestedMap{}
+func (oom *OwnerOffsetMoveHelper) Init(prefix string, postfix string, env string, tag string) {
+	oom.syncMap = &util.SyncNestedMap{}
 	oom.syncMap.Init()
 
 	oom.prefix = prefix
 	oom.postfix = postfix
 	oom.env = env
 	oom.tag = tag
-	oom.produceQueue = produceQueue
 
 	go func() {
 		ticker := time.NewTicker(60 * time.Second)
@@ -81,11 +84,11 @@ func (oom *OwnerOffsetMoveHelper) generateMetrics() {
 			// just because this way is easy to implement and good for now.
 			// I will think of how to get a better solution.
 			offsetMove := strconv.Itoa(offsetDiff * 2)
-			oom.produceQueue <- combineInfo([]string{oom.prefix, oom.tag, ks[1]},
+			oom.ProduceQueue <- combineInfo([]string{oom.prefix, oom.tag, ks[1]},
 				[]string{offsetMove, strconv.FormatInt(partitionOffsetMove.CurtTimestamp, 10), oom.postfix, ownerTag})
 		} else if timeDiff == 60 {
 			offsetMove := strconv.Itoa(offsetDiff)
-			oom.produceQueue <- combineInfo([]string{oom.prefix, oom.tag, ks[1]},
+			oom.ProduceQueue <- combineInfo([]string{oom.prefix, oom.tag, ks[1]},
 				[]string{offsetMove, strconv.FormatInt(partitionOffsetMove.CurtTimestamp, 10), oom.postfix, ownerTag})
 		} else {
 			// the precise result should be
@@ -98,7 +101,7 @@ func (oom *OwnerOffsetMoveHelper) generateMetrics() {
 	}
 }
 
-func (oom *OwnerOffsetMoveHelper) GetSyncMap() *utils.SyncNestedMap {
+func (oom *OwnerOffsetMoveHelper) GetSyncMap() *util.SyncNestedMap {
 	return oom.syncMap
 }
 

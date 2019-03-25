@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/HarbinZhang/goRainbow/core/modules"
+	"github.com/HarbinZhang/goRainbow/core/module"
+	"github.com/HarbinZhang/goRainbow/core/util"
+	"go.uber.org/zap"
 
 	"github.com/HarbinZhang/goRainbow/core/pipeline"
 )
@@ -12,24 +14,52 @@ import (
 func main() {
 	const link string = "http://127.0.0.1:8000/v3/kafka"
 
-	const LagQueueSize int = 1000
 	const ProduceQueueSize int = 9000
 
 	// Queue init
 	produceQueue := make(chan string, ProduceQueueSize)
 
 	// Prepare count service
-	countService := &modules.CountService{}
+	countService := &module.CountService{}
 	countService.Init(produceQueue)
 
-	// Prepare pipeline routines
+	//prepare logger
+	logger := util.GetLogger()
 	pipeline.PrepareLogger()
-	go pipeline.AliveConsumersMaintainer(link, produceQueue, countService)
-	go pipeline.AliveTopicsMaintainer(link, produceQueue, countService)
-	go pipeline.Producer(produceQueue, countService)
+
+	// Prepare pipeline routines
+	aliveConsumersMaintainer := &pipeline.AliveConsumersMaintainer{
+		BurrowURL:    link,
+		ProduceQueue: produceQueue,
+		CountService: countService,
+		Logger: logger.With(
+			zap.String("name", "aliveConsumersMaintainer"),
+		),
+	}
+
+	aliveTopicsMaintainer := &pipeline.AliveTopicsMaintainer{
+		BurrowURL:    link,
+		ProduceQueue: produceQueue,
+		CountService: countService,
+		Logger: logger.With(
+			zap.String("name", "aliveTopicsMaintainer"),
+		),
+	}
+
+	producer := &pipeline.Producer{
+		ProduceQueue: produceQueue,
+		CountService: countService,
+		Logger: logger.With(
+			zap.String("name", "producer"),
+		),
+	}
+
+	go aliveConsumersMaintainer.Start()
+	go aliveTopicsMaintainer.Start()
+	go producer.Start()
 
 	// health_check server
-	healthCheckHandler := modules.HealthChecker(countService)
+	healthCheckHandler := module.HealthChecker(countService)
 	http.HandleFunc("/health_check", healthCheckHandler)
 	http.ListenAndServe(":7099", nil)
 

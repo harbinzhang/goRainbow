@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/HarbinZhang/goRainbow/core/protocol"
-	"github.com/HarbinZhang/goRainbow/core/utils"
+	"github.com/HarbinZhang/goRainbow/core/util"
 )
 
 func TestMain(m *testing.M) {
@@ -20,7 +20,7 @@ func TestMain(m *testing.M) {
 
 func TestWithProducer(t *testing.T) {
 
-	contextProvider := utils.ContextProvider{}
+	contextProvider := util.ContextProvider{}
 	contextProvider.Init("../../config/config.json")
 
 	lagStatusQueue, produceQueue := preparePipeline()
@@ -39,7 +39,7 @@ func TestWithProducer(t *testing.T) {
 
 func TestStartFrom0(t *testing.T) {
 
-	contextProvider := utils.ContextProvider{}
+	contextProvider := util.ContextProvider{}
 	contextProvider.Init("../../config/config.json")
 
 	lagStatusQueue, produceQueue := preparePipeline()
@@ -143,14 +143,14 @@ func preparePipeline() (chan<- protocol.LagStatus, chan string) {
 	lagStatusQueue := make(chan protocol.LagStatus, 1000)
 	produceQueue := make(chan string, 9000)
 
-	rcsTotal := &utils.RequestCountService{
+	rcsTotal := &util.RequestCountService{
 		Name:         "totalMessage",
 		Interval:     60 * time.Second,
 		ProducerChan: produceQueue,
 	}
 	rcsTotal.Init()
 
-	rcsValid := &utils.RequestCountService{
+	rcsValid := &util.RequestCountService{
 		Name:         "totalMessage",
 		Interval:     60 * time.Second,
 		ProducerChan: produceQueue,

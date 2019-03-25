@@ -34,7 +34,11 @@ func (cc *CountService) isExistOrInit(RequestCounterName string) {
 	cc.RLock()
 	if _, ok := cc.counterMap[RequestCounterName]; !ok {
 		cc.RUnlock()
+		// It may have a problem. the same counter can be inited multiple times.
+		// Here is a race condition.
+		// But it is acceptable.
 		cc.Lock()
+		// init counter
 		rcs := &util.RequestCounter{
 			Name:         RequestCounterName,
 			Interval:     60 * time.Second,
@@ -54,8 +58,9 @@ func (cc *CountService) Increase(RequestCounterName string, env string) {
 	cc.counterMap[RequestCounterName].Increase(env)
 }
 
+// IsCountServiceAvailable
 func (cc *CountService) IsCountServiceAvailable() bool {
-	const TOTAL_MESSAGE string = "totalMessage"
-	cc.isExistOrInit(TOTAL_MESSAGE)
-	return cc.counterMap[TOTAL_MESSAGE].IsMetricAvailable()
+	const TotalMessage string = "totalMessage"
+	cc.isExistOrInit(TotalMessage)
+	return cc.counterMap[TotalMessage].IsMetricAvailable()
 }

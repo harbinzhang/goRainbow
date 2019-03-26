@@ -35,6 +35,7 @@ func (atm *AliveTopicsMaintainer) Start() {
 		clusters, clusterLink := getClusters(atm.BurrowURL)
 		if clusters == nil {
 			// Burrow server is not ready
+			atm.Logger.Info("Burrow server not ready")
 			time.Sleep(1 * time.Minute)
 			continue
 		}
@@ -56,12 +57,16 @@ func (atm *AliveTopicsMaintainer) Start() {
 						ProduceQueue:    atm.ProduceQueue,
 						ClusterTopicMap: atm.clusterTopicMap,
 						CountService:    atm.CountService,
-						Logger: atm.Logger.With(
-							zap.String("name", "topicHandler"),
+						Logger: util.GetLogger().With(
+							zap.String("module", "topicHandler"),
 						),
 					}
 					topicHandler.Init(topicsLink, topicString, clusterString, postfix)
 					go topicHandler.Start()
+					atm.Logger.Info("create a new topic handler",
+						zap.String("topic", topicString),
+						zap.String("cluster", clusterString),
+					)
 				}
 			}
 			atm.clusterTopicMap.ReleaseLock(clusterString)

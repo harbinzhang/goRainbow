@@ -1,7 +1,6 @@
 package util
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 	"sync"
@@ -57,7 +56,6 @@ func (rc *RequestCounter) generateMetric() {
 		prefix := "fjord.burrow." + env + "." + rc.Name
 		envTag := "env=" + env
 		message := strings.Join([]string{prefix, strconv.Itoa(count), timestamp, rc.Postfix, envTag}, " ")
-		fmt.Println("Data traffic produced: " + message)
 		rc.ProducerChan <- message
 	}
 	if isAllUnavailable {

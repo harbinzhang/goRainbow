@@ -66,7 +66,7 @@ func (oom *OwnerOffsetMoveHelper) generateMetrics() {
 		ks := strings.Split(k, ":")
 		if len(ks) != 2 {
 			// the params are not "host:port" format, skip this one.
-			oom.CountService.Increase("exceptionCount", oom.env)
+			oom.CountService.Increase("exception.invalidFormat", oom.env)
 			continue
 		}
 
@@ -93,8 +93,14 @@ func (oom *OwnerOffsetMoveHelper) generateMetrics() {
 		} else {
 			// the precise result should be
 			// offsetMove := strconv.FormatInt(int64(float64(offsetDiff*60)/float64(timeDiff)), 10)
-			oom.CountService.Increase("exceptionCount", oom.env)
-
+			oom.CountService.Increase("exception.timeDiffInvalid", oom.env)
+			oom.Logger.Warn("TimeDiff is not valid",
+				zap.String("cluster", oom.env),
+				zap.String("tag", oom.tag),
+				zap.String("prefix", oom.prefix),
+				zap.Int64("timeDiff", timeDiff),
+				zap.Int64("timestamp", partitionOffsetMove.CurtTimestamp),
+			)
 			fmt.Println("current time diff is" + strconv.FormatInt(timeDiff, 10))
 		}
 		oom.syncMap.ReleaseLock(k)

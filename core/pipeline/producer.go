@@ -55,6 +55,7 @@ func (p *Producer) Start() {
 				if ev.TopicPartition.Error != nil {
 					p.Logger.Warn("Delivery failed",
 						zap.String("topicPartition", ev.TopicPartition.String()),
+						zap.Int64("timestamp", time.Now().Unix()),
 					)
 				} else {
 					// fmt.Printf("Delivered message to %v\n", ev.TopicPartition)
@@ -84,8 +85,7 @@ func (p *Producer) Start() {
 
 	for message := range p.ProduceQueue {
 		go rcsMetricsSent.Increase(env)
-		// fmt.Println(message)
-		p.Logger.Info("Produced to speed-racer: " + message)
+		p.Logger.Debug("Produced to speed-racer: " + message)
 		kafkaProducer.Produce(&kafka.Message{
 			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
 			Value:          []byte(message),

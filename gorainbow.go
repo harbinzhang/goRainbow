@@ -63,6 +63,6 @@ func main() {
 	http.HandleFunc("/health_check", healthCheckHandler)
 	http.ListenAndServe(":7099", nil)
 
-	fmt.Println("server exited")
+	fmt.Println("goRainbow exited")
 	close(produceQueue)
 }

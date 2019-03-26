@@ -67,6 +67,10 @@ func (t *Translator) Start() {
 	)
 }
 
+func (t *Translator) Stop() error {
+	return nil
+}
+
 func (t *Translator) parseInfo(lag protocol.LagStatus) {
 	// lag is 0 or non-zero.
 	// parse it into lower level(partitions, maxlag).

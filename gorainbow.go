@@ -64,5 +64,7 @@ func main() {
 	http.ListenAndServe(":7099", nil)
 
 	fmt.Println("goRainbow exited")
+
+	countService.Stop()
 	close(produceQueue)
 }

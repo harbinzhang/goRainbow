@@ -79,6 +79,10 @@ func (th *TopicHandler) Start() {
 	)
 }
 
+func (th *TopicHandler) Stop() error {
+	return nil
+}
+
 func (th *TopicHandler) handleTopicOffset(topicOffset protocol.TopicOffset, prefix string) {
 	topicTag := "topic=" + th.topic
 	for id, offset := range topicOffset.Offsets {

@@ -92,3 +92,7 @@ func (p *Producer) Start() {
 		}, nil)
 	}
 }
+
+func (p *Producer) Stop() error {
+	return nil
+}

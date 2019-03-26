@@ -19,11 +19,13 @@ type OwnerOffsetMoveHelper struct {
 	ProduceQueue chan<- string
 	Logger       *zap.Logger
 
-	syncMap *util.SyncNestedMap
-	prefix  string
-	postfix string
-	env     string
-	tag     string
+	syncMap     *util.SyncNestedMap
+	prefix      string
+	postfix     string
+	env         string
+	tag         string
+	ticker      *time.Ticker
+	quitChannel chan struct{}
 }
 
 func (oom *OwnerOffsetMoveHelper) Init(prefix string, postfix string, env string, tag string) {
@@ -35,13 +37,27 @@ func (oom *OwnerOffsetMoveHelper) Init(prefix string, postfix string, env string
 	oom.env = env
 	oom.tag = tag
 
+	oom.ticker = time.NewTicker(60 * time.Second)
+	oom.quitChannel = make(chan struct{})
 	go func() {
-		ticker := time.NewTicker(60 * time.Second)
 		for {
-			<-ticker.C
-			oom.generateMetrics()
+			select {
+			case <-oom.ticker.C:
+				oom.generateMetrics()
+			case <-oom.quitChannel:
+				return
+			}
 		}
 	}()
+}
+
+func (oom *OwnerOffsetMoveHelper) Stop() error {
+	oom.Logger.Info("stopping")
+
+	oom.ticker.Stop()
+	close(oom.quitChannel)
+
+	return nil
 }
 
 func (oom *OwnerOffsetMoveHelper) Update(key string, offset int, timestamp int64) {

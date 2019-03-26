@@ -75,8 +75,8 @@ func (atm *AliveTopicsMaintainer) Start() {
 	}
 }
 
-func (atm *AliveTopicsMaintainer) Stop() {
-
+func (atm *AliveTopicsMaintainer) Stop() error {
+	return nil
 }
 
 func getTopics(link string, cluster string) (interface{}, string) {

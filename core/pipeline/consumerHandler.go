@@ -78,6 +78,6 @@ func (ch *ConsumerHandler) Start() {
 	)
 }
 
-func (ch *ConsumerHandler) Stop() {
-
+func (ch *ConsumerHandler) Stop() error {
+	return nil
 }

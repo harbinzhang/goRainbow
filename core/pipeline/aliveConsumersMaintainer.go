@@ -88,6 +88,6 @@ func (acm *AliveConsumersMaintainer) Start() {
 	}
 }
 
-func (acm *AliveConsumersMaintainer) Stop() {
-
+func (acm *AliveConsumersMaintainer) Stop() error {
+	return nil
 }

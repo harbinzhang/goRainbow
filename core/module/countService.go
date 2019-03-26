@@ -30,6 +30,16 @@ func (cc *CountService) Init(produceQueue chan<- string) {
 	cc.produceQueue = produceQueue
 }
 
+func (cc *CountService) Stop() error {
+	for _, val := range cc.counterMap {
+		err := val.Stop()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (cc *CountService) isExistOrInit(RequestCounterName string) {
 	cc.RLock()
 	if _, ok := cc.counterMap[RequestCounterName]; !ok {

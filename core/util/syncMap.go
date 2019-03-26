@@ -4,9 +4,9 @@ import (
 	"sync"
 )
 
-// SyncNestedMap is used for goRainbow parent-info mapping
-// No need to use RWMutex, because only main thread would read
-// and two threads would write.
+// SyncNestedMap is used for goRainbow nested mapping
+// No need to use RWMutex, because only main thread would read it
+// and two threads would write to this map.
 type SyncNestedMap struct {
 	sync.Mutex
 	infoMap    map[string]interface{}

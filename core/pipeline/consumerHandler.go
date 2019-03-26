@@ -44,7 +44,7 @@ func (ch *ConsumerHandler) Start() {
 		ProduceQueue: ch.ProduceQueue,
 		CountService: ch.CountService,
 		Logger: util.GetLogger().With(
-			zap.String("name", "Translator"),
+			zap.String("module", "Translator"),
 		),
 	}
 	translator.Init(prefix, ch.cluster)

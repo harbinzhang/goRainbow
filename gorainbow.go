@@ -33,7 +33,7 @@ func main() {
 		ProduceQueue: produceQueue,
 		CountService: countService,
 		Logger: logger.With(
-			zap.String("name", "aliveConsumersMaintainer"),
+			zap.String("module", "aliveConsumersMaintainer"),
 		),
 	}
 
@@ -42,7 +42,7 @@ func main() {
 		ProduceQueue: produceQueue,
 		CountService: countService,
 		Logger: logger.With(
-			zap.String("name", "aliveTopicsMaintainer"),
+			zap.String("module", "aliveTopicsMaintainer"),
 		),
 	}
 
@@ -50,7 +50,7 @@ func main() {
 		ProduceQueue: produceQueue,
 		CountService: countService,
 		Logger: logger.With(
-			zap.String("name", "producer"),
+			zap.String("module", "producer"),
 		),
 	}
 

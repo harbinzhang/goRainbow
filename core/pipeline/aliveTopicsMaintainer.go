@@ -58,7 +58,7 @@ func (atm *AliveTopicsMaintainer) Start() {
 						ClusterTopicMap: atm.clusterTopicMap,
 						CountService:    atm.CountService,
 						Logger: util.GetLogger().With(
-							zap.String("name", "topicHandler"),
+							zap.String("module", "topicHandler"),
 						),
 					}
 					topicHandler.Init(topicsLink, topicString, clusterString, postfix)

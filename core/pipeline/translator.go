@@ -43,7 +43,7 @@ func (t *Translator) Init(prefix string, env string) {
 		CountService: t.CountService,
 		ProduceQueue: t.ProduceQueue,
 		Logger: util.GetLogger().With(
-			zap.String("name", "consumerOwnerOffsetMoveHelper"),
+			zap.String("module", "consumerOwnerOffsetMoveHelper"),
 		),
 	}
 	t.oom.Init(t.prefix, t.postfix, t.env, "hosts")

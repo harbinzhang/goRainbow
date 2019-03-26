@@ -44,7 +44,7 @@ func (th *TopicHandler) Start() {
 		CountService: th.CountService,
 		ProduceQueue: th.ProduceQueue,
 		Logger: util.GetLogger().With(
-			zap.String("name", "topicOwnerOffsetMoveHelper"),
+			zap.String("module", "topicOwnerOffsetMoveHelper"),
 		),
 	}
 	th.oom.Init(prefix, th.postfix, th.cluster, "offsetRate")

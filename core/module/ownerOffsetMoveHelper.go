@@ -93,7 +93,7 @@ func (oom *OwnerOffsetMoveHelper) generateMetrics() {
 		} else {
 			// the precise result should be
 			// offsetMove := strconv.FormatInt(int64(float64(offsetDiff*60)/float64(timeDiff)), 10)
-			oom.CountService.Increase("exception.timeDiff", oom.env)
+			oom.CountService.Increase("exception.timeDiffInvalid", oom.env)
 			oom.Logger.Warn("TimeDiff is not valid",
 				zap.String("cluster", oom.env),
 				zap.String("tag", oom.tag),

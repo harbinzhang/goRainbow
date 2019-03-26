@@ -69,7 +69,7 @@ func (acm *AliveConsumersMaintainer) Start() {
 						CountService:       acm.CountService,
 						ClusterConsumerMap: acm.clusterConsumerMap,
 						Logger: util.GetLogger().With(
-							zap.String("name", "consumerHandler"),
+							zap.String("module", "consumerHandler"),
 						),
 					}
 					consumerHandler.Init(consumersLink, consumerString, clusterString)

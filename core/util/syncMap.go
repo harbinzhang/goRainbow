@@ -46,9 +46,9 @@ func (snm *SyncNestedMap) ReleaseLock(parent string) bool {
 }
 
 func (snm *SyncNestedMap) GetChild(parent string, child interface{}) interface{} {
-
 	snm.Lock()
 	defer snm.Unlock()
+
 	if _, ok := snm.infoMap[parent]; ok {
 
 	} else {

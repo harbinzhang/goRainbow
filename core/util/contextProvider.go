@@ -2,7 +2,6 @@ package util
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"strings"
 
@@ -25,7 +24,7 @@ func (cp *ContextProvider) GetConf() protocol.Config {
 	defer configFile.Close()
 	decoder := json.NewDecoder(configFile)
 	if err := decoder.Decode(&conf); err != nil {
-		fmt.Println("Err conf: ", err)
+		panic("Err decode config: " + err.Error())
 	}
 	return conf
 }

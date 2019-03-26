@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/HarbinZhang/goRainbow/core/module"
 	"github.com/HarbinZhang/goRainbow/core/util"
@@ -12,8 +14,9 @@ import (
 )
 
 func main() {
-	const link string = "http://127.0.0.1:8000/v3/kafka"
+	defer handleExit()
 
+	const link string = "http://127.0.0.1:8000/v3/kafka"
 	const ProduceQueueSize int = 9000
 
 	// Queue init
@@ -54,9 +57,9 @@ func main() {
 		),
 	}
 
+	go producer.Start()
 	go aliveConsumersMaintainer.Start()
 	go aliveTopicsMaintainer.Start()
-	go producer.Start()
 
 	// health_check server
 	healthCheckHandler := module.HealthChecker(countService)
@@ -67,4 +70,17 @@ func main() {
 
 	countService.Stop()
 	close(produceQueue)
+
+	// exit cleanly
+	os.Exit(0)
+}
+
+func handleExit() {
+	if e := recover(); e != nil {
+		if exit, ok := e.(string); ok {
+			fmt.Fprintln(os.Stderr, exit, "Stopped goRainbow at", time.Now().Format("March 26, 2019 at 1:24pm (PST)"))
+			os.Exit(1)
+		}
+		panic(e) // not an string, bubble up
+	}
 }

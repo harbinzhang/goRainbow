@@ -42,7 +42,7 @@ func (p *Producer) Start() {
 	}
 	kafkaProducer, err := kafka.NewProducer(&kafkaConfig)
 	if err != nil {
-		panic(err)
+		panic("Err building kafka producer: " + err.Error())
 	}
 
 	defer kafkaProducer.Close()

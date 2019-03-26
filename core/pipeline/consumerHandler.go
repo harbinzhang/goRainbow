@@ -43,7 +43,7 @@ func (ch *ConsumerHandler) Start() {
 		LagQueue:     lagStatusQueue,
 		ProduceQueue: ch.ProduceQueue,
 		CountService: ch.CountService,
-		Logger: ch.Logger.With(
+		Logger: util.GetLogger().With(
 			zap.String("name", "Translator"),
 		),
 	}
@@ -57,6 +57,7 @@ func (ch *ConsumerHandler) Start() {
 		if lagStatus.Error {
 			ch.Logger.Warn("Get consumer /lag error",
 				zap.String("message", lagStatus.Message),
+				zap.Int64("timestamp", time.Now().Unix()),
 			)
 			break
 		}
@@ -72,7 +73,9 @@ func (ch *ConsumerHandler) Start() {
 	close(lagStatusQueue)
 	ch.Logger.Warn("consumer is invalid, will stop handler.",
 		zap.String("consumer", ch.consumer),
-		zap.String("cluster", ch.cluster))
+		zap.String("cluster", ch.cluster),
+		zap.Int64("timestamp", time.Now().Unix()),
+	)
 }
 
 func (ch *ConsumerHandler) Stop() {

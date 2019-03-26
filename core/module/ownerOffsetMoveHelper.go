@@ -99,6 +99,7 @@ func (oom *OwnerOffsetMoveHelper) generateMetrics() {
 				zap.String("tag", oom.tag),
 				zap.String("prefix", oom.prefix),
 				zap.Int64("timeDiff", timeDiff),
+				zap.Int64("timestamp", partitionOffsetMove.CurtTimestamp),
 			)
 			fmt.Println("current time diff is" + strconv.FormatInt(timeDiff, 10))
 		}

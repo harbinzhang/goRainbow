@@ -43,7 +43,7 @@ func (th *TopicHandler) Start() {
 	th.oom = &module.OwnerOffsetMoveHelper{
 		CountService: th.CountService,
 		ProduceQueue: th.ProduceQueue,
-		Logger: th.Logger.With(
+		Logger: util.GetLogger().With(
 			zap.String("name", "topicOwnerOffsetMoveHelper"),
 		),
 	}
@@ -57,6 +57,7 @@ func (th *TopicHandler) Start() {
 		if topicOffset.Error {
 			th.Logger.Warn("Get consumer /lag error",
 				zap.String("message", topicOffset.Message),
+				zap.Int64("timestamp", time.Now().Unix()),
 			)
 			break
 		}
@@ -73,7 +74,9 @@ func (th *TopicHandler) Start() {
 
 	th.Logger.Warn("Topic is invalid, will stop handler",
 		zap.String("topic", th.topic),
-		zap.String("cluster", th.cluster))
+		zap.String("cluster", th.cluster),
+		zap.Int64("timestamp", time.Now().Unix()),
+	)
 }
 
 func (th *TopicHandler) handleTopicOffset(topicOffset protocol.TopicOffset, prefix string) {

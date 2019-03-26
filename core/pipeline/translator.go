@@ -42,7 +42,7 @@ func (t *Translator) Init(prefix string, env string) {
 	t.oom = &module.OwnerOffsetMoveHelper{
 		CountService: t.CountService,
 		ProduceQueue: t.ProduceQueue,
-		Logger: t.Logger.With(
+		Logger: util.GetLogger().With(
 			zap.String("name", "consumerOwnerOffsetMoveHelper"),
 		),
 	}
@@ -63,6 +63,7 @@ func (t *Translator) Start() {
 
 	t.Logger.Warn("translator exit",
 		zap.String("prefix", t.prefix),
+		zap.Int64("timestamp", time.Now().Unix()),
 	)
 }
 
@@ -103,6 +104,7 @@ func (t *Translator) parsePartitionInfo(partitions []protocol.Partition, postfix
 				zap.String("prefix", t.prefix),
 				zap.Int("currentLag", currentLag),
 				zap.String("partitionID", partitionID),
+				zap.Int64("timestamp", time.Now().Unix()),
 			)
 			t.CountService.Increase("exception.ownerInvalid", t.env)
 			return
@@ -155,6 +157,7 @@ func (t *Translator) parseMaxLagInfo(maxLag protocol.MaxLag, postfix string) {
 		t.Logger.Warn("owner invalid",
 			zap.String("prefix", t.prefix),
 			zap.Int("maxLagPartitionID", maxLag.Partition),
+			zap.Int64("timestamp", time.Now().Unix()),
 		)
 		t.CountService.Increase("exception.ownerInvalid", t.env)
 		return

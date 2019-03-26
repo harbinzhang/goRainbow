@@ -57,7 +57,7 @@ func (atm *AliveTopicsMaintainer) Start() {
 						ProduceQueue:    atm.ProduceQueue,
 						ClusterTopicMap: atm.clusterTopicMap,
 						CountService:    atm.CountService,
-						Logger: atm.Logger.With(
+						Logger: util.GetLogger().With(
 							zap.String("name", "topicHandler"),
 						),
 					}

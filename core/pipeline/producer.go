@@ -55,6 +55,7 @@ func (p *Producer) Start() {
 				if ev.TopicPartition.Error != nil {
 					p.Logger.Warn("Delivery failed",
 						zap.String("topicPartition", ev.TopicPartition.String()),
+						zap.Int64("timestamp", time.Now().Unix()),
 					)
 				} else {
 					// fmt.Printf("Delivered message to %v\n", ev.TopicPartition)

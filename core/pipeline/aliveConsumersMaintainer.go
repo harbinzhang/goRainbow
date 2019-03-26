@@ -68,7 +68,7 @@ func (acm *AliveConsumersMaintainer) Start() {
 						ProduceQueue:       acm.ProduceQueue,
 						CountService:       acm.CountService,
 						ClusterConsumerMap: acm.clusterConsumerMap,
-						Logger: acm.Logger.With(
+						Logger: util.GetLogger().With(
 							zap.String("name", "consumerHandler"),
 						),
 					}

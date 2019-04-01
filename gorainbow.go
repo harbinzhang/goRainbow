@@ -23,8 +23,8 @@ func main() {
 	produceQueue := make(chan string, ProduceQueueSize)
 
 	// Prepare count service
-	countService := &module.CountService{}
-	countService.Init(produceQueue)
+	countService := &module.CountService{ProduceQueue: produceQueue}
+	countService.Start()
 
 	//prepare logger
 	logger := util.GetLogger()

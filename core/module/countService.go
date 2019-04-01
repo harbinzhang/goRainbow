@@ -15,19 +15,19 @@ import (
 // at the first time Increase()
 type CountService struct {
 	sync.RWMutex
-	counterMap   map[string]*util.RequestCounter
-	produceQueue chan<- string
-	postfix      string
+
+	ProduceQueue chan<- string
+
+	counterMap map[string]*util.RequestCounter
+	postfix    string
 }
 
-func (cc *CountService) Init(produceQueue chan<- string) {
+func (cc *CountService) Start() {
 	cc.counterMap = make(map[string]*util.RequestCounter)
 
 	contextProvider := util.ContextProvider{}
 	contextProvider.Init("config/config.json")
 	cc.postfix = contextProvider.GetPostfix()
-
-	cc.produceQueue = produceQueue
 }
 
 func (cc *CountService) Stop() error {
@@ -52,7 +52,7 @@ func (cc *CountService) isExistOrInit(RequestCounterName string) {
 		rcs := &util.RequestCounter{
 			Name:         RequestCounterName,
 			Interval:     60 * time.Second,
-			ProducerChan: cc.produceQueue,
+			ProducerChan: cc.ProduceQueue,
 			Postfix:      cc.postfix,
 		}
 		rcs.Init()

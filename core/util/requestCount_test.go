@@ -10,21 +10,21 @@ import (
 
 func TestRequestCountServiceSingle(t *testing.T) {
 	producerChan := make(chan string, 10)
-	rc := &RequestCountService{
+	rc := &RequestCounter{
 		Name:         "totalMessage",
 		Interval:     1 * time.Second,
 		ProducerChan: producerChan,
 	}
 	rc.Init()
 	rc.Increase("test")
-	// t.Log(rc.envCount["test"])
+
 	time.Sleep(1 * time.Second)
 	res := <-producerChan
 	assert.Equal(t, "1", strings.Split(res, " ")[1], "message not correct")
 
 	rc.Increase("test")
 	rc.Increase("test")
-	// t.Log(rc.envCount["test"])
+
 	time.Sleep(1 * time.Second)
 	res = <-producerChan
 	assert.Equal(t, "2", strings.Split(res, " ")[1], "message not correct")
@@ -33,7 +33,7 @@ func TestRequestCountServiceSingle(t *testing.T) {
 
 func TestRequestCountServiceMulti(t *testing.T) {
 	producerChan := make(chan string, 10)
-	rc := &RequestCountService{
+	rc := &RequestCounter{
 		Name:         "totalMessage",
 		Interval:     100 * time.Millisecond,
 		ProducerChan: producerChan,
@@ -52,20 +52,19 @@ func TestRequestCountServiceMulti(t *testing.T) {
 
 func TestMetricsIsAvailable(t *testing.T) {
 	producerChan := make(chan string, 10)
-	rc := &RequestCountService{
+	rc := &RequestCounter{
 		Name:         "totalMessage",
 		Interval:     10 * time.Millisecond,
 		ProducerChan: producerChan,
 	}
 	rc.Init()
-	// t.Log(rc.envCount["test"])
-	assert.Equal(t, true, rc.MetricsIsAvailable(), "MetricsIsAvailable should return true")
+	assert.Equal(t, true, rc.IsMetricAvailable(), "IsMetricAvailable should return true")
 	time.Sleep(50 * time.Millisecond)
-	assert.Equal(t, true, rc.MetricsIsAvailable(), "MetricsIsAvailable should return true")
+	assert.Equal(t, true, rc.IsMetricAvailable(), "IsMetricAvailable should return true")
 	time.Sleep(50 * time.Millisecond)
-	assert.Equal(t, false, rc.MetricsIsAvailable(), "MetricsIsAvailable should return true")
+	assert.Equal(t, false, rc.IsMetricAvailable(), "IsMetricAvailable should return true")
 	rc.Increase("test")
-	assert.Equal(t, false, rc.MetricsIsAvailable(), "MetricsIsAvailable should return true")
-	time.Sleep(10 * time.Millisecond)
-	assert.Equal(t, true, rc.MetricsIsAvailable(), "MetricsIsAvailable should return true")
+	assert.Equal(t, false, rc.IsMetricAvailable(), "IsMetricAvailable should return true")
+	time.Sleep(20 * time.Millisecond)
+	assert.Equal(t, true, rc.IsMetricAvailable(), "IsMetricAvailable should return true")
 }

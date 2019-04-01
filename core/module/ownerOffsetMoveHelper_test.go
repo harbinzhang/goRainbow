@@ -1,44 +1,25 @@
 package module
 
 import (
-	"github.com/HarbinZhang/goRainbow/core/util"
 	"testing"
+
+	"go.uber.org/zap"
 
 	"github.com/HarbinZhang/goRainbow/core/protocol"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestOwnerOffsetMoveHelper_generateMetrics(t *testing.T) {
-	type fields struct {
-		syncMap      *util.SyncNestedMap
-		prefix       string
-		postfix      string
-		produceQueue chan<- string
-	}
-	tests := []struct {
-		name   string
-		fields fields
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			oom := &OwnerOffsetMoveHelper{
-				syncMap:      tt.fields.syncMap,
-				prefix:       tt.fields.prefix,
-				postfix:      tt.fields.postfix,
-				produceQueue: tt.fields.produceQueue,
-			}
-			oom.generateMetrics()
-		})
-	}
-}
-
 func TestUpdate(t *testing.T) {
 	produceQueue := make(chan string, 9000)
+	countService := &CountService{ProduceQueue: produceQueue}
+	countService.Start()
 
-	oom := &OwnerOffsetMoveHelper{}
-	oom.Init(produceQueue, "prefix", "postfix")
+	oom := &OwnerOffsetMoveHelper{
+		CountService: countService,
+		ProduceQueue: produceQueue,
+		Logger:       zap.NewNop(),
+	}
+	oom.Init("prefix", "postfix", "env", "tag")
 
 	oom.Update("test1:1", 10, 30)
 	keys := oom.GetSyncMap().GetKeys()
@@ -67,9 +48,15 @@ func TestUpdate(t *testing.T) {
 
 func TestGenerateMetrics(t *testing.T) {
 	produceQueue := make(chan string, 9000)
+	countService := &CountService{ProduceQueue: produceQueue}
+	countService.Start()
 
-	oom := &OwnerOffsetMoveHelper{}
-	oom.Init(produceQueue, "prefix", "postfix")
+	oom := &OwnerOffsetMoveHelper{
+		CountService: countService,
+		ProduceQueue: produceQueue,
+		Logger:       zap.NewNop(),
+	}
+	oom.Init("prefix", "postfix", "env", "tag")
 
 	keys := oom.GetSyncMap().GetKeys()
 	assert.Equal(t, 0, len(keys), "keys length should be 0")

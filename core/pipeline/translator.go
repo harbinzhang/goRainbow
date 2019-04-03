@@ -111,7 +111,6 @@ func (t *Translator) parsePartitionInfo(partitions []protocol.Partition, postfix
 				zap.Int64("timestamp", time.Now().Unix()),
 			)
 			t.CountService.Increase("exception.ownerInvalid", t.env)
-			return
 		}
 
 		topic := partition.Topic

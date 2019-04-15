@@ -31,7 +31,7 @@ func (t *Translator) Init(prefix string, env string) {
 	t.env = env
 
 	contextProvider := util.ContextProvider{}
-	contextProvider.Init("config/config.json")
+	contextProvider.Init()
 	t.postfix = contextProvider.GetPostfix()
 
 	// Prepare metrics traffic control

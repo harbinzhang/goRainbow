@@ -30,7 +30,7 @@ func (acm *AliveConsumersMaintainer) Start() {
 	acm.clusterConsumerMap.Init()
 
 	contextProvider := util.ContextProvider{}
-	contextProvider.Init("config/config.json")
+	contextProvider.Init()
 	blacklist := contextProvider.GetBlacklist()
 
 	for {

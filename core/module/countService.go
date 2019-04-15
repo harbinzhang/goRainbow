@@ -26,7 +26,7 @@ func (cc *CountService) Start() {
 	cc.counterMap = make(map[string]*util.RequestCounter)
 
 	contextProvider := util.ContextProvider{}
-	contextProvider.Init("config/config.json")
+	contextProvider.Init()
 	cc.postfix = contextProvider.GetPostfix()
 }
 
@@ -40,6 +40,19 @@ func (cc *CountService) Stop() error {
 	return nil
 }
 
+func (cc *CountService) Increase(RequestCounterName string, env string) {
+	cc.isExistOrInit(RequestCounterName)
+	cc.counterMap[RequestCounterName].Increase(env)
+}
+
+// IsCountServiceAvailable
+func (cc *CountService) IsCountServiceAvailable() bool {
+	const TotalMessage string = "totalMessage"
+	cc.isExistOrInit(TotalMessage)
+	return cc.counterMap[TotalMessage].IsMetricAvailable()
+}
+
+// isExistOrInit would init requestCounter if there is no one named RequestCounterName existing.
 func (cc *CountService) isExistOrInit(RequestCounterName string) {
 	cc.RLock()
 	if _, ok := cc.counterMap[RequestCounterName]; !ok {
@@ -61,16 +74,4 @@ func (cc *CountService) isExistOrInit(RequestCounterName string) {
 	} else {
 		cc.RUnlock()
 	}
-}
-
-func (cc *CountService) Increase(RequestCounterName string, env string) {
-	cc.isExistOrInit(RequestCounterName)
-	cc.counterMap[RequestCounterName].Increase(env)
-}
-
-// IsCountServiceAvailable
-func (cc *CountService) IsCountServiceAvailable() bool {
-	const TotalMessage string = "totalMessage"
-	cc.isExistOrInit(TotalMessage)
-	return cc.counterMap[TotalMessage].IsMetricAvailable()
 }

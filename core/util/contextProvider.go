@@ -13,8 +13,8 @@ type ContextProvider struct {
 	filename string
 }
 
-func (cp *ContextProvider) Init(name string) {
-	cp.filename = name
+func (cp *ContextProvider) Init() {
+	cp.filename = os.Getenv("configPath")
 }
 
 func (cp *ContextProvider) GetConf() protocol.Config {

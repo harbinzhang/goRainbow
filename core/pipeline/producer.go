@@ -23,7 +23,7 @@ func (p *Producer) Start() {
 	defer p.Logger.Sync()
 
 	contextProvider := util.ContextProvider{}
-	contextProvider.Init("config/config.json")
+	contextProvider.Init()
 	postfix := contextProvider.GetPostfix()
 	conf := contextProvider.GetConf()
 

@@ -25,7 +25,7 @@ func (atm *AliveTopicsMaintainer) Start() {
 	defer atm.Logger.Sync()
 
 	contextProvider := util.ContextProvider{}
-	contextProvider.Init("config/config.json")
+	contextProvider.Init()
 	postfix := contextProvider.GetPostfix()
 
 	atm.clusterTopicMap = &util.SyncNestedMap{}

@@ -19,6 +19,8 @@ func main() {
 	const link string = "http://127.0.0.1:8000/v3/kafka"
 	const ProduceQueueSize int = 9000
 
+	os.Setenv("configPath", "config/config.json")
+
 	// Queue init
 	produceQueue := make(chan string, ProduceQueueSize)
 

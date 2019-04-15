@@ -52,6 +52,9 @@ before_script:
 # script always run to completion (set +e). All of these code checks are must haves
 # in a modern Go project.
 script:
+  - ls 
+  - pwd
+  - git branch
   - git status
   - git checkout dev-coverage
   - git status

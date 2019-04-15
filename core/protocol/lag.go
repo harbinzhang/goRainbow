@@ -16,7 +16,7 @@ type Field struct {
 	Short bool   `json:"short,omitempty"`
 }
 
-// Partion represents a partition
+// Partition represents a partition
 type Partition struct {
 	Topic     string `json:"topic"`
 	Partition int    `json:"partition"`

@@ -42,7 +42,7 @@ func (cc *CountService) Stop() error {
 	return nil
 }
 
-// Increase() inceases 1 in RequestCounterName of env.
+// Increase inceases 1 in RequestCounterName of env.
 // It would init a new RequestCounter if not exist.
 func (cc *CountService) Increase(RequestCounterName string, env string) {
 	cc.isExistOrInit(RequestCounterName)

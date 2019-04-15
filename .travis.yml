@@ -52,7 +52,9 @@ before_script:
 # script always run to completion (set +e). All of these code checks are must haves
 # in a modern Go project.
 script:
+  - git status
   - git checkout dev-coverage
+  - git status
   - test -z "$(gofmt -s -l $GO_FILES)"       # Fail if a .go file hasn't been formatted with gofmt
   - go test --timeout 5s -v -race ./...      # Run all the tests with the race detector enabled
   - ./testAndCover.sh                        # Run the tests again to get coverage info

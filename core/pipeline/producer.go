@@ -19,6 +19,7 @@ type Producer struct {
 	Logger       *zap.Logger
 }
 
+// Start is a general start
 func (p *Producer) Start() {
 	defer p.Logger.Sync()
 
@@ -93,6 +94,7 @@ func (p *Producer) Start() {
 	}
 }
 
+// Stop is a general stop
 func (p *Producer) Stop() error {
 	return nil
 }

@@ -22,6 +22,7 @@ type TwinStateMachine struct {
 	mmap map[string]int
 }
 
+// Init is init
 func (tsm *TwinStateMachine) Init() {
 	tsm.mmap = make(map[string]int)
 }

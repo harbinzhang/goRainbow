@@ -41,6 +41,7 @@ func (rc *RequestCounter) Init() {
 	}()
 }
 
+// Stop is for stopping itself
 func (rc *RequestCounter) Stop() error {
 	rc.ticker.Stop()
 	close(rc.quitChannel)
@@ -86,7 +87,7 @@ func getCurrentEpochTime() string {
 	return strconv.FormatInt(time.Now().Unix(), 10)
 }
 
-// MetricsIsAvailable is for test if Burrow is sending Lag information to Rainbow
+// IsMetricAvailable is for test if Burrow is sending Lag information to Rainbow
 func (rc *RequestCounter) IsMetricAvailable() bool {
 	rc.Lock()
 	defer rc.Unlock()

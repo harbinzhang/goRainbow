@@ -22,6 +22,7 @@ type CountService struct {
 	postfix    string
 }
 
+// Start is a general start()
 func (cc *CountService) Start() {
 	cc.counterMap = make(map[string]*util.RequestCounter)
 
@@ -30,6 +31,7 @@ func (cc *CountService) Start() {
 	cc.postfix = contextProvider.GetPostfix()
 }
 
+// Stop is a general stop()
 func (cc *CountService) Stop() error {
 	for _, val := range cc.counterMap {
 		err := val.Stop()
@@ -40,12 +42,14 @@ func (cc *CountService) Stop() error {
 	return nil
 }
 
+// Increase() inceases 1 in RequestCounterName of env.
+// It would init a new RequestCounter if not exist.
 func (cc *CountService) Increase(RequestCounterName string, env string) {
 	cc.isExistOrInit(RequestCounterName)
 	cc.counterMap[RequestCounterName].Increase(env)
 }
 
-// IsCountServiceAvailable
+// IsCountServiceAvailable is for health_check
 func (cc *CountService) IsCountServiceAvailable() bool {
 	const TotalMessage string = "totalMessage"
 	cc.isExistOrInit(TotalMessage)

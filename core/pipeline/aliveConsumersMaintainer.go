@@ -23,6 +23,7 @@ type AliveConsumersMaintainer struct {
 	clusterConsumerMap *util.SyncNestedMap
 }
 
+// Start is a general start
 func (acm *AliveConsumersMaintainer) Start() {
 	defer acm.Logger.Sync()
 
@@ -88,6 +89,7 @@ func (acm *AliveConsumersMaintainer) Start() {
 	}
 }
 
+// Stop is a general stop
 func (acm *AliveConsumersMaintainer) Stop() error {
 	return nil
 }

@@ -13,10 +13,12 @@ type ContextProvider struct {
 	filename string
 }
 
+// Init is for
 func (cp *ContextProvider) Init() {
 	cp.filename = os.Getenv("configPath")
 }
 
+// GetConf is for
 func (cp *ContextProvider) GetConf() protocol.Config {
 	// Prepare config file
 	var conf protocol.Config
@@ -29,6 +31,7 @@ func (cp *ContextProvider) GetConf() protocol.Config {
 	return conf
 }
 
+// GetPostfix is for
 func (cp *ContextProvider) GetPostfix() string {
 
 	conf := cp.GetConf()
@@ -61,6 +64,7 @@ func (cp *ContextProvider) GetPostfix() string {
 	return postfix
 }
 
+// GetBlacklist is for
 func (cp *ContextProvider) GetBlacklist() string {
 	conf := cp.GetConf()
 	return conf.Consumer.Blacklist

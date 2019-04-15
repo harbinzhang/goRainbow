@@ -21,6 +21,7 @@ type AliveTopicsMaintainer struct {
 	clusterTopicMap *util.SyncNestedMap
 }
 
+// Start is a general start
 func (atm *AliveTopicsMaintainer) Start() {
 	defer atm.Logger.Sync()
 
@@ -75,6 +76,7 @@ func (atm *AliveTopicsMaintainer) Start() {
 	}
 }
 
+// Stop is a general Stop
 func (atm *AliveTopicsMaintainer) Stop() error {
 	return nil
 }

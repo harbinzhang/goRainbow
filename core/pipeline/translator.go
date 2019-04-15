@@ -26,6 +26,7 @@ type Translator struct {
 	oom     *module.OwnerOffsetMoveHelper
 }
 
+// Init is a general init
 func (t *Translator) Init(prefix string, env string) {
 	t.prefix = prefix
 	t.env = env
@@ -49,6 +50,7 @@ func (t *Translator) Init(prefix string, env string) {
 	t.oom.Init(t.prefix, t.postfix, t.env, "hosts")
 }
 
+// Start is a general start
 func (t *Translator) Start() {
 	defer t.Logger.Sync()
 
@@ -67,6 +69,7 @@ func (t *Translator) Start() {
 	)
 }
 
+// Stop is a general stop
 func (t *Translator) Stop() error {
 	return nil
 }

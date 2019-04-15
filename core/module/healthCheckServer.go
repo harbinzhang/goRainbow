@@ -4,6 +4,8 @@ import (
 	"net/http"
 )
 
+// HealthChecker is for health_check service.
+// It checks metrics availability.
 func HealthChecker(cc *CountService) func(http.ResponseWriter, *http.Request) {
 
 	return func(w http.ResponseWriter, r *http.Request) {

@@ -13,6 +13,7 @@ type SyncNestedMap struct {
 	parentLock map[string]*sync.Mutex
 }
 
+// Init is for init itself
 func (snm *SyncNestedMap) Init() {
 	snm.Lock()
 	defer snm.Unlock()
@@ -34,6 +35,7 @@ func (snm *SyncNestedMap) SetLock(parent string) bool {
 	return true
 }
 
+// ReleaseLock is for releasing its parent level lock
 func (snm *SyncNestedMap) ReleaseLock(parent string) bool {
 	snm.Lock()
 	defer snm.Unlock()
@@ -45,6 +47,7 @@ func (snm *SyncNestedMap) ReleaseLock(parent string) bool {
 	return true
 }
 
+// GetChild is for getting child
 func (snm *SyncNestedMap) GetChild(parent string, child interface{}) interface{} {
 	snm.Lock()
 	defer snm.Unlock()
@@ -58,6 +61,7 @@ func (snm *SyncNestedMap) GetChild(parent string, child interface{}) interface{}
 	return snm.infoMap[parent]
 }
 
+// PutChild is for updating child
 func (snm *SyncNestedMap) PutChild(parent string, child interface{}) {
 	snm.Lock()
 	defer snm.Unlock()
@@ -68,6 +72,7 @@ func (snm *SyncNestedMap) PutChild(parent string, child interface{}) {
 	snm.infoMap[parent] = child
 }
 
+// GetKeys gets current keys in infoMap
 func (snm *SyncNestedMap) GetKeys() []string {
 	snm.Lock()
 	defer snm.Unlock()

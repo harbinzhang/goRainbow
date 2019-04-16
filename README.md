@@ -12,10 +12,6 @@ With goRainbow, it provides more visibility for Kafka users:
 2. Consumer status: for each consumer, which partition(s) are hosted and how many records consumed per minute.
 3. Lag: total lag in the whole consumer group and partition level lag.
 4. It provides data traffic statistic.(totalMessage, validMessage, metricsSent)
-5.  Burrow Rainbow provides more visibility for other teams who are using our Kafka service.
-Producer status: for each producer, how many records produced to each partition.
-Consumer status: for each consumer, which partition(s) are hosted and how many records consumed per minute.
-Lag: total lag in the whole consumer group and partition level lag.
 ### Features
 1. Heath-check: It provides health-check HTTP service so that AWS can auto restart Burrow-goRainbow when the service is unavailable.
 2. Dynamic metric sending:

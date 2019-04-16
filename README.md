@@ -5,10 +5,17 @@
 
 # goRainbow
 # What it is
-goRainbow is a plug-in for [Burrow](https://github.com/linkedin/Burrow). It pulls lag information from Burrow, translates it into metrics and sends it to the wavefront.
-1. It pulls lag of consumers.
-2. It pulls offset of topics.
-3. It provides data traffic statistic.(totalMessage, validMessage, metricsSent)
+goRainbow is a plug-in for [Burrow](https://github.com/linkedin/Burrow). Burrow is a Lag monitoring service for Apache Kafka.  
+
+With goRainbow, it provides more visibility for Kafka users:  
+1. Producer status: for each producer, how many records produced to each partition.
+2. Consumer status: for each consumer, which partition(s) are hosted and how many records consumed per minute.
+3. Lag: total lag in the whole consumer group and partition level lag.
+4. It provides data traffic statistic.(totalMessage, validMessage, metricsSent)
+5.  Burrow Rainbow provides more visibility for other teams who are using our Kafka service.
+Producer status: for each producer, how many records produced to each partition.
+Consumer status: for each consumer, which partition(s) are hosted and how many records consumed per minute.
+Lag: total lag in the whole consumer group and partition level lag.
 ### Features
 1. Heath-check: It provides health-check HTTP service so that AWS can auto restart Burrow-goRainbow when the service is unavailable.
 2. Dynamic metric sending:

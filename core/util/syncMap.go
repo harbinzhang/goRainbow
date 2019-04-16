@@ -4,15 +4,16 @@ import (
 	"sync"
 )
 
-// SyncNestedMap is used for goRainbow parent-info mapping
-// No need to use RWMutex, because only main thread would read
-// and two threads would write.
+// SyncNestedMap is used for goRainbow nested mapping
+// No need to use RWMutex, because only main thread would read it
+// and two threads would write to this map.
 type SyncNestedMap struct {
 	sync.Mutex
 	infoMap    map[string]interface{}
 	parentLock map[string]*sync.Mutex
 }
 
+// Init is for init itself
 func (snm *SyncNestedMap) Init() {
 	snm.Lock()
 	defer snm.Unlock()
@@ -34,6 +35,7 @@ func (snm *SyncNestedMap) SetLock(parent string) bool {
 	return true
 }
 
+// ReleaseLock is for releasing its parent level lock
 func (snm *SyncNestedMap) ReleaseLock(parent string) bool {
 	snm.Lock()
 	defer snm.Unlock()
@@ -45,10 +47,11 @@ func (snm *SyncNestedMap) ReleaseLock(parent string) bool {
 	return true
 }
 
+// GetChild is for getting child
 func (snm *SyncNestedMap) GetChild(parent string, child interface{}) interface{} {
-
 	snm.Lock()
 	defer snm.Unlock()
+
 	if _, ok := snm.infoMap[parent]; ok {
 
 	} else {
@@ -58,6 +61,7 @@ func (snm *SyncNestedMap) GetChild(parent string, child interface{}) interface{}
 	return snm.infoMap[parent]
 }
 
+// PutChild is for updating child
 func (snm *SyncNestedMap) PutChild(parent string, child interface{}) {
 	snm.Lock()
 	defer snm.Unlock()
@@ -68,6 +72,7 @@ func (snm *SyncNestedMap) PutChild(parent string, child interface{}) {
 	snm.infoMap[parent] = child
 }
 
+// GetKeys gets current keys in infoMap
 func (snm *SyncNestedMap) GetKeys() []string {
 	snm.Lock()
 	defer snm.Unlock()

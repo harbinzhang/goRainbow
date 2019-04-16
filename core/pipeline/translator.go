@@ -26,12 +26,13 @@ type Translator struct {
 	oom     *module.OwnerOffsetMoveHelper
 }
 
+// Init is a general init
 func (t *Translator) Init(prefix string, env string) {
 	t.prefix = prefix
 	t.env = env
 
 	contextProvider := util.ContextProvider{}
-	contextProvider.Init("config/config.json")
+	contextProvider.Init()
 	t.postfix = contextProvider.GetPostfix()
 
 	// Prepare metrics traffic control
@@ -49,6 +50,7 @@ func (t *Translator) Init(prefix string, env string) {
 	t.oom.Init(t.prefix, t.postfix, t.env, "hosts")
 }
 
+// Start is a general start
 func (t *Translator) Start() {
 	defer t.Logger.Sync()
 
@@ -65,6 +67,11 @@ func (t *Translator) Start() {
 		zap.String("prefix", t.prefix),
 		zap.Int64("timestamp", time.Now().Unix()),
 	)
+}
+
+// Stop is a general stop
+func (t *Translator) Stop() error {
+	return nil
 }
 
 func (t *Translator) parseInfo(lag protocol.LagStatus) {

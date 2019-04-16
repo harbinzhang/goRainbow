@@ -16,6 +16,7 @@ type Field struct {
 	Short bool   `json:"short,omitempty"`
 }
 
+// Partition represents a partition
 type Partition struct {
 	Topic     string `json:"topic"`
 	Partition int    `json:"partition"`
@@ -35,6 +36,7 @@ type Partition struct {
 	Complete   float64 `json:"complete"`
 }
 
+// MaxLag represents max partition lag
 type MaxLag struct {
 	Topic     string `json:"topic"`
 	Partition int    `json:"partition"`

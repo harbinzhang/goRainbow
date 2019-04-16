@@ -23,6 +23,7 @@ type AliveConsumersMaintainer struct {
 	clusterConsumerMap *util.SyncNestedMap
 }
 
+// Start is a general start
 func (acm *AliveConsumersMaintainer) Start() {
 	defer acm.Logger.Sync()
 
@@ -30,7 +31,7 @@ func (acm *AliveConsumersMaintainer) Start() {
 	acm.clusterConsumerMap.Init()
 
 	contextProvider := util.ContextProvider{}
-	contextProvider.Init("config/config.json")
+	contextProvider.Init()
 	blacklist := contextProvider.GetBlacklist()
 
 	for {
@@ -88,6 +89,7 @@ func (acm *AliveConsumersMaintainer) Start() {
 	}
 }
 
-func (acm *AliveConsumersMaintainer) Stop() {
-
+// Stop is a general stop
+func (acm *AliveConsumersMaintainer) Stop() error {
+	return nil
 }

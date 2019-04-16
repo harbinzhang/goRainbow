@@ -11,6 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// TopicHandler is a offset handler for topic.
 type TopicHandler struct {
 	ProduceQueue    chan string
 	ClusterTopicMap *util.SyncNestedMap
@@ -24,6 +25,7 @@ type TopicHandler struct {
 	oom       *module.OwnerOffsetMoveHelper
 }
 
+// Init is a general init
 func (th *TopicHandler) Init(topicLink string, topic string, cluster string, postfix string) {
 	th.topicLink = topicLink
 	th.topic = topic
@@ -31,6 +33,7 @@ func (th *TopicHandler) Init(topicLink string, topic string, cluster string, pos
 	th.postfix = postfix
 }
 
+// Start is a general start
 func (th *TopicHandler) Start() {
 	defer th.Logger.Sync()
 
@@ -77,6 +80,11 @@ func (th *TopicHandler) Start() {
 		zap.String("cluster", th.cluster),
 		zap.Int64("timestamp", time.Now().Unix()),
 	)
+}
+
+// Stop is a general stop
+func (th *TopicHandler) Stop() error {
+	return nil
 }
 
 func (th *TopicHandler) handleTopicOffset(topicOffset protocol.TopicOffset, prefix string) {

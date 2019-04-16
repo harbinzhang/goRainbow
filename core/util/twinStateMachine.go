@@ -22,6 +22,7 @@ type TwinStateMachine struct {
 	mmap map[string]int
 }
 
+// Init is init
 func (tsm *TwinStateMachine) Init() {
 	tsm.mmap = make(map[string]int)
 }
@@ -31,18 +32,20 @@ func (tsm *TwinStateMachine) Put(key string, lag int) bool {
 	tsm.Lock()
 	defer tsm.Unlock()
 
+	var res bool
 	if val, ok := tsm.mmap[key]; ok {
 		if val == lag {
 			tsm.mmap[key] = -1
-			return false
+			res = false
 		} else {
 			tsm.mmap[key] = lag
-			return true
+			res = true
 		}
 	} else {
 		tsm.mmap[key] = lag
-		return true
+		res = true
 	}
+	return res
 }
 
 // PartitionPut is for Partition level use, it's different from Put:

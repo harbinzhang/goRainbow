@@ -2,7 +2,6 @@ package util
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"strings"
 
@@ -14,10 +13,12 @@ type ContextProvider struct {
 	filename string
 }
 
-func (cp *ContextProvider) Init(name string) {
-	cp.filename = name
+// Init is for
+func (cp *ContextProvider) Init() {
+	cp.filename = os.Getenv("configPath")
 }
 
+// GetConf is for
 func (cp *ContextProvider) GetConf() protocol.Config {
 	// Prepare config file
 	var conf protocol.Config
@@ -25,11 +26,12 @@ func (cp *ContextProvider) GetConf() protocol.Config {
 	defer configFile.Close()
 	decoder := json.NewDecoder(configFile)
 	if err := decoder.Decode(&conf); err != nil {
-		fmt.Println("Err conf: ", err)
+		panic("Err decode config: " + err.Error())
 	}
 	return conf
 }
 
+// GetPostfix is for
 func (cp *ContextProvider) GetPostfix() string {
 
 	conf := cp.GetConf()
@@ -62,6 +64,7 @@ func (cp *ContextProvider) GetPostfix() string {
 	return postfix
 }
 
+// GetBlacklist is for
 func (cp *ContextProvider) GetBlacklist() string {
 	conf := cp.GetConf()
 	return conf.Consumer.Blacklist

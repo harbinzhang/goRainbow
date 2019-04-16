@@ -11,6 +11,7 @@ import (
 
 var logger *zap.Logger
 
+// PrepareLogger is Deprecated
 func PrepareLogger() {
 	logger = util.GetLogger()
 }

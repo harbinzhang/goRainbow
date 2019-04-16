@@ -10,26 +10,43 @@ import (
 // RequestCounter is for counting events in go-rainbow
 type RequestCounter struct {
 	sync.Mutex
-	envCount         map[string]int
-	unavailableCount int
 
 	Interval     time.Duration
 	ProducerChan chan<- string
 	Name         string
 	Postfix      string
+
+	envCount         map[string]int
+	unavailableCount int
+	ticker           *time.Ticker
+	quitChannel      chan struct{}
 }
 
 // Init is to initial a RequestCounter
 func (rc *RequestCounter) Init() {
 	rc.envCount = make(map[string]int)
 	rc.unavailableCount = 0
+
+	rc.quitChannel = make(chan struct{})
+	rc.ticker = time.NewTicker(rc.Interval)
 	go func() {
-		ticker := time.NewTicker(rc.Interval)
 		for {
-			<-ticker.C
-			rc.generateMetric()
+			select {
+			case <-rc.ticker.C:
+				rc.generateMetric()
+			case <-rc.quitChannel:
+				return
+			}
 		}
 	}()
+}
+
+// Stop is for stopping itself
+func (rc *RequestCounter) Stop() error {
+	rc.ticker.Stop()
+	close(rc.quitChannel)
+
+	return nil
 }
 
 // Increase is for increase message count increase per env
@@ -70,7 +87,7 @@ func getCurrentEpochTime() string {
 	return strconv.FormatInt(time.Now().Unix(), 10)
 }
 
-// MetricsIsAvailable is for test if Burrow is sending Lag information to Rainbow
+// IsMetricAvailable is for test if Burrow is sending Lag information to Rainbow
 func (rc *RequestCounter) IsMetricAvailable() bool {
 	rc.Lock()
 	defer rc.Unlock()

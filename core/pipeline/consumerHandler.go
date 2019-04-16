@@ -10,6 +10,12 @@ import (
 	"go.uber.org/zap"
 )
 
+// ConsumerHandler handles:
+// 1. consumer offset
+// 2. consumer total lag
+// 3. consumer partition lag
+// 4. consumer max lag of partition
+// 5. consumer offset change rate
 type ConsumerHandler struct {
 	ProduceQueue       chan string
 	CountService       *module.CountService
@@ -21,12 +27,14 @@ type ConsumerHandler struct {
 	cluster       string
 }
 
+// Init is a general init
 func (ch *ConsumerHandler) Init(consumersLink string, consumer string, cluster string) {
 	ch.consumersLink = consumersLink
 	ch.consumer = consumer
 	ch.cluster = cluster
 }
 
+// Start is a general start
 func (ch *ConsumerHandler) Start() {
 	defer ch.Logger.Sync()
 
@@ -78,6 +86,7 @@ func (ch *ConsumerHandler) Start() {
 	)
 }
 
-func (ch *ConsumerHandler) Stop() {
-
+// Stop is a general stop
+func (ch *ConsumerHandler) Stop() error {
+	return nil
 }

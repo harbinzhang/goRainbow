@@ -19,11 +19,12 @@ type Producer struct {
 	Logger       *zap.Logger
 }
 
+// Start is a general start
 func (p *Producer) Start() {
 	defer p.Logger.Sync()
 
 	contextProvider := util.ContextProvider{}
-	contextProvider.Init("config/config.json")
+	contextProvider.Init()
 	postfix := contextProvider.GetPostfix()
 	conf := contextProvider.GetConf()
 
@@ -42,7 +43,7 @@ func (p *Producer) Start() {
 	}
 	kafkaProducer, err := kafka.NewProducer(&kafkaConfig)
 	if err != nil {
-		panic(err)
+		panic("Err building kafka producer: " + err.Error())
 	}
 
 	defer kafkaProducer.Close()
@@ -57,8 +58,6 @@ func (p *Producer) Start() {
 						zap.String("topicPartition", ev.TopicPartition.String()),
 						zap.Int64("timestamp", time.Now().Unix()),
 					)
-				} else {
-					// fmt.Printf("Delivered message to %v\n", ev.TopicPartition)
 				}
 			}
 		}
@@ -91,4 +90,9 @@ func (p *Producer) Start() {
 			Value:          []byte(message),
 		}, nil)
 	}
+}
+
+// Stop is a general stop
+func (p *Producer) Stop() error {
+	return nil
 }

@@ -15,21 +15,48 @@ import (
 // at the first time Increase()
 type CountService struct {
 	sync.RWMutex
-	counterMap   map[string]*util.RequestCounter
-	produceQueue chan<- string
-	postfix      string
+
+	ProduceQueue chan<- string
+
+	counterMap map[string]*util.RequestCounter
+	postfix    string
 }
 
-func (cc *CountService) Init(produceQueue chan<- string) {
+// Start is a general start()
+func (cc *CountService) Start() {
 	cc.counterMap = make(map[string]*util.RequestCounter)
 
 	contextProvider := util.ContextProvider{}
-	contextProvider.Init("config/config.json")
+	contextProvider.Init()
 	cc.postfix = contextProvider.GetPostfix()
-
-	cc.produceQueue = produceQueue
 }
 
+// Stop is a general stop()
+func (cc *CountService) Stop() error {
+	for _, val := range cc.counterMap {
+		err := val.Stop()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Increase inceases 1 in RequestCounterName of env.
+// It would init a new RequestCounter if not exist.
+func (cc *CountService) Increase(RequestCounterName string, env string) {
+	cc.isExistOrInit(RequestCounterName)
+	cc.counterMap[RequestCounterName].Increase(env)
+}
+
+// IsCountServiceAvailable is for health_check
+func (cc *CountService) IsCountServiceAvailable() bool {
+	const TotalMessage string = "totalMessage"
+	cc.isExistOrInit(TotalMessage)
+	return cc.counterMap[TotalMessage].IsMetricAvailable()
+}
+
+// isExistOrInit would init requestCounter if there is no one named RequestCounterName existing.
 func (cc *CountService) isExistOrInit(RequestCounterName string) {
 	cc.RLock()
 	if _, ok := cc.counterMap[RequestCounterName]; !ok {
@@ -42,7 +69,7 @@ func (cc *CountService) isExistOrInit(RequestCounterName string) {
 		rcs := &util.RequestCounter{
 			Name:         RequestCounterName,
 			Interval:     60 * time.Second,
-			ProducerChan: cc.produceQueue,
+			ProducerChan: cc.ProduceQueue,
 			Postfix:      cc.postfix,
 		}
 		rcs.Init()
@@ -51,16 +78,4 @@ func (cc *CountService) isExistOrInit(RequestCounterName string) {
 	} else {
 		cc.RUnlock()
 	}
-}
-
-func (cc *CountService) Increase(RequestCounterName string, env string) {
-	cc.isExistOrInit(RequestCounterName)
-	cc.counterMap[RequestCounterName].Increase(env)
-}
-
-// IsCountServiceAvailable
-func (cc *CountService) IsCountServiceAvailable() bool {
-	const TotalMessage string = "totalMessage"
-	cc.isExistOrInit(TotalMessage)
-	return cc.counterMap[TotalMessage].IsMetricAvailable()
 }

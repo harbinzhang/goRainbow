@@ -21,11 +21,12 @@ type AliveTopicsMaintainer struct {
 	clusterTopicMap *util.SyncNestedMap
 }
 
+// Start is a general start
 func (atm *AliveTopicsMaintainer) Start() {
 	defer atm.Logger.Sync()
 
 	contextProvider := util.ContextProvider{}
-	contextProvider.Init("config/config.json")
+	contextProvider.Init()
 	postfix := contextProvider.GetPostfix()
 
 	atm.clusterTopicMap = &util.SyncNestedMap{}
@@ -75,8 +76,9 @@ func (atm *AliveTopicsMaintainer) Start() {
 	}
 }
 
-func (atm *AliveTopicsMaintainer) Stop() {
-
+// Stop is a general Stop
+func (atm *AliveTopicsMaintainer) Stop() error {
+	return nil
 }
 
 func getTopics(link string, cluster string) (interface{}, string) {

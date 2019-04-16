@@ -19,13 +19,16 @@ type OwnerOffsetMoveHelper struct {
 	ProduceQueue chan<- string
 	Logger       *zap.Logger
 
-	syncMap *util.SyncNestedMap
-	prefix  string
-	postfix string
-	env     string
-	tag     string
+	syncMap     *util.SyncNestedMap
+	prefix      string
+	postfix     string
+	env         string
+	tag         string
+	ticker      *time.Ticker
+	quitChannel chan struct{}
 }
 
+// Init is a general Init
 func (oom *OwnerOffsetMoveHelper) Init(prefix string, postfix string, env string, tag string) {
 	oom.syncMap = &util.SyncNestedMap{}
 	oom.syncMap.Init()
@@ -35,15 +38,31 @@ func (oom *OwnerOffsetMoveHelper) Init(prefix string, postfix string, env string
 	oom.env = env
 	oom.tag = tag
 
+	oom.ticker = time.NewTicker(60 * time.Second)
+	oom.quitChannel = make(chan struct{})
 	go func() {
-		ticker := time.NewTicker(60 * time.Second)
 		for {
-			<-ticker.C
-			oom.generateMetrics()
+			select {
+			case <-oom.ticker.C:
+				oom.generateMetrics()
+			case <-oom.quitChannel:
+				return
+			}
 		}
 	}()
 }
 
+// Stop is a general stop
+func (oom *OwnerOffsetMoveHelper) Stop() error {
+	oom.Logger.Info("stopping")
+
+	oom.ticker.Stop()
+	close(oom.quitChannel)
+
+	return nil
+}
+
+// Update updates current offset for different key.
 func (oom *OwnerOffsetMoveHelper) Update(key string, offset int, timestamp int64) {
 	// It works for the current case. ie. concurrent competition only exists in different key.
 	// It doesn't work for "concurrent competition exists in the same key at the same time".
@@ -107,6 +126,7 @@ func (oom *OwnerOffsetMoveHelper) generateMetrics() {
 	}
 }
 
+// GetSyncMap returns its syncMap
 func (oom *OwnerOffsetMoveHelper) GetSyncMap() *util.SyncNestedMap {
 	return oom.syncMap
 }

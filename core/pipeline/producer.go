@@ -58,8 +58,6 @@ func (p *Producer) Start() {
 						zap.String("topicPartition", ev.TopicPartition.String()),
 						zap.Int64("timestamp", time.Now().Unix()),
 					)
-				} else {
-					// fmt.Printf("Delivered message to %v\n", ev.TopicPartition)
 				}
 			}
 		}

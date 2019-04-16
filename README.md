@@ -45,11 +45,11 @@ goRainbow includes 3 main parts:
 You may check [Burrow Dockerfile](burrow/Dockerfile) for how to use goRainbow.
 Also, [Burrow Inspection](burrow/README.md) is my understanding of Burrow code.
 ### Program
-The main program is gorainbow.go
+The main program is goRainbow.go
 ```
-go run gorainbow.go
+go run goRainbow.go
 ```
-It will open ports at localhost:7099
+It will open health_check port at localhost:7099
 - health-check: localhost:7099/health-check
   - return 200 if service is available
   - return 503 if service is unavailable

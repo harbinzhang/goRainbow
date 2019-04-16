@@ -23,7 +23,7 @@ PACKAGES=$(find core -type d -not -path '*/\.*')
 # Note this is just for coverage. We run the race detector separately because it won't work with count
 for pkg in $PACKAGES
 do
-    go test --timeout 5s -covermode=count -coverprofile=profile_tmp.cov github.com/linkedin/Burrow/$pkg || ERROR="Error testing $pkg"
+    go test --timeout 5s -covermode=count -coverprofile=profile_tmp.cov github.com/HarbinZhang/goRainbow/$pkg || ERROR="Error testing $pkg"
     if [ -f profile_tmp.cov ]
     then
         tail -n +2 profile_tmp.cov >> profile.cov || die "Unable to append coverage for $pkg"

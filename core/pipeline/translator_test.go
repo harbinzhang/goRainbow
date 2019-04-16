@@ -10,23 +10,29 @@ import (
 	"testing"
 	"time"
 
+	"github.com/HarbinZhang/goRainbow/core/module"
+	"go.uber.org/zap"
+
 	"github.com/HarbinZhang/goRainbow/core/protocol"
 	"github.com/HarbinZhang/goRainbow/core/util"
 )
 
 func TestMain(m *testing.M) {
 	PrepareLogger()
+	os.Setenv("configPath", "../../config/config.json")
 }
 
 func TestWithProducer(t *testing.T) {
 
 	contextProvider := util.ContextProvider{}
-	contextProvider.Init("../../config/config.json")
+	contextProvider.Init()
 
 	lagStatusQueue, produceQueue := preparePipeline()
 	pull := prepareLag()
 
-	go Producer(produceQueue)
+	go func() {
+		<-produceQueue
+	}()
 
 	for i := 0; i < 100; i++ {
 		lagStatusQueue <- pull
@@ -40,12 +46,14 @@ func TestWithProducer(t *testing.T) {
 func TestStartFrom0(t *testing.T) {
 
 	contextProvider := util.ContextProvider{}
-	contextProvider.Init("../../config/config.json")
+	contextProvider.Init()
 
 	lagStatusQueue, produceQueue := preparePipeline()
 	pull := prepareLag()
 
-	go Producer(produceQueue)
+	go func() {
+		<-produceQueue
+	}()
 
 	pull.Status.Partitions[0].CurrentLag = 0
 	for i := 0; i < 5; i++ {
@@ -143,21 +151,21 @@ func preparePipeline() (chan<- protocol.LagStatus, chan string) {
 	lagStatusQueue := make(chan protocol.LagStatus, 1000)
 	produceQueue := make(chan string, 9000)
 
-	rcsTotal := &util.RequestCountService{
-		Name:         "totalMessage",
-		Interval:     60 * time.Second,
-		ProducerChan: produceQueue,
+	countService := &module.CountService{
+		ProduceQueue: produceQueue,
 	}
-	rcsTotal.Init()
 
-	rcsValid := &util.RequestCountService{
-		Name:         "totalMessage",
-		Interval:     60 * time.Second,
-		ProducerChan: produceQueue,
+	translator := &Translator{
+		LagQueue:     lagStatusQueue,
+		ProduceQueue: produceQueue,
+		CountService: countService,
+		Logger: util.GetLogger().With(
+			zap.String("module", "Translator"),
+		),
 	}
-	rcsValid.Init()
 
-	go Translator(lagStatusQueue, produceQueue, rcsTotal, rcsValid, "")
+	translator.Init("prefix", "test")
+	go translator.Start()
 
 	return lagStatusQueue, produceQueue
 }

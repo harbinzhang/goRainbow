@@ -10,9 +10,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestUpdate(t *testing.T) {
+func TestMain(m *testing.M) {
 	os.Setenv("configPath", "../../config/config.json")
+}
 
+func TestUpdate(t *testing.T) {
 	produceQueue := make(chan string, 9000)
 	countService := &CountService{ProduceQueue: produceQueue}
 	countService.Start()

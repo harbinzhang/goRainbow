@@ -11,14 +11,14 @@ With goRainbow, it provides more visibility for Kafka users:
 1. Producer status: for each producer, how many records produced to each partition.
 2. Consumer status: for each consumer, which partition(s) are hosted and how many records consumed per minute.
 3. Lag: total lag in the whole consumer group and partition level lag.
-4. It provides data traffic statistic.(totalMessage, validMessage, metricsSent)
+4. Traffic statistics: It provides data traffic statistic.(totalMessage, validMessage, metricsSent, exceptionCount)
 ### Features
 1. Heath-check: It provides health-check HTTP service so that AWS can auto restart Burrow-goRainbow when the service is unavailable.
 2. Dynamic metric sending:
    1. It sends partition metrics when lag exists. Also it guarantees every metric starts from 0 and ends with 0, which shows better in wavefront.
    2. It sends metrics per 30s when metrics change and per 60s for unchanged metrics.
 ## Thanks
-A big thanks to porter-rainbow, which gave a basic idea about how to design the goRainbow.
+A big thanks to porter-rainbow, which gave me a basic idea about how to design the goRainbow.
 
 port-rainbow is mainly based on socket connection. goRainbow is like a RESTful service.
 # Rainbow structure

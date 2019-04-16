@@ -1,3 +1,8 @@
+[![Join the chat at https://gitter.im/linkedin-Burrow/Lobby](https://badges.gitter.im/linkedin-Burrow/Lobby.svg)](https://gitter.im/linkedin-Burrow/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/HarbinZhang/goRainbow.svg)](https://travis-ci.org/HarbinZhang/goRainbow)
+[![Coverage Status](https://coveralls.io/repos/github/HarbinZhang/goRainbow/badge.svg?branch=dev-coverage)](https://coveralls.io/github/HarbinZhang/goRainbow?branch=dev-coverage)
+
+
 # goRainbow
 # What it is
 goRainbow is a plug-in for [Burrow](https://github.com/linkedin/Burrow). It pulls lag information from Burrow, translates it into metrics and sends it to the wavefront.

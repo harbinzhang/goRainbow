@@ -48,9 +48,9 @@ before_script:
   - go get honnef.co/go/tools/cmd/staticcheck                   # Badass static analyzer/linter
   - go get github.com/fzipp/gocyclo
   - go get github.com/mattn/goveralls
-  - git clone https://github.com/edenhill/librdkafka.git &
-  - cd librdkafka &
-  - ./configure --prefix /usr &
+  - git clone https://github.com/edenhill/librdkafka.git
+  - cd librdkafka
+  - ./configure --prefix /usr
   - make
   - sudo make install
   - cd ../

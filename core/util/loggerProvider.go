@@ -2,6 +2,9 @@ package util
 
 import (
 	"encoding/json"
+	"os"
+
+	"go.uber.org/zap/zapcore"
 
 	"go.uber.org/zap"
 )
@@ -25,6 +28,11 @@ func GetLogger() *zap.Logger {
 	if err := json.Unmarshal(rawJSON, &cfg); err != nil {
 		panic("Err decode logger config: " + err.Error())
 	}
+
+	if os.Getenv("log_level") == "debug" {
+		cfg.Level.SetLevel(zapcore.DebugLevel)
+	}
+
 	logger, err := cfg.Build()
 	if err != nil {
 		panic("Err building logger config: " + err.Error())

@@ -2,7 +2,6 @@ package util
 
 import (
 	"encoding/json"
-	"os"
 
 	"go.uber.org/zap/zapcore"
 
@@ -29,9 +28,7 @@ func GetLogger() *zap.Logger {
 		panic("Err decode logger config: " + err.Error())
 	}
 
-	if os.Getenv("log_level") == "debug" {
-		cfg.Level.SetLevel(zapcore.DebugLevel)
-	}
+	cfg.Level.SetLevel(zapcore.DebugLevel)
 
 	logger, err := cfg.Build()
 	if err != nil {

@@ -25,6 +25,7 @@ func GetLogger() *zap.Logger {
 	if err := json.Unmarshal(rawJSON, &cfg); err != nil {
 		panic("Err decode logger config: " + err.Error())
 	}
+
 	logger, err := cfg.Build()
 	if err != nil {
 		panic("Err building logger config: " + err.Error())

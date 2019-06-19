@@ -4,12 +4,11 @@ import (
 	"os"
 	"time"
 
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"go.uber.org/zap"
 
 	"github.com/HarbinZhang/goRainbow/core/module"
-
 	"github.com/HarbinZhang/goRainbow/core/util"
-	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
 // Producer send metrics to Kafka

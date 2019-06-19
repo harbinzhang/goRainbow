@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/HarbinZhang/goRainbow/core/module"
 	"github.com/HarbinZhang/goRainbow/core/protocol"
 	"github.com/HarbinZhang/goRainbow/core/util"
-	"go.uber.org/zap"
 )
 
 // ConsumerHandler handles:

@@ -6,7 +6,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/HarbinZhang/goRainbow/core/module"
-
 	"github.com/HarbinZhang/goRainbow/core/util"
 )
 

@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/HarbinZhang/goRainbow/core/module"
 	"go.uber.org/zap"
 
+	"github.com/HarbinZhang/goRainbow/core/module"
 	"github.com/HarbinZhang/goRainbow/core/protocol"
 	"github.com/HarbinZhang/goRainbow/core/util"
 )

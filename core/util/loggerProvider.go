@@ -9,7 +9,7 @@ import (
 // GetLogger returns a zap.Logger, need to take care of Sync() before exiting.
 func GetLogger() *zap.Logger {
 	rawJSON := []byte(`{
-		"level": "warn",
+		"level": "debug",
 		"encoding": "json",
 		"outputPaths": ["./rainbow_log"],
 		"errorOutputPaths": ["stderr"],
@@ -25,6 +25,7 @@ func GetLogger() *zap.Logger {
 	if err := json.Unmarshal(rawJSON, &cfg); err != nil {
 		panic("Err decode logger config: " + err.Error())
 	}
+
 	logger, err := cfg.Build()
 	if err != nil {
 		panic("Err building logger config: " + err.Error())

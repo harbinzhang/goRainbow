@@ -114,7 +114,7 @@ func (t *Translator) parsePartitionInfo(partitions []protocol.Partition, postfix
 				zap.Int64("timestamp", time.Now().Unix()),
 			)
 			t.CountService.Increase("exception.ownerInvalid", t.env)
-			owner = "Null"
+			return
 		}
 
 		topic := partition.Topic
@@ -167,7 +167,7 @@ func (t *Translator) parseMaxLagInfo(maxLag protocol.MaxLag, postfix string) {
 			zap.Int64("timestamp", time.Now().Unix()),
 		)
 		t.CountService.Increase("exception.ownerInvalid", t.env)
-		owner = "Null"
+		return
 	}
 	ownerTag := "owner=" + owner
 

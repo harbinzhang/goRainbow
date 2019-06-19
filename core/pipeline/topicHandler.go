@@ -39,7 +39,6 @@ func (th *TopicHandler) Start() {
 	defer th.Logger.Sync()
 
 	fmt.Println("New topic found: ", th.topicLink, th.topic)
-	var topicOffset protocol.TopicOffset
 
 	prefix := "fjord.burrow." + th.cluster + ".topic." + th.topic
 
@@ -57,6 +56,7 @@ func (th *TopicHandler) Start() {
 	for {
 		// check its topic offset from Burrow periodically
 		<-ticker.C
+		var topicOffset protocol.TopicOffset
 		getHTTPStruct(th.topicLink+th.topic, &topicOffset)
 		if topicOffset.Error {
 			th.Logger.Warn("Get consumer /lag error",

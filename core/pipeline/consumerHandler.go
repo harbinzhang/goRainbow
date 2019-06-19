@@ -40,7 +40,6 @@ func (ch *ConsumerHandler) Start() {
 	defer ch.Logger.Sync()
 
 	fmt.Println("New consumer found: ", ch.consumersLink, ch.consumer)
-	var lagStatus protocol.LagStatus
 
 	lagStatusQueue := make(chan protocol.LagStatus)
 
@@ -62,6 +61,7 @@ func (ch *ConsumerHandler) Start() {
 	for {
 		// check its ch.consumer lag from Burrow periodically
 		<-ticker.C
+		var lagStatus protocol.LagStatus
 		getHTTPStruct(ch.consumersLink+ch.consumer+"/lag", &lagStatus)
 		if lagStatus.Error {
 			ch.Logger.Warn("Get consumer /lag error",
@@ -70,7 +70,6 @@ func (ch *ConsumerHandler) Start() {
 			)
 			break
 		}
-		// fmt.Println(lagStatus)
 		lagStatusQueue <- lagStatus
 	}
 

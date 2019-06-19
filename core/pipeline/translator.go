@@ -22,7 +22,6 @@ type Translator struct {
 	prefix  string
 	env     string
 	postfix string
-	tsm     *util.TwinStateMachine
 	oom     *module.OwnerOffsetMoveHelper
 }
 
@@ -34,10 +33,6 @@ func (t *Translator) Init(prefix string, env string) {
 	contextProvider := util.ContextProvider{}
 	contextProvider.Init()
 	t.postfix = contextProvider.GetPostfix()
-
-	// Prepare metrics traffic control
-	t.tsm = &util.TwinStateMachine{}
-	t.tsm.Init()
 
 	// Prepare consumer side offset change per minute
 	t.oom = &module.OwnerOffsetMoveHelper{
@@ -55,11 +50,6 @@ func (t *Translator) Start() {
 	defer t.Logger.Sync()
 
 	for lag := range t.LagQueue {
-		// if lag doesn't change, sends it per 60s. Otherwise 30s.
-		shouldSendIt := t.tsm.Put(lag.Status.Cluster+lag.Status.Group, lag.Status.Totallag)
-		if !shouldSendIt {
-			continue
-		}
 		go t.parseInfo(lag)
 	}
 
@@ -125,11 +115,6 @@ func (t *Translator) parsePartitionInfo(partitions []protocol.Partition, postfix
 		// endOffsetTimestamp := strconv.FormatInt(partition.End.Timestamp, 10)
 
 		t.oom.Update(owner+":"+partitionID, partition.End.Offset, time.Now().Unix())
-
-		shouldSendIt, _ := t.tsm.PartitionPut(t.prefix+partitionID, currentLag)
-		if !shouldSendIt {
-			continue
-		}
 
 		topicTag := "topic=" + topic
 		partitionTag := "partition=" + partitionID

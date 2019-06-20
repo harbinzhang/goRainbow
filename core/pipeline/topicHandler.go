@@ -66,7 +66,7 @@ func (th *TopicHandler) Start() {
 			break
 		}
 
-		go th.handleTopicOffset(topicOffset, prefix)
+		go th.handleTopicOffset(topicOffset, prefix, time.Now().Unix())
 
 	}
 
@@ -88,12 +88,12 @@ func (th *TopicHandler) Stop() error {
 	return nil
 }
 
-func (th *TopicHandler) handleTopicOffset(topicOffset protocol.TopicOffset, prefix string) {
+func (th *TopicHandler) handleTopicOffset(topicOffset protocol.TopicOffset, prefix string, timestamp int64) {
 	topicTag := "topic=" + th.topic
 	for id, offset := range topicOffset.Offsets {
-		timeString := strconv.FormatInt(time.Now().Unix(), 10)
+		timeString := strconv.FormatInt(timestamp, 10)
 		partitionIDTag := "partitionId=" + strconv.Itoa(id)
-		th.oom.Update(th.topic+":"+strconv.Itoa(id), offset, time.Now().Unix())
+		th.oom.Update(th.topic+":"+strconv.Itoa(id), offset, timestamp)
 		th.ProduceQueue <- combineInfo([]string{prefix, strconv.Itoa(id), "offset"},
 			[]string{strconv.Itoa(offset), timeString, th.postfix, topicTag, partitionIDTag})
 	}

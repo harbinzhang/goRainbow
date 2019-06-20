@@ -76,6 +76,7 @@ type LagStatus struct {
 	} `json:"request"`
 }
 
+// LagInfo is a customized struct to add an accurate timestamp
 type LagInfo struct {
 	Lag       LagStatus `json:"lag"`
 	Timestamp int64     `json:"timestamp"`

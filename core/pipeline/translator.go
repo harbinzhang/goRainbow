@@ -14,7 +14,7 @@ import (
 
 // Translator for message translate from struct to string
 type Translator struct {
-	LagQueue     <-chan protocol.LagStatus
+	LagQueue     <-chan protocol.LagInfo
 	ProduceQueue chan<- string
 	CountService *module.CountService
 	Logger       *zap.Logger
@@ -49,8 +49,8 @@ func (t *Translator) Init(prefix string, env string) {
 func (t *Translator) Start() {
 	defer t.Logger.Sync()
 
-	for lag := range t.LagQueue {
-		go t.parseInfo(lag)
+	for lagInfo := range t.LagQueue {
+		go t.parseInfo(lagInfo)
 	}
 
 	t.Logger.Warn("translator exit",
@@ -64,13 +64,13 @@ func (t *Translator) Stop() error {
 	return nil
 }
 
-func (t *Translator) parseInfo(lag protocol.LagStatus) {
+func (t *Translator) parseInfo(lagInfo protocol.LagInfo) {
 	// lag is 0 or non-zero.
 	// parse it into lower level(partitions, maxlag).
-	cluster := lag.Status.Cluster
-	group := lag.Status.Group
-	totalLag := strconv.Itoa(lag.Status.Totallag)
-	timestamp := getEpochTime()
+	cluster := lagInfo.Lag.Status.Cluster
+	group := lagInfo.Lag.Status.Group
+	totalLag := strconv.Itoa(lagInfo.Lag.Status.Totallag)
+	timestamp := strconv.FormatInt(lagInfo.Timestamp, 10)
 
 	envTag := "env=" + cluster
 	consumerTag := "consumer=" + group
@@ -84,11 +84,11 @@ func (t *Translator) parseInfo(lag protocol.LagStatus) {
 		t.CountService.Increase("validMessage", cluster)
 	}
 
-	go t.parsePartitionInfo(lag.Status.Partitions, newPostfix)
-	go t.parseMaxLagInfo(lag.Status.Maxlag, newPostfix)
+	go t.parsePartitionInfo(lagInfo.Lag.Status.Partitions, newPostfix, lagInfo.Timestamp)
+	go t.parseMaxLagInfo(lagInfo.Lag.Status.Maxlag, newPostfix)
 }
 
-func (t *Translator) parsePartitionInfo(partitions []protocol.Partition, postfix string) {
+func (t *Translator) parsePartitionInfo(partitions []protocol.Partition, postfix string, timestamp int64) {
 	for _, partition := range partitions {
 
 		partitionID := strconv.Itoa(partition.Partition)
@@ -114,7 +114,7 @@ func (t *Translator) parsePartitionInfo(partitions []protocol.Partition, postfix
 		endOffset := strconv.Itoa(partition.End.Offset)
 		// endOffsetTimestamp := strconv.FormatInt(partition.End.Timestamp, 10)
 
-		t.oom.Update(owner+":"+partitionID, partition.End.Offset, time.Now().Unix())
+		t.oom.Update(owner+":"+partitionID, partition.End.Offset, timestamp)
 
 		topicTag := "topic=" + topic
 		partitionTag := "partition=" + partitionID

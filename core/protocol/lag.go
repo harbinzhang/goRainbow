@@ -76,6 +76,11 @@ type LagStatus struct {
 	} `json:"request"`
 }
 
+type LagInfo struct {
+	Lag       LagStatus `json:"lag"`
+	Timestamp int64     `json:"timestamp"`
+}
+
 // TopicOffset is for topic/offset
 type TopicOffset struct {
 	Error   bool   `json:"error"`

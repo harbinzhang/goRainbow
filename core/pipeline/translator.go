@@ -169,10 +169,6 @@ func (t *Translator) parseMaxLagInfo(maxLag protocol.MaxLag, postfix string) {
 	}
 }
 
-func getEpochTime() string {
-	return strconv.FormatInt(time.Now().Unix(), 10)
-}
-
 func combineInfo(prefix []string, postfix []string) string {
 	return strings.Join(prefix, ".") + " " + strings.Join(postfix, " ")
 }

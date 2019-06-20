@@ -3,3 +3,4 @@
 .idea/
 rainbow_log
 ./pipeline/rainbow_log
+profile.cov

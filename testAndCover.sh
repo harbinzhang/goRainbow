@@ -9,7 +9,7 @@ function die() {
 }
 
 export GOPATH=`pwd`:$GOPATH
-
+echo $GOPATH
 # Initialize profile.cov
 echo "mode: count" > profile.cov
 
@@ -18,7 +18,7 @@ ERROR=""
 
 # Get package list
 PACKAGES=$(find core -type d -not -path '*/\.*')
-
+echo $PACKAGES
 # Test each package and append coverage profile info to profile.cov
 # Note this is just for coverage. We run the race detector separately because it won't work with count
 for pkg in $PACKAGES

@@ -27,7 +27,7 @@ func TestWithProducer(t *testing.T) {
 	contextProvider := util.ContextProvider{}
 	contextProvider.Init()
 
-	lagStatusQueue, produceQueue := preparePipeline()
+	lagInfoQueue, produceQueue := preparePipeline()
 	pull := prepareLag()
 
 	go func() {
@@ -35,7 +35,7 @@ func TestWithProducer(t *testing.T) {
 	}()
 
 	for i := 0; i < 100; i++ {
-		lagStatusQueue <- pull
+		lagInfoQueue <- pull
 		time.Sleep(30 * time.Second)
 	}
 
@@ -48,22 +48,22 @@ func TestStartFrom0(t *testing.T) {
 	contextProvider := util.ContextProvider{}
 	contextProvider.Init()
 
-	lagStatusQueue, produceQueue := preparePipeline()
+	lagInfoQueue, produceQueue := preparePipeline()
 	pull := prepareLag()
 
 	go func() {
 		<-produceQueue
 	}()
 
-	pull.Status.Partitions[0].CurrentLag = 0
+	pull.Lag.Status.Partitions[0].CurrentLag = 0
 	for i := 0; i < 5; i++ {
-		lagStatusQueue <- pull
+		lagInfoQueue <- pull
 		time.Sleep(30 * time.Second)
 	}
 
-	pull.Status.Partitions[0].CurrentLag = 50
+	pull.Lag.Status.Partitions[0].CurrentLag = 50
 	for i := 0; i < 5; i++ {
-		lagStatusQueue <- pull
+		lagInfoQueue <- pull
 		time.Sleep(30 * time.Second)
 	}
 
@@ -72,16 +72,16 @@ func TestStartFrom0(t *testing.T) {
 
 func TestBasic(t *testing.T) {
 
-	lagStatusQueue, produceQueue := preparePipeline()
+	lagInfoQueue, produceQueue := preparePipeline()
 	pull := prepareLag()
 
-	lagStatusQueue <- pull
+	lagInfoQueue <- pull
 
 	metric := <-produceQueue
 
 	fmt.Println("metric: ", metric)
 
-	close(lagStatusQueue)
+	close(lagInfoQueue)
 	// close(produceQueue)
 
 }
@@ -89,7 +89,7 @@ func TestBasic(t *testing.T) {
 func BenchmarkBasic(b *testing.B) {
 	b.ReportAllocs()
 
-	lagStatusQueue, produceQueue := preparePipeline()
+	lagInfoQueue, produceQueue := preparePipeline()
 	pull := prepareLag()
 
 	go func() {
@@ -97,16 +97,16 @@ func BenchmarkBasic(b *testing.B) {
 	}()
 
 	for i := 0; i < b.N; i++ {
-		lagStatusQueue <- pull
+		lagInfoQueue <- pull
 	}
 
-	close(lagStatusQueue)
+	close(lagInfoQueue)
 }
 
 func Benchmark100Consumers(b *testing.B) {
 	b.ReportAllocs()
 
-	lagStatusQueue, produceQueue := preparePipeline()
+	lagInfoQueue, produceQueue := preparePipeline()
 	pull := prepareLag100Consumers()
 
 	b.ResetTimer()
@@ -116,15 +116,15 @@ func Benchmark100Consumers(b *testing.B) {
 	}()
 
 	for i := 0; i < b.N; i++ {
-		lagStatusQueue <- pull[i%100]
+		lagInfoQueue <- pull[i%100]
 	}
 
-	close(lagStatusQueue)
+	close(lagInfoQueue)
 }
 
 func TestMany(t *testing.T) {
 
-	lagStatusQueue, produceQueue := preparePipeline()
+	lagInfoQueue, produceQueue := preparePipeline()
 	pull := prepareLag()
 
 	go func() {
@@ -132,10 +132,10 @@ func TestMany(t *testing.T) {
 	}()
 
 	for i := 0; i < 100; i++ {
-		lagStatusQueue <- pull
+		lagInfoQueue <- pull
 	}
 
-	close(lagStatusQueue)
+	close(lagInfoQueue)
 }
 
 // func TestGetEpochTime0(t *testing.T) {
@@ -146,9 +146,9 @@ func TestMany(t *testing.T) {
 // 	assert.Equal(t, strconv.FormatInt(time.Now().Unix(), 10), getEpochTime("0001-01-01 00:00:00"), "Not passed")
 // }
 
-func preparePipeline() (chan<- protocol.LagStatus, chan string) {
+func preparePipeline() (chan<- protocol.LagInfo, chan string) {
 	// prepare
-	lagStatusQueue := make(chan protocol.LagStatus, 1000)
+	lagInfoQueue := make(chan protocol.LagInfo, 1000)
 	produceQueue := make(chan string, 9000)
 
 	countService := &module.CountService{
@@ -156,7 +156,7 @@ func preparePipeline() (chan<- protocol.LagStatus, chan string) {
 	}
 
 	translator := &Translator{
-		LagQueue:     lagStatusQueue,
+		LagQueue:     lagInfoQueue,
 		ProduceQueue: produceQueue,
 		CountService: countService,
 		Logger: util.GetLogger().With(
@@ -167,38 +167,39 @@ func preparePipeline() (chan<- protocol.LagStatus, chan string) {
 	translator.Init("prefix", "test")
 	go translator.Start()
 
-	return lagStatusQueue, produceQueue
+	return lagInfoQueue, produceQueue
 }
 
-func prepareLag() protocol.LagStatus {
+func prepareLag() protocol.LagInfo {
 
 	// read lagMessage basic template
 	pullFile, _ := os.Open("../../config/pull_content.json")
 	defer pullFile.Close()
 	pullRead, _ := ioutil.ReadAll(pullFile)
-	var pull protocol.LagStatus
+	var pull protocol.LagInfo
 
 	// transfer the lag template from byte to struct/json
-	if err := json.Unmarshal(pullRead, &pull); err != nil {
+	if err := json.Unmarshal(pullRead, &pull.Lag); err != nil {
 		fmt.Printf("Err: %s\n", err)
 		os.Exit(1)
 	}
+	pull.Timestamp = time.Now().Unix()
 
 	return pull
 }
 
-func prepareLag100Consumers() [100]protocol.LagStatus {
+func prepareLag100Consumers() [100]protocol.LagInfo {
 	lag := prepareLag()
-	var res [100]protocol.LagStatus
+	var res [100]protocol.LagInfo
 
 	for i := 0; i < 100; i++ {
 		newLag := lag
-		copy(newLag.Status.Partitions, lag.Status.Partitions)
+		copy(newLag.Lag.Status.Partitions, lag.Lag.Status.Partitions)
 		Group := "console-consumer-" + strconv.Itoa(i)
-		newLag.Status.Group = Group
-		newLag.Status.Totallag = rand.Intn(10000)
-		newLag.Status.Cluster = lag.Status.Cluster
-		newLag.Status.Maxlag = lag.Status.Maxlag
+		newLag.Lag.Status.Group = Group
+		newLag.Lag.Status.Totallag = rand.Intn(10000)
+		newLag.Lag.Status.Cluster = lag.Lag.Status.Cluster
+		newLag.Lag.Status.Maxlag = lag.Lag.Status.Maxlag
 		res[i] = newLag
 	}
 

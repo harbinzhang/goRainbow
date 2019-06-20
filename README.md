@@ -1,5 +1,6 @@
 [![Gitter](https://badges.gitter.im/BurrowRainbow/community.svg)](https://gitter.im/BurrowRainbow/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Build Status](https://travis-ci.org/HarbinZhang/goRainbow.svg)](https://travis-ci.org/HarbinZhang/goRainbow)
+[![Go Report Card](https://goreportcard.com/badge/github.com/HarbinZhang/goRainbow)](https://goreportcard.com/report/github.com/HarbinZhang/goRainbow)
 [![Coverage Status](https://coveralls.io/repos/github/HarbinZhang/goRainbow/badge.svg?branch=dev-coverage)](https://coveralls.io/github/HarbinZhang/goRainbow?branch=dev-coverage)
 
 

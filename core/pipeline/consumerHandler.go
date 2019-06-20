@@ -40,16 +40,15 @@ func (ch *ConsumerHandler) Start() {
 	defer ch.Logger.Sync()
 
 	fmt.Println("New consumer found: ", ch.consumersLink, ch.consumer)
-	var lagStatus protocol.LagStatus
 
-	lagStatusQueue := make(chan protocol.LagStatus)
+	lagInfoQueue := make(chan protocol.LagInfo)
 
 	ticker := time.NewTicker(30 * time.Second)
 
 	prefix := "fjord.burrow." + ch.cluster + "." + ch.consumer
 
 	translator := &Translator{
-		LagQueue:     lagStatusQueue,
+		LagQueue:     lagInfoQueue,
 		ProduceQueue: ch.ProduceQueue,
 		CountService: ch.CountService,
 		Logger: util.GetLogger().With(
@@ -62,16 +61,17 @@ func (ch *ConsumerHandler) Start() {
 	for {
 		// check its ch.consumer lag from Burrow periodically
 		<-ticker.C
-		getHTTPStruct(ch.consumersLink+ch.consumer+"/lag", &lagStatus)
-		if lagStatus.Error {
+		var lagInfo protocol.LagInfo
+		getHTTPStruct(ch.consumersLink+ch.consumer+"/lag", &lagInfo.Lag)
+		if lagInfo.Lag.Error {
 			ch.Logger.Warn("Get consumer /lag error",
-				zap.String("message", lagStatus.Message),
+				zap.String("message", lagInfo.Lag.Message),
 				zap.Int64("timestamp", time.Now().Unix()),
 			)
 			break
 		}
-		// fmt.Println(lagStatus)
-		lagStatusQueue <- lagStatus
+		lagInfo.Timestamp = time.Now().Unix()
+		lagInfoQueue <- lagInfo
 	}
 
 	// snm.DeregisterChild(cluster, ch.consumer)
@@ -79,7 +79,7 @@ func (ch *ConsumerHandler) Start() {
 	delete(ch.ClusterConsumerMap.GetChild(ch.cluster, nil).(map[string]interface{}), ch.consumer)
 	ch.ClusterConsumerMap.ReleaseLock(ch.cluster)
 
-	close(lagStatusQueue)
+	close(lagInfoQueue)
 	ch.Logger.Warn("consumer is invalid, will stop handler.",
 		zap.String("consumer", ch.consumer),
 		zap.String("cluster", ch.cluster),

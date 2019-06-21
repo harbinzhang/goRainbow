@@ -43,6 +43,7 @@ func (acm *AliveConsumersMaintainer) Start() {
 		}
 		for _, cluster := range clusters.([]interface{}) {
 			clusterString := cluster.(string)
+			fmt.Println(clusterString)
 			consumersSet := acm.clusterConsumerMap.GetChild(clusterString, make(map[string]interface{})).(map[string]interface{})
 
 			acm.clusterConsumerMap.SetLock(clusterString)

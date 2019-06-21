@@ -1,7 +1,6 @@
 package pipeline
 
 import (
-	"fmt"
 	"regexp"
 	"time"
 
@@ -43,13 +42,11 @@ func (acm *AliveConsumersMaintainer) Start() {
 		}
 		for _, cluster := range clusters.([]interface{}) {
 			clusterString := cluster.(string)
-			fmt.Println(clusterString)
 			consumersSet := acm.clusterConsumerMap.GetChild(clusterString, make(map[string]interface{})).(map[string]interface{})
 
 			acm.clusterConsumerMap.SetLock(clusterString)
 
 			consumers, consumersLink := getConsumers(clusterLink, clusterString)
-			fmt.Println(consumers, consumersLink)
 
 			// create new consumer handler if it does not exist.
 			for _, consumer := range consumers.([]interface{}) {

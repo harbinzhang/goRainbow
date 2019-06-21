@@ -31,7 +31,7 @@ func (cp *ContextProvider) GetConf() protocol.Config {
 	return conf
 }
 
-// GetPostfix is for
+// GetPostfix is for basic postfix
 func (cp *ContextProvider) GetPostfix() string {
 
 	conf := cp.GetConf()
@@ -48,12 +48,36 @@ func (cp *ContextProvider) GetPostfix() string {
 	} else {
 		dataCenter = "data_center=slv"
 	}
-	var planet string
-	if os.Getenv("ENV") != "" {
-		planet = "planet=" + os.Getenv("ENV")
+
+	dcaZone := "dca_zone=local"
+	source := "source=fjord-burrow"
+
+	// postfix := "source=192.168.3.169 data_center=slv dca_zone=local department=fjord planet=sbx888 service_name=porter_rainbow porter_tools=porter-rainbow"
+	postfix := strings.Join([]string{source, dataCenter, dcaZone, department, serviceName, metricFormat}, " ")
+
+	return postfix
+}
+
+// GetPostfixWithCluster is for
+// @param cluster: provide different postfix for different cluster.
+func (cp *ContextProvider) GetPostfixWithCluster(cluster string) string {
+
+	conf := cp.GetConf()
+
+	// Prepare tags
+	department := "department=" + conf.Service.Department
+	serviceName := "service_name=" + conf.Service.Name
+	metricFormat := "metric_format=" + conf.Translator.MetricFormat
+
+	// Prepare tags from env variables
+	var dataCenter string
+	if os.Getenv("DATACENTER") != "" {
+		dataCenter = "data_center=" + os.Getenv("DATACENTER")
 	} else {
-		planet = "planet=test"
+		dataCenter = "data_center=slv"
 	}
+
+	planet := "planet=" + cluster
 
 	dcaZone := "dca_zone=local"
 	source := "source=fjord-burrow"

@@ -9,7 +9,7 @@ import (
 // GetLogger returns a zap.Logger, need to take care of Sync() before exiting.
 func GetLogger() *zap.Logger {
 	rawJSON := []byte(`{
-		"level": "warn",
+		"level": "debug",
 		"encoding": "json",
 		"outputPaths": ["./rainbow_log"],
 		"errorOutputPaths": ["stderr"],

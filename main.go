@@ -16,7 +16,7 @@ import (
 func main() {
 	defer handleExit()
 
-	const link string = "http://10.248.2.106:8000/v3/kafka"
+	const link string = "http://127.0.0.1:8000/v3/kafka"
 	const ProduceQueueSize int = 9000
 
 	os.Setenv("configPath", "config/config.json")

@@ -61,6 +61,7 @@ func (atm *AliveTopicsMaintainer) Start() {
 							zap.String("module", "topicHandler"),
 						),
 					}
+					postfix += " planet=" + clusterString
 					topicHandler.Init(topicsLink, topicString, clusterString, postfix)
 					go topicHandler.Start()
 					atm.Logger.Info("create a new topic handler",

@@ -71,7 +71,7 @@ func (rc *RequestCounter) generateMetric() {
 			isAllUnavailable = false
 		}
 		prefix := "fjord.burrow." + env + "." + rc.Name
-		envTag := "env=" + env
+		envTag := "planet=" + env
 		message := strings.Join([]string{prefix, strconv.Itoa(count), timestamp, rc.Postfix, envTag}, " ")
 		rc.ProducerChan <- message
 	}

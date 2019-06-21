@@ -72,7 +72,7 @@ func (t *Translator) parseInfo(lagInfo protocol.LagInfo) {
 	totalLag := strconv.Itoa(lagInfo.Lag.Status.Totallag)
 	timestamp := strconv.FormatInt(lagInfo.Timestamp, 10)
 
-	envTag := "env=" + cluster
+	envTag := "planet=" + cluster
 	consumerTag := "consumer=" + group
 	newPostfix := strings.Join([]string{timestamp, t.postfix, envTag, consumerTag}, " ")
 

@@ -1,7 +1,6 @@
 package pipeline
 
 import (
-	"os"
 	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
@@ -79,10 +78,8 @@ func (p *Producer) Start() {
 	// Produce messages to topic (asynchronously)
 	topic := conf.Kafka.Topic
 
-	env := os.Getenv("ENV")
-
 	for message := range p.ProduceQueue {
-		go rcsMetricsSent.Increase(env)
+		go rcsMetricsSent.Increase("test")
 		p.Logger.Debug("Produced to speed-racer: " + message)
 		kafkaProducer.Produce(&kafka.Message{
 			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},

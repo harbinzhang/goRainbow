@@ -11,7 +11,7 @@ func GetLogger() *zap.Logger {
 	rawJSON := []byte(`{
 		"level": "warn",
 		"encoding": "json",
-		"outputPaths": ["./rainbow_log"],
+		"outputPaths": ["stdout","./rainbow_log"],
 		"errorOutputPaths": ["stderr"],
 		"initialFields": {"service": "goRainbow"},
 		"encoderConfig": {

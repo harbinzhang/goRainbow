@@ -6,9 +6,9 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/HarbinZhang/goRainbow/core/module"
-	"github.com/HarbinZhang/goRainbow/core/protocol"
-	"github.com/HarbinZhang/goRainbow/core/util"
+	"github.com/harbinzhang/goRainbow/core/module"
+	"github.com/harbinzhang/goRainbow/core/protocol"
+	"github.com/harbinzhang/goRainbow/core/util"
 )
 
 // ConsumerHandler handles:

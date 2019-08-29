@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/HarbinZhang/goRainbow/core/util"
+	"github.com/harbinzhang/goRainbow/core/util"
 )
 
 // CountService provide counters which send # of it counts per minute to wavefront.

@@ -6,7 +6,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/HarbinZhang/goRainbow/core/protocol"
+	"github.com/harbinzhang/goRainbow/core/protocol"
 	"github.com/stretchr/testify/assert"
 )
 

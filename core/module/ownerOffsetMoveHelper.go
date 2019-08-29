@@ -8,8 +8,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/HarbinZhang/goRainbow/core/protocol"
-	"github.com/HarbinZhang/goRainbow/core/util"
+	"github.com/harbinzhang/goRainbow/core/protocol"
+	"github.com/harbinzhang/goRainbow/core/util"
 )
 
 // OwnerOffsetMoveHelper is for statistics of how many records

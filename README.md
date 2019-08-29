@@ -1,7 +1,7 @@
 [![Gitter](https://badges.gitter.im/BurrowRainbow/community.svg)](https://gitter.im/BurrowRainbow/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-[![Build Status](https://travis-ci.org/HarbinZhang/goRainbow.svg)](https://travis-ci.org/HarbinZhang/goRainbow)
-[![Go Report Card](https://goreportcard.com/badge/github.com/HarbinZhang/goRainbow)](https://goreportcard.com/report/github.com/HarbinZhang/goRainbow)
-[![Coverage Status](https://coveralls.io/repos/github/HarbinZhang/goRainbow/badge.svg?branch=dev-coverage)](https://coveralls.io/github/HarbinZhang/goRainbow?branch=dev-coverage)
+[![Build Status](https://travis-ci.org/harbinzhang/goRainbow.svg)](https://travis-ci.org/harbinzhang/goRainbow)
+[![Go Report Card](https://goreportcard.com/badge/github.com/harbinzhang/goRainbow)](https://goreportcard.com/report/github.com/harbinzhang/goRainbow)
+[![Coverage Status](https://coveralls.io/repos/github/harbinzhang/goRainbow/badge.svg?branch=dev-coverage)](https://coveralls.io/github/harbinzhang/goRainbow?branch=dev-coverage)
 
 
 # goRainbow
@@ -64,7 +64,7 @@ It will open health_check port at localhost:7099
   - return 503 if service is unavailable
 ### Burrow push-model
 Also goRainbow provides a Burrow-push-model, in which goRainbow accepts Burrow's Lag message via Burrow notifier. It's working fine, but goRainbow pull-model can provide a better precision.   
-You may check rainbow-push-model branch for details. [push-model](https://github.com/HarbinZhang/goRainbow/tree/rainbow-push-model)
+You may check rainbow-push-model branch for details. [push-model](https://github.com/harbinzhang/goRainbow/tree/rainbow-push-model)
 ### Some implements
 1. Avoid blocking operation in main pipeline.
    1. Refined nested sync map to avoid blocking in URL maintainer.

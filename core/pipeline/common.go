@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/HarbinZhang/goRainbow/core/util"
+	"github.com/harbinzhang/goRainbow/core/util"
 	"go.uber.org/zap"
 )
 

@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/HarbinZhang/goRainbow/core/protocol"
+	"github.com/harbinzhang/goRainbow/core/protocol"
 )
 
 // ContextProvider is for loading rainbow config from config.json.

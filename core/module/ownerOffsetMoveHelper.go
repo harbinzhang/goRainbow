@@ -1,7 +1,6 @@
 package module
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -84,7 +83,7 @@ func (oom *OwnerOffsetMoveHelper) generateMetrics() {
 
 		ks := strings.Split(k, ":")
 		if len(ks) != 2 {
-			// the params are not "host:port" format, skip this one.
+			// the params are not "owner:partitionID" format, skip this one.
 			oom.CountService.Increase("exception.invalidFormat", oom.env)
 			continue
 		}
@@ -116,11 +115,11 @@ func (oom *OwnerOffsetMoveHelper) generateMetrics() {
 			oom.Logger.Warn("TimeDiff is not valid",
 				zap.String("cluster", oom.env),
 				zap.String("tag", oom.tag),
+				zap.String("key", k),
 				zap.String("prefix", oom.prefix),
 				zap.Int64("timeDiff", timeDiff),
 				zap.Int64("timestamp", partitionOffsetMove.CurtTimestamp),
 			)
-			fmt.Println("current time diff is" + strconv.FormatInt(timeDiff, 10))
 		}
 		oom.syncMap.ReleaseLock(k)
 	}

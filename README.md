@@ -1,8 +1,7 @@
 [![Gitter](https://badges.gitter.im/BurrowRainbow/community.svg)](https://gitter.im/BurrowRainbow/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Build Status](https://travis-ci.org/harbinzhang/goRainbow.svg)](https://travis-ci.org/harbinzhang/goRainbow)
 [![Go Report Card](https://goreportcard.com/badge/github.com/harbinzhang/goRainbow)](https://goreportcard.com/report/github.com/harbinzhang/goRainbow)
-[![Coverage Status](https://coveralls.io/repos/github/harbinzhang/goRainbow/badge.svg?branch=dev-coverage)](https://coveralls.io/github/harbinzhang/goRainbow?branch=dev-coverage)
-
+[![Coverage Status](https://coveralls.io/repos/github/harbinzhang/goRainbow/badge.svg?branch=dev)](https://coveralls.io/github/harbinzhang/goRainbow?branch=dev)
 
 # goRainbow
 # What it is

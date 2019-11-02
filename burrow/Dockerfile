@@ -1,4 +1,4 @@
-FROM golang:1.10.0-alpine3.7 as builder
+FROM golang:1.12-alpine as builder
 
 ENV DEP_VERSION="0.3.2"
 
@@ -26,8 +26,13 @@ ENV RAINBOW "harbinzhang/goRainbow"
 WORKDIR /go/src/github.com/
 
 RUN go get -d -v github.com/confluentinc/confluent-kafka-go/kafka
-RUN git clone https://github.com/harbinzhang/goRainbow.git
-RUN go get -d -v github.com/${RAINBOW}
+
+
+RUN mkdir harbinzhang 
+WORKDIR /go/src/github.com/harbinzhang
+RUN git clone https://github.com/harbinzhang/goRainbow.git && \
+	cd goRainbow
+
 
 WORKDIR /go/src/github.com/${RAINBOW}
 RUN GOOS=linux go build -a -installsuffix cgo -o /app/rainbow .
@@ -44,9 +49,13 @@ ENV TZ America/Los_Angeles
 RUN apk add --no-cache git curl tzdata && \
 	curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64 -o $GOPATH/bin/dep && \
 	chmod +x $GOPATH/bin/dep && \
-	mkdir -p $GOPATH/src/github.com/linkedin/Burrow
+	mkdir -p $GOPATH/src/github.com/linkedin
 
-ADD . $GOPATH/src/github.com/linkedin/Burrow/
+RUN cd $GOPATH/src/github.com/linkedin && \
+	git clone https://github.com/linkedin/Burrow.git && \
+	cd Burrow && \
+	git checkout 8403e4299c0af1d5be66404955303936014e9cda
+# ADD . $GOPATH/src/github.com/linkedin/Burrow/
 
 RUN cd $GOPATH/src/github.com/linkedin/Burrow && \
 	dep ensure && \

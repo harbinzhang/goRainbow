@@ -27,12 +27,12 @@ WORKDIR /go/src/github.com/
 
 RUN go get -d -v github.com/confluentinc/confluent-kafka-go/kafka
 
+
 RUN mkdir harbinzhang 
 WORKDIR /go/src/github.com/harbinzhang
 RUN git clone https://github.com/harbinzhang/goRainbow.git && \
-	cd goRainbow && \
-	git checkout dev
-# RUN go get -d -v github.com/${RAINBOW}
+	cd goRainbow
+
 
 WORKDIR /go/src/github.com/${RAINBOW}
 RUN GOOS=linux go build -a -installsuffix cgo -o /app/rainbow .

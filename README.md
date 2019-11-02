@@ -43,7 +43,6 @@ It will open health_check port at localhost:7099
 ### Burrow push-model
 Also goRainbow provides a Burrow-push-model, in which goRainbow accepts Burrow's Lag message via Burrow notifier. It's working fine, but goRainbow pull-model can provide a better precision.   
 You may check rainbow-push-model branch for details. [push-model](https://github.com/harbinzhang/goRainbow/tree/rainbow-push-model)
-
 ### Some implements
 1. Avoid blocking operation in main pipeline.
    1. Refined nested sync map to avoid blocking in URL maintainer.

@@ -5,7 +5,7 @@ ENV DEP_VERSION="0.3.2"
 RUN apk update && apk add bash && \
 	apk add openjdk8 
 
-
+ENV TZ America/Los_Angeles
 
 # For Kafka related
 RUN apk add --update --no-cache alpine-sdk bash ca-certificates \
@@ -18,31 +18,23 @@ WORKDIR /root/librdkafka
 RUN /root/librdkafka/configure
 RUN make
 RUN make install
-#For golang applications
+
+
+#For goRainbow applications
 RUN mkdir /lib64 && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
 RUN mkdir /app
 
-ENV RAINBOW "harbinzhang/goRainbow"
+ENV RAINBOW "goRainbow"
 WORKDIR /go/src/github.com/
 
 RUN go get -d -v github.com/confluentinc/confluent-kafka-go/kafka
 
-
-RUN mkdir harbinzhang 
-WORKDIR /go/src/github.com/harbinzhang
-RUN git clone https://github.com/harbinzhang/goRainbow.git && \
-	cd goRainbow
-
+WORKDIR /go/src/github.com
+COPY ./goRainbow ./goRainbow
 
 WORKDIR /go/src/github.com/${RAINBOW}
 RUN GOOS=linux go build -a -installsuffix cgo -o /app/rainbow .
 RUN mv ./config /app/config
-# COPY /goRainbow ./
-# COPY /goRainbow/config /app/config
-# RUN GOOS=linux go build -a -installsuffix cgo -o /app/rainbow . && \
-# 	chmod -R 777 /app/rainbow
-
-ENV TZ America/Los_Angeles
 
 
 # For Burrow related
@@ -55,7 +47,6 @@ RUN cd $GOPATH/src/github.com/linkedin && \
 	git clone https://github.com/linkedin/Burrow.git && \
 	cd Burrow && \
 	git checkout 8403e4299c0af1d5be66404955303936014e9cda
-# ADD . $GOPATH/src/github.com/linkedin/Burrow/
 
 RUN cd $GOPATH/src/github.com/linkedin/Burrow && \
 	dep ensure && \
@@ -63,7 +54,6 @@ RUN cd $GOPATH/src/github.com/linkedin/Burrow && \
 
 
 WORKDIR /app
-# COPY --from=builder /tmp/burrow /app/
 ADD /docker-config/docker-entrypoint.sh /etc/burrow/
 ADD /docker-config/burrow.toml /etc/burrow/
 ADD /conf/http-post.tmpl /etc/burrow/conf/
@@ -73,7 +63,5 @@ RUN mkdir -p /etc/burrow/logs
 
 RUN chmod +x /etc/burrow/docker-entrypoint.sh
 
-# CMD [ "/app/rainbow" ]
 ENTRYPOINT [ "/etc/burrow/docker-entrypoint.sh" ]
-# CMD ["bash"]
 CMD ["/app/burrow", "--config-dir", "/etc/burrow"]
